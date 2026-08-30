@@ -1,8 +1,8 @@
 /**
  * Production server.
  *
- * The site is 19 prerendered pages plus two on-demand routes (the contact
- * endpoint and its receipt page). This file exists for one reason that is easy
+ * The site is 19 prerendered pages plus three on-demand routes (the contact
+ * endpoint, its receipt page and the Resend delivery webhook). This file exists for one reason that is easy
  * to miss: with `@astrojs/node` in standalone mode, prerendered pages are
  * served by the adapter's own static handler and never enter the Astro app —
  * so Astro middleware cannot put security headers on them, and 18 of 19 pages
@@ -156,8 +156,35 @@ app.use(['/404', '/404/'], (_req, res) => {
   res.status(404).type('text/html').sendFile(notFound);
 });
 
+/*
+ * The delivery webhook must not depend on a content-type to get through.
+ *
+ * Astro's checkOrigin rejects a cross-site POST unless the request is exempt,
+ * and the exemption is by content-type: only the three "simple" form types are
+ * checked, so `application/json` passes and everything else 403s. Svix does
+ * send JSON, so this works — but that means the entire alerting path hangs on
+ * a header Resend chooses, and if it ever changed the route would 403, Svix
+ * would retry for hours and give up, and the safety net for silently-lost
+ * leads would itself fail silently. Measured, all four cases:
+ *
+ *   application/json      -> 200      text/plain            -> 403
+ *   <no content-type>     -> 403      x-www-form-urlencoded -> 403
+ *
+ * CSRF protection is worth nothing on this route regardless: it is not a form,
+ * it has no session or cookie to ride on, and it rejects anything without a
+ * valid Svix HMAC over the raw body. So mark the request exempt and let the
+ * signature be the only thing standing at the door. The body is JSON whatever
+ * the sender labelled it.
+ */
+app.post('/api/resend-webhook', (req, _res, next) => {
+  if (req.headers['svix-id'] && req.headers['svix-signature']) {
+    req.headers['content-type'] = 'application/json';
+  }
+  next();
+});
+
 /* On-demand routes. Anything the static layer did not match falls through to
-   Astro, which owns /api/contact and /contact/sent. */
+   Astro, which owns /api/contact, /contact/sent and /api/resend-webhook. */
 app.use(astro);
 
 /* Astro calls next() for a genuinely unknown path. Serve the prerendered 404

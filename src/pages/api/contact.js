@@ -12,6 +12,12 @@
  *
  * Both carry the same submission reference so the inbox and the client can
  * name the same enquiry.
+ *
+ * The guarantee in (1) is narrower than it looks, and the gap has bitten:
+ * Resend answers a suppressed recipient with the same 200 and message id as a
+ * real send, so there is nothing here to detect and the visitor is thanked for
+ * an enquiry nobody will see. The outcome only shows up later, on the delivery
+ * webhook — see api/resend-webhook.js.
  */
 import { SITE } from '../../site.config.mjs';
 import { collectLead, validateLead, leadRows, newSubmissionId } from '../../lib/leads.mjs';
@@ -218,9 +224,16 @@ export async function POST({ request }) {
     console.error(`contact: auto-reply failed for ${id} — ${describeFailure(acked)}`);
   }
 
-  /* Reference only. The privacy notice enumerates what our logs hold and a
+  /* "delivered" was a lie. A 200 from Resend means the message was accepted,
+     not that it reached anyone — a suppressed recipient returns exactly the
+     same 200 and an id for a message that is never sent. The real outcome
+     arrives at /api/resend-webhook. Logging Resend's own id alongside our
+     reference is what makes the two searchable against each other when it
+     does not.
+
+     References only: the privacy notice enumerates what our logs hold, and a
      company or person name is not on that list. */
-  console.log(`contact: ${id} — delivered`);
+  console.log(`contact: ${id} — accepted by Resend as ${sent.id}`);
   return respond(request, { ok: true, id });
 }
 

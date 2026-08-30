@@ -1,33 +1,44 @@
 # Deploying groovymark.com
 
-Hostinger VPS → Dokploy → Docker. The site is 19 prerendered pages plus two
-on-demand routes (`/api/contact` and `/contact/sent/`), served by `server.mjs`
+Hostinger VPS → Dokploy → Docker. The site is 19 prerendered pages plus three
+on-demand routes (`/api/contact`, `/contact/sent/` and `/api/resend-webhook`),
+served by `server.mjs`
 behind Dokploy's Traefik.
 
 ---
 
-## 1. Verify the sending domain in Resend
+## 1. The sending domain in Resend
 
-**Resend verifies domains, not individual sender addresses.** Once
-`groovymark.com` is verified you can send from any address at it, and you do not
-need to "create" `hello@` anywhere.
+**The verified domain is `email.groovymark.com`, not `groovymark.com`.** That
+distinction is the whole of this section, because Resend verifies domains and a
+subdomain is not covered by its parent in either direction:
 
-1. https://resend.com/domains → **Add Domain** → `groovymark.com`
-2. Add the DNS records it gives you (SPF, DKIM, and DMARC) at your DNS host
-3. Wait for the status to read **Verified**
+| `RESEND_FROM` | Result |
+| --- | --- |
+| `hello@email.groovymark.com` | sends |
+| `hello@groovymark.com` | **403, no mail sent** — the apex is not verified |
+| `leads@groovymark.com` | **403** — same reason, and see the trap below |
+| `onboarding@resend.dev` | delivers only to your own Resend account address |
 
-Two traps:
+Confirmed live in DNS:
 
-- **A subdomain is not covered by the parent.** Verifying `mail.groovymark.com`
-  does *not* authorise `from: hello@groovymark.com`. The domain in `RESEND_FROM`
-  must match the verified domain exactly.
-- **`onboarding@resend.dev` only sends to your own account address.** Using it
-  as a `from` works in a quick test and then returns 403 the moment a real
-  recipient is involved.
+```
+resend._domainkey.email.groovymark.com   DKIM present
+send.email.groovymark.com                v=spf1 include:amazonses.com ~all
+send.email.groovymark.com  MX            feedback-smtp.us-east-1.amazonses.com
+groovymark.com             MX            mx1/mx2.titan.email   (RECEIVING only)
+```
 
-Sending from an unverified domain returns **403** and the mail is not sent. The
-form surfaces this as "We could not deliver that one" rather than pretending it
-worked.
+Two domains, two jobs. **Resend sends as `email.groovymark.com`. Titan receives
+for `groovymark.com`.** Neither does the other's job, and `leads@groovymark.com`
+is a Titan mailbox that Resend delivers *to* — never an address it can send
+*from*.
+
+The trap worth naming: setting `RESEND_FROM` to `leads@groovymark.com` fails
+twice over. It is unverified, so Resend returns 403; and even if it were
+verified, the apex SPF is `include:spf.titan.email` with no SES in it, so Titan
+would see its own domain arriving from an unlisted relay and reject it as
+spoofed.
 
 ---
 
@@ -41,10 +52,15 @@ RESEND_API_KEY=re_xxxxxxxxxxxxxxxxxxxxxxxxxxxx
 RESEND_FROM=GroovyMark <hello@groovymark.com>
 ```
 
+```
+RESEND_WEBHOOK_SECRET=whsec_xxxxxxxxxxxxxxxxxxxxxxxx
+```
+
 Optional:
 
 ```
 LEADS_TO=leads@groovymark.com     # defaults to SITE.leadsEmail when unset
+ALERT_TO=someone@gmail.com        # where "lead not delivered" alerts go
 ```
 
 Three things to get right:
@@ -57,6 +73,54 @@ Three things to get right:
 - Dokploy stores Environment values in its own database, readable by anyone with
   dashboard access. If that matters, use its vault referencing instead:
   `${{vault.<vault>.<path>:<key>}}`.
+
+---
+
+## 2b. The delivery webhook — do not skip this
+
+A `200` from Resend at send time means **accepted**, not delivered. A recipient
+on Resend's suppression list returns exactly the same `200` and message id for a
+message Resend never attempts to send. `POST /api/contact` has nothing to detect
+and thanks the visitor for an enquiry nobody will ever see.
+
+That is not hypothetical. `leads@groovymark.com` did not exist as a Titan
+mailbox, hard-bounced, was suppressed, and every enquiry after that was lost in
+exactly this way — sender confirmed, reference issued, inbox empty.
+
+`/api/resend-webhook` closes it.
+
+1. https://resend.com/webhooks → **Add Webhook**
+2. Endpoint: `https://groovymark.com/api/resend-webhook`
+3. Subscribe to **email.bounced, email.failed, email.complained,
+   email.delivery_delayed** (add `email.delivered` while you verify, then leave
+   it or drop it — it is handled either way)
+4. Copy the signing secret into `RESEND_WEBHOOK_SECRET`
+5. Set `ALERT_TO` to an address **at a different provider from `LEADS_TO`**
+
+Point 5 is the whole design. The alert exists for the case where the primary
+inbox is the broken thing, so routing it through that same inbox guarantees it
+is missing precisely when it matters.
+
+Without `RESEND_WEBHOOK_SECRET` the route answers 503 and verifies nothing. It
+will not accept unsigned payloads — an open webhook lets anyone write chosen
+text into the logs an operator reads during an incident, and make the server
+send mail on demand.
+
+### If a lead is reported undelivered
+
+The log line is `LEAD NOT DELIVERED — GM-YYMMDD-XXXXXX`, and the alert names the
+same reference. **The enquiry itself is not lost** — Resend stores the full
+rendered message, so open https://resend.com/emails, find that reference in the
+subject, and read it there.
+
+If the reason is suppression, fix it in this order:
+
+1. Create the mailbox, or point the alias somewhere real.
+2. Send it a test from outside and confirm it arrives.
+3. **Only then** remove the address at https://resend.com/suppression.
+
+Reversing 2 and 3 just re-bounces the next enquiry and re-suppresses the
+address.
 
 ---
 

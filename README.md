@@ -4,8 +4,9 @@ Marketing site for GroovyMark — custom AI content production and publishing
 systems, built to hand over or run as a managed service.
 
 Astro 5, hand-written CSS, no UI framework and no webfonts. Nineteen pages are
-prerendered at build time; two routes render on demand (the enquiry endpoint and
-its receipt page), served by a small Express wrapper.
+prerendered at build time; three routes render on demand (the enquiry endpoint,
+its receipt page, and the Resend delivery webhook), served by a small Express
+wrapper.
 
 ---
 
@@ -30,7 +31,7 @@ Two environment variables are needed for the form to deliver — see
 
 | Path | What it is |
 | --- | --- |
-| `src/pages/` | Routes. `api/contact.js` and `contact/sent.astro` set `prerender = false`; everything else is static. |
+| `src/pages/` | Routes. `api/contact.js`, `api/resend-webhook.js` and `contact/sent.astro` set `prerender = false`; everything else is static. |
 | `src/data/` | All site copy and figures. Nothing is hard-coded in a template. |
 | `src/site.config.mjs` | Brand, contact addresses, social profiles, company registration. One source of truth. |
 | `src/lib/` | Structured data, lead schema and validation, the Resend transport, the two email templates. |
@@ -81,6 +82,14 @@ Each of these looks wrong until you know why, and each has broken before:
 - **`security.allowedDomains` in `astro.config.mjs` is load-bearing.** Without
   it every production form POST returns 403, and it cannot be reproduced on
   localhost. See §6 of `DEPLOY.md`.
+- **A `200` from Resend means accepted, not delivered.** A suppressed recipient
+  returns the same `200` and message id for a message that is never sent, so
+  `api/contact.js` cannot tell the difference and the visitor is thanked for an
+  enquiry nobody will see. `api/resend-webhook.js` exists solely to make that
+  loud. It needs `RESEND_WEBHOOK_SECRET`; without it, it refuses everything.
+- **Resend sends as `email.groovymark.com`; Titan receives for
+  `groovymark.com`.** `RESEND_FROM` must be at the first — the apex is not a
+  verified sending domain and returns 403. See §1 of `DEPLOY.md`.
 - **HSTS is withheld over plain HTTP on purpose.** Browsers treat `localhost` as
   a secure context, so sending it there pins HTTPS for a year and breaks every
   local dev server on the machine. See §5b of `DEPLOY.md`.

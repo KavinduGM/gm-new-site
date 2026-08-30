@@ -1144,6 +1144,12 @@ const whatsappUrl = hasWhatsapp
             form.querySelectorAll('input, select, textarea, button').forEach(function (el) {
               el.disabled = true;
             });
+            /* Every other branch restores the label; this one did not, so the
+               button sat under the reference still reading 'Sending...' after
+               the panel above it said the enquiry had arrived. A finished
+               action gets a finished label, and no arrow — there is nowhere
+               left to go. */
+            btn.textContent = 'Sent';
             show(
               '<p class="meta form__status-label"><span class="dot dot--done" aria-hidden="true"></span>Enquiry received</p>' +
                 '<p class="form__status-title">We have it. A person is reading it now.</p>' +
