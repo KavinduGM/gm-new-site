@@ -1,0 +1,97 @@
+---
+import { SITE } from '../site.config.mjs';
+import { graph, organizationSchema, websiteSchema } from '../lib/schema.mjs';
+
+interface Props {
+  title: string;
+  description: string;
+  /** Omit the "| GroovyMark" suffix (used on the home page). */
+  bareTitle?: boolean;
+  image?: string;
+  imageAlt?: string;
+  type?: 'website' | 'article';
+  noindex?: boolean;
+  /** Extra JSON-LD nodes merged into the page-level @graph. */
+  schema?: unknown[];
+  publishedTime?: string;
+  modifiedTime?: string;
+}
+
+const {
+  title,
+  description,
+  bareTitle = false,
+  image = SITE.ogImage,
+  imageAlt = `${SITE.name} — ${SITE.tagline}`,
+  type = 'website',
+  noindex = false,
+  schema = [],
+  publishedTime,
+  modifiedTime,
+} = Astro.props;
+
+/* Trailing slash kept, not stripped. astro.config sets build.format:'directory',
+   so every page is emitted as <route>/index.html and the URL the host serves
+   without a redirect is the slashed one — which is also exactly what
+   @astrojs/sitemap writes. Stripping it made 13 of the 14 sitemap entries
+   disagree with the canonical tag on the page they point at. */
+const path = Astro.url.pathname;
+const canonical = new URL(path.endsWith('/') ? path : path + '/', Astro.site ?? SITE.url).href;
+const ogImage = new URL(image, Astro.site ?? SITE.url).href;
+const fullTitle = bareTitle ? title : `${title} | ${SITE.name}`;
+
+const jsonLd = graph(organizationSchema(), websiteSchema(), ...schema);
+---
+
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+
+<title>{fullTitle}</title>
+<meta name="description" content={description} />
+{!noindex && <link rel="canonical" href={canonical} />}
+
+{noindex
+  ? <meta name="robots" content="noindex, nofollow" />
+  : <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" />}
+
+{/* Open Graph */}
+<meta property="og:type" content={type} />
+<meta property="og:site_name" content={SITE.name} />
+<meta property="og:locale" content={SITE.localeTag} />
+<meta property="og:url" content={canonical} />
+<meta property="og:title" content={fullTitle} />
+<meta property="og:description" content={description} />
+<meta property="og:image" content={ogImage} />
+<meta property="og:image:type" content="image/png" />
+<meta property="og:image:width" content="1200" />
+<meta property="og:image:height" content="630" />
+<meta property="og:image:alt" content={imageAlt} />
+{publishedTime && <meta property="article:published_time" content={publishedTime} />}
+{modifiedTime && <meta property="article:modified_time" content={modifiedTime} />}
+
+{/* Twitter / X */}
+<meta name="twitter:card" content="summary_large_image" />
+<meta name="twitter:title" content={fullTitle} />
+<meta name="twitter:description" content={description} />
+<meta name="twitter:image" content={ogImage} />
+<meta name="twitter:image:alt" content={imageAlt} />
+
+{/* Icons & platform */}
+<link rel="icon" href="/favicon.ico" sizes="32x32" />
+<link rel="icon" href="/icon.svg" type="image/svg+xml" />
+<link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+<link rel="manifest" href="/site.webmanifest" />
+<meta name="theme-color" content={SITE.themeColor} />
+
+{/* Analytics. Loaded here for every visitor because SITE.analyticsRequiresConsent
+    is false; when that flips to true the tag moves behind the consent gate in
+    CookieConsent.astro instead and this block stops rendering. */}
+{SITE.analyticsId && !SITE.analyticsRequiresConsent && (
+  <script async src={SITE.analyticsSrc} data-tid={SITE.analyticsId}></script>
+)}
+<meta name="color-scheme" content="dark" />
+<meta name="format-detection" content="telephone=no" />
+
+<link rel="sitemap" type="application/xml" href="/sitemap-index.xml" />
+
+<script type="application/ld+json" set:html={JSON.stringify(jsonLd)} is:inline />

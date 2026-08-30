@@ -1,0 +1,239 @@
+---
+import { ROLES } from '../data/home.mjs';
+
+/* Five named roles collapsing into one system. The grouping bracket is the
+   point: it states that the whole list is replaced together, not that each row
+   maps to something on the right. */
+const n = ROLES.replaced.length;
+---
+
+<figure
+  class="rr"
+  role="img"
+  aria-label={`${n} specialist roles — ${ROLES.replaced.join(', ')} — replaced together by one system, monitored by one person, running 24/7.`}
+>
+  <p class="rr__label rr__label--from" aria-hidden="true">
+    Replaces <span class="rr__n">{String(n).padStart(2, '0')}</span>
+  </p>
+  <p class="rr__label rr__label--to" aria-hidden="true">
+    Becomes <span class="rr__n rr__n--sig">01</span>
+  </p>
+
+  <!-- Roles and bracket share one flex box so the bracket tracks the list's
+       height. Left in the grid row it would stretch to the taller system block
+       and overshoot the roles it is grouping. -->
+  <div class="rr__group" aria-hidden="true">
+    <ul role="list" class="rr__roles">
+      {ROLES.replaced.map((r, i) => (
+        <li class="rr__role" style={`--i:${i}`}><s>{r}</s></li>
+      ))}
+    </ul>
+    <div class="rr__brace">
+      <span class="rr__brace-bar"></span>
+      <span class="rr__brace-tick"></span>
+      <span class="rr__chev">→</span>
+    </div>
+  </div>
+
+  <div class="rr__sys ticked" aria-hidden="true">
+    <p class="rr__sys-name">{ROLES.system.name}</p>
+    <p class="rr__sys-sub">{ROLES.system.sub}</p>
+    <ul role="list" class="rr__facts">
+      {ROLES.system.facts.map((f) => (
+        <li class="rr__fact"><span class="dot dot--done"></span>{f}</li>
+      ))}
+    </ul>
+  </div>
+</figure>
+
+<style>
+  /* Label row and content row are separate tracks so the bracket stretches to
+     the roles list alone and never includes the label above it. */
+  .rr {
+    margin: 0;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--sp-2) var(--sp-4);
+  }
+  @media (min-width: 48em) {
+    .rr {
+      /* Capped and centred rather than 1fr: letting the system block absorb all
+         remaining width stretched it to ~1070px in a 1376px panel, which spread
+         the facts to opposite edges and left the band looking empty. */
+      grid-template-columns: auto minmax(0, 32rem);
+      grid-template-rows: auto 1fr;
+      align-items: start;
+      justify-content: center;
+      column-gap: var(--sp-5);
+    }
+    .rr__label--from { grid-area: 1 / 1; }
+    .rr__label--to { grid-area: 1 / 2; }
+    .rr__group { grid-area: 2 / 1; align-self: center; }
+    .rr__sys { grid-area: 2 / 2; align-self: center; }
+  }
+
+  .rr__label {
+    display: flex;
+    align-items: baseline;
+    gap: var(--sp-2);
+    font-family: var(--font-mono);
+    font-size: var(--fs-2xs);
+    letter-spacing: var(--tr-label);
+    text-transform: uppercase;
+    color: var(--c-ink-3);
+    margin-block-end: var(--sp-2);
+  }
+  .rr__label--to { color: var(--c-signal); }
+  .rr__n { font-size: var(--fs-sm); color: var(--c-ink-4); }
+  .rr__n--sig { color: var(--c-signal); }
+
+  /* ---- Roles: one per line ---- */
+  .rr__group { display: flex; align-items: stretch; gap: var(--sp-4); }
+  .rr__roles { display: grid; gap: var(--sp-2); align-content: center; }
+  .rr__role {
+    font-size: var(--fs-sm);
+    line-height: 1.25;
+    color: var(--c-ink-3);
+    white-space: nowrap;
+  }
+  .rr__role s { text-decoration-color: var(--c-rose-line); }
+
+  /* ---- Bracket ---- */
+  .rr__brace {
+    position: relative;
+    display: flex;
+    align-items: center;
+    inline-size: 3.25rem;
+  }
+  .rr__brace-bar {
+    /* Spine on the right, caps top and bottom — a grouping bracket, drawn with
+       borders so it stretches with the row instead of needing a fixed viewBox. */
+    inline-size: 0.625rem;
+    block-size: 100%;
+    border-inline-end: 1px solid var(--c-line-strong);
+    border-block-start: 1px solid var(--c-line-strong);
+    border-block-end: 1px solid var(--c-line-strong);
+  }
+  .rr__brace-tick {
+    position: absolute;
+    inset-inline-start: 0.625rem;
+    inset-block-start: 50%;
+    inline-size: 1.25rem;
+    block-size: 1px;
+    background: var(--c-line-strong);
+  }
+  .rr__chev {
+    position: absolute;
+    inset-inline-end: 0;
+    inset-block-start: 50%;
+    translate: 0 -50%;
+    font-size: var(--fs-md);
+    line-height: 1;
+    color: var(--c-signal);
+  }
+
+  /* Narrow: the bracket has no room, so the relationship is carried by a
+     single downward arrow instead. */
+  @media (max-width: 47.99em) {
+    .rr__group { flex-direction: column; align-items: stretch; gap: var(--sp-2); }
+    .rr__brace { inline-size: 100%; justify-content: center; block-size: 1.75rem; }
+    .rr__brace-bar, .rr__brace-tick { display: none; }
+    .rr__chev { position: static; translate: none; rotate: 90deg; }
+    .rr__label--to { margin-block-start: var(--sp-2); }
+  }
+
+  /* ---- The system ---- */
+  .rr__sys {
+    position: relative;
+    padding: clamp(0.875rem, 0.7rem + 0.8vw, 1.125rem);
+    border: 1px solid var(--c-line-signal);
+    border-radius: var(--r-2);
+    background: var(--c-signal-wash);
+  }
+  .rr__sys-name {
+    font-size: var(--fs-md);
+    letter-spacing: var(--tr-tight);
+    font-weight: 500;
+    color: var(--c-ink);
+    line-height: var(--lh-snug);
+  }
+  .rr__sys-sub { margin-block-start: var(--sp-1); font-size: var(--fs-sm); color: var(--c-ink-2); }
+  .rr__facts {
+    display: grid;
+    gap: var(--sp-2);
+    margin-block-start: var(--sp-3);
+    padding-block-start: var(--sp-3);
+    border-block-start: 1px solid var(--c-line-signal);
+    grid-template-columns: minmax(0, 1fr);
+  }
+  @media (min-width: 30em) { .rr__facts { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+  .rr__fact {
+    display: flex;
+    align-items: center;
+    gap: var(--sp-2);
+    font-family: var(--font-mono);
+    font-size: var(--fs-2xs);
+    letter-spacing: var(--tr-wide);
+    color: var(--c-ink-2);
+  }
+  .rr__fact .dot { flex: none; }
+
+  /* ---- Path trace ----
+     One 8s loop that walks the eye along the claim: the five roles lift in
+     order, the bracket carries across, the arrow steps right, and the system
+     block takes the accent.
+
+     Smoothness comes from three things, not from slowing it down:
+       - --ease-in-out (symmetric) rather than --ease-out, whose
+         cubic-bezier(0.16, 1, ...) shoots out and slams to a stop;
+       - windows roughly twice as wide, and overlapping, so the four phases
+         read as one travelling movement instead of four separate blinks;
+       - a settle keyframe on each fall, so nothing snaps back to rest.
+
+     Every keyframe returns to the resting style, so the idle stretch between
+     passes is the normal static design — nothing is hidden waiting to be
+     revealed, and only compositor-safe properties move.
+     Gated: no motion at all under prefers-reduced-motion. */
+  @media (prefers-reduced-motion: no-preference) {
+    .rr__role {
+      animation: rr-pop 8s var(--ease-in-out) infinite;
+      animation-delay: calc(var(--i) * 0.14s);
+    }
+    .rr__brace-bar { animation: rr-brace-bar 8s var(--ease-in-out) infinite; }
+    .rr__brace-tick { animation: rr-brace-tick 8s var(--ease-in-out) infinite; }
+    .rr__chev { animation: rr-chev 8s var(--ease-in-out) infinite; }
+    .rr__sys { animation: rr-sys 8s var(--ease-in-out) infinite; }
+  }
+
+  /* 0-18%   roles lift and settle, staggered to ~2.0s
+     10-34%  bracket carries the group across
+     15-42%  arrow drifts toward the system
+     21-54%  system border takes the accent, then fades out through its glow
+     54-100% at rest */
+  @keyframes rr-pop {
+    0%, 100% { transform: translateY(0);      color: var(--c-ink-3); }
+    5%       { transform: translateY(-2px);   color: var(--c-ink-2); }
+    11%      { transform: translateY(-1px);   color: var(--c-ink-2); }
+    18%      { transform: translateY(0);      color: var(--c-ink-3); }
+  }
+  @keyframes rr-brace-bar {
+    0%, 10%, 34%, 100% { border-color: var(--c-line-strong); }
+    19%                { border-color: var(--c-signal); }
+    26%                { border-color: var(--c-line-signal); }
+  }
+  @keyframes rr-brace-tick {
+    0%, 12%, 36%, 100% { background: var(--c-line-strong); }
+    21%                { background: var(--c-signal); }
+    28%                { background: var(--c-line-signal); }
+  }
+  @keyframes rr-chev {
+    0%, 15%, 42%, 100% { transform: translateX(0);     opacity: 0.72; }
+    25%                { transform: translateX(3px);   opacity: 1; }
+    33%                { transform: translateX(1.5px); opacity: 0.86; }
+  }
+  @keyframes rr-sys {
+    0%, 21%, 54%, 100% { border-color: var(--c-line-signal); box-shadow: none; }
+    33%                { border-color: var(--c-signal); box-shadow: 0 0 34px -14px var(--c-signal-glow); }
+    43%                { border-color: var(--c-line-signal); box-shadow: 0 0 22px -16px var(--c-signal-glow); }
+  }
+</style>

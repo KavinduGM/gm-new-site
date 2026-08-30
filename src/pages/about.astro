@@ -1,0 +1,1149 @@
+---
+import Base from '../layouts/Base.astro';
+import { SITE } from '../site.config.mjs';
+import { ENGAGEMENTS, STUDIO, TIMELINE, TEAM, RUNNING } from '../data/content.mjs';
+import { breadcrumbSchema } from '../lib/schema.mjs';
+
+/* Engagement names are read from shared content so the two cards in the last
+   section can never drift from /engagements. */
+const [build, managed] = ENGAGEMENTS;
+
+/* ---- The thesis -------------------------------------------------------
+   The whole argument, in the order it happened. Emphasis is marked with <b>
+   in the string and rendered with set:html — white, never more accent. */
+const THESIS = [
+  {
+    n: '01',
+    claim: 'Content demand grew faster than content teams.',
+    body:
+      'One idea used to make one asset. It now makes a long-form cut, four vertical edits, a thumbnail set, captions and a week of posts. <b>Hiring against that curve stops working</b> long before the budget does.',
+  },
+  {
+    n: '02',
+    claim: 'The tooling that filled the gap is rented, generic and fragile.',
+    body:
+      'Most of what is sold as an AI content system is a visual workflow builder with someone else’s logo on it, chained across five subscriptions and owned by <b>none of the people who depend on it</b>. It breaks quietly the first time a vendor moves an endpoint.',
+  },
+  {
+    n: '03',
+    claim: 'The compliance floor rose while vendors treated it as a marketing line.',
+    body:
+      'Transparency duties for synthetic audio, video and imagery are in force, and the organisations deploying that content carry duties of their own. The common answer has been a visible label and a values page. That tells a viewer something. <b>It tells a legal team nothing.</b>',
+  },
+];
+
+/* ---- What we believe --------------------------------------------------
+   Five positions, each one a build decision rather than a value. The first
+   is the argument of the whole company, so it leads the grid. */
+const BELIEFS = [
+  {
+    n: '01',
+    lead: true,
+    claim: 'Own the system. Don’t rent it.',
+    body:
+      'A system you own runs on your accounts, holds your data and answers to your team. A tool you rent can be repriced or discontinued while your content calendar is still running. The code behind it stays with us, the way a studio keeps its working files, and that is how we can guarantee it keeps working and fix it when it does not.',
+  },
+  {
+    n: '02',
+    claim: 'One vendor beats five.',
+    body:
+      'Every extra tool is another processor, another retention policy, another breach surface. One AI vendor keeps the data map <b>short enough to put in front of a client</b> without a page of caveats.',
+  },
+  {
+    n: '03',
+    claim: 'Disclosure is a build requirement, not a badge.',
+    body:
+      'Applied at upload, it is a policy someone has to remember. Applied at generation and carried through every derivative, it is a property of the system — one layer to change when a rule tightens.',
+  },
+  {
+    n: '04',
+    claim: 'A finished system beats a permanent beta.',
+    body:
+      'Software that is never done is software somebody keeps paying attention to, usually the client. We build to a stopping point: the pipeline runs, the failure modes are handled, the documentation matches what the system does.',
+  },
+  {
+    n: '05',
+    claim: 'Your workflow is the spec, not ours.',
+    body:
+      'Nobody should have to move their content plan into our tool. It stays in the sheet, board or calendar your team already keeps, and <b>the system reads from there</b>.',
+  },
+];
+
+/* ---- How an engagement actually runs ---------------------------------- */
+const WORKING = [
+  {
+    k: 'Delivery',
+    v: 'Discovery, build reviews, the parallel run and handover happen remotely. Nothing in the process waits on a flight.',
+  },
+  {
+    k: 'Hours',
+    v: 'We keep hours that overlap yours, so a review cycle closes inside a working day rather than across a night.',
+  },
+  {
+    k: 'Shape',
+    v: 'Engagement-shaped, not retainer-shaped. A build has a defined scope, a schedule and an end.',
+  },
+];
+
+/* Coverage, stated as markets served rather than a claim about offices. Reads
+   from the same constant /who-its-for uses, so the two cannot drift apart. */
+const REGIONS = [
+  {
+    tier: 'Markets served',
+    status: 'dot--done',
+    places: ['United States', 'United Kingdom', 'Germany & Western Europe', 'Australia & New Zealand', 'Gulf', 'South Africa'],
+  },
+];
+
+const arrow = 'M1 6h9M6.5 2 10.5 6l-4 4';
+---
+
+<Base
+  title="About the studio: build systems, don’t rent tools"
+  description="A two-person senior studio, shipping since 2021 from Colombo with a branch in Perth. Why GroovyMark exists, who builds it, and what we will not do."
+  schema={[breadcrumbSchema([{ name: 'About', href: '/about/' }])]}
+  hideFooterCta
+>
+  <!-- ============================================================ 1. HERO -->
+  <section class="ab-hero grid-bg">
+    <span class="bloom ab-hero__bloom" aria-hidden="true"></span>
+    <div class="wrap ab-hero__inner">
+      <p class="eyebrow eyebrow--center ab-hero__eyebrow">About {SITE.name}</p>
+      <h1 class="hero__title ab-hero__title">
+        Build the <span class="hl">system</span>. Don’t rent the tools.
+      </h1>
+      <p class="hero__lede ab-hero__lede">
+        {SITE.name} exists because of one gap: what a team is asked to produce against
+        what it can actually produce. Rented, generic tooling filled that gap and does not
+        hold at volume. We build the other thing — one production system per client.
+      </p>
+      <div class="btn-row ab-hero__actions">
+        <a href="/contact/" class="btn btn--primary btn--lg">
+          Book a build call
+          <svg class="btn__arrow" width="12" height="12" viewBox="0 0 12 12" aria-hidden="true"><path d={arrow} fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="square"/></svg>
+        </a>
+      </div>
+
+      <!-- Studio-wide, and labelled as such. The content system's own numbers
+           are far smaller and live on /trust; both are true and they are not
+           the same count. -->
+      <ul role="list" class="facts">
+        <li class="facts__item">
+          <span class="facts__v">{new Date().getFullYear() - STUDIO.founded}+</span>
+          <span class="facts__k">Years shipping, since {STUDIO.founded}</span>
+        </li>
+        <li class="facts__item">
+          <span class="facts__v">{STUDIO.peakStaff} → {STUDIO.staff}</span>
+          <span class="facts__k">Our own headcount, after the system</span>
+        </li>
+        <li class="facts__item">
+          <span class="facts__v">{RUNNING.live}</span>
+          <span class="facts__k">Client systems live today</span>
+        </li>
+        <li class="facts__item">
+          <span class="facts__v">{RUNNING.building}</span>
+          <span class="facts__k">More in build right now</span>
+        </li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- ========================================================== 2. THESIS -->
+  <section class="section" aria-labelledby="thesis-title">
+    <div class="wrap wrap--wide">
+      <h2 id="thesis-title" class="sec__title">Three things happened at once.</h2>
+      <p class="sec__lede">
+        The argument the company is built on, in the order it happened. Disagree with all
+        three and we are not the right people to build your content system — and
+        <a href="/who-its-for/" class="link">who it is and is not for</a> says so plainly.
+      </p>
+
+      <!-- One panel, three premises separated by space rather than a rule under
+           every row: three ruled lists in a column is what made the earlier
+           version of this page read as one long grey sheet. -->
+      <div class="thesis ticked">
+        <div class="thesis__bar">
+          <span class="thesis__bar-label">
+            <span class="dot dot--done" aria-hidden="true"></span>The thesis
+          </span>
+          <span class="thesis__bar-range">Premise 01–{String(THESIS.length).padStart(2, '0')}</span>
+        </div>
+
+        <ol role="list" class="thesis__list">
+          {THESIS.map((t) => (
+            <li class="thesis__item">
+              <span class="thesis__n">{t.n}</span>
+              <span class="thesis__claim">{t.claim}</span>
+              <span class="thesis__detail" set:html={t.body} />
+            </li>
+          ))}
+        </ol>
+      </div>
+
+      <!-- The one accent block on the page: it carries the argument. -->
+      <div class="so ticked">
+        <div class="so__bar">
+          <span class="so__bar-label">Therefore</span>
+          <span class="so__bar-meta">The build rule</span>
+        </div>
+        <div class="so__body">
+          <p class="so__claim">Build systems. Don’t rent tools.</p>
+          <p class="so__text">
+            One system per client, running through a single AI vendor, with disclosure
+            applied at generation and inputs tracked through every run. When it is finished
+            you own it, or we operate it for you. There is no third option where you rent
+            a seat forever.
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========================================================= 3. BELIEFS -->
+  <section class="section paper creed-sec" aria-labelledby="creed-title">
+    <div class="wrap wrap--wide">
+      <h2 id="creed-title" class="sec__title">What we believe, and what it changes.</h2>
+      <p class="sec__lede">
+        None of this is values-page decoration. Each position changes what gets written,
+        what gets bought, and what you hold at the end.
+      </p>
+
+      <ol role="list" class="creed">
+        {BELIEFS.map((b) => (
+          <li class:list={['creed__card', 'ticked', b.lead && 'creed__card--lead']}>
+            <span class="creed__n">{b.n}</span>
+            <h3 class="creed__claim">{b.claim}</h3>
+            <p class="creed__body" set:html={b.body} />
+          </li>
+        ))}
+      </ol>
+    </div>
+  </section>
+
+  <!-- ======================================================== 4. TIMELINE -->
+  <section class="section section--ruled" aria-labelledby="story-title">
+    <div class="wrap wrap--wide">
+      <h2 id="story-title" class="sec__title">
+        The studio did not start <span class="hl">with this</span>.
+      </h2>
+      <p class="sec__lede">
+        Five years of building things that had to keep running after we left. The content
+        production system is the newest of them, and it exists because the earlier work taught
+        us what breaks once nobody is watching.
+      </p>
+
+      <ol role="list" class="story">
+        {TIMELINE.map((e, i) => (
+          <li class:list={['story__item', i === TIMELINE.length - 1 && 'is-now']}>
+            <p class="story__meta">
+              <span class="story__year">{e.year}</span>
+              {i === TIMELINE.length - 1 && <span class="story__now">Now</span>}
+            </p>
+            <div class="story__card">
+              <h3 class="story__t">{e.t}</h3>
+              <p class="story__d">{e.d}</p>
+            </div>
+          </li>
+        ))}
+      </ol>
+    </div>
+  </section>
+
+  <!-- ======================================================= 5. HEADCOUNT -->
+  <section class="section section--ruled" aria-labelledby="cut-title">
+    <div class="wrap wrap--wide">
+      <h2 id="cut-title" class="sec__title">
+        We sold it to ourselves <span class="hl">first</span>.
+      </h2>
+      <p class="sec__lede">
+        Before any of this was a product it was our own payroll problem. Twelve people, an
+        office, and a content operation that needed another hire every time a client signed.
+        We built the system to fix it, moved our own accounts onto it, and stopped hiring.
+      </p>
+
+      <div class="cut">
+        <div class="cut__figures">
+          <p class="cut__row">
+            <span class="cut__was">{STUDIO.peakStaff}</span>
+            <span class="cut__arrow" aria-hidden="true">→</span>
+            <span class="cut__now">{STUDIO.staff}</span>
+          </p>
+          <p class="cut__k">People on the payroll, before and after</p>
+          <p class="cut__note">
+            Ten roles went to the system: editing, animation, scripting, voice, thumbnails,
+            scheduling, publishing, review, reporting and the coordination around all of it.
+            What is left is the two of us — one operating it, one building it.
+          </p>
+          <p class="cut__proof">
+            On one client account we measured the same change end to end:
+            <a href="/insights/oap-client-production-review/" class="link">nine people to two,
+            with output up 34%</a> — four months of records, published with the caveats attached.
+          </p>
+        </div>
+
+        <figure class="cut__shots">
+          <img
+            class="cut__img"
+            src="/story/production-floor.webp"
+            alt="Three of the old production team editing at desktop workstations in the Colombo office."
+            width="1400"
+            height="788"
+            loading="lazy"
+            decoding="async"
+          />
+          <img
+            class="cut__img"
+            src="/story/the-team.webp"
+            alt="Eight of the twelve-person team together in the Colombo office."
+            width="1400"
+            height="788"
+            loading="lazy"
+            decoding="async"
+          />
+          <figcaption class="cut__cap">
+            The team and the production floor it ran on, before the system. The machines in the
+            first photograph are the ones the energy figures counted.
+          </figcaption>
+        </figure>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================================================ 6. TEAM -->
+  <section class="section section--raised grid-bg grid-bg--center" aria-labelledby="team-title">
+    <div class="wrap wrap--wide">
+      <h2 id="team-title" class="sec__title">Two people. <span class="hl">That is the whole company</span>.</h2>
+      <p class="sec__lede">
+        It was {STUDIO.peakStaff}. The system took the other {STUDIO.peakStaff - STUDIO.staff}
+        roles, which is the same thing we are asking you to buy — so the count stays on the page
+        rather than being quietly rounded up. There is no account layer between you and the
+        people writing your pipeline, because there is nobody left to be one.
+      </p>
+
+      <ul role="list" class="team">
+        {TEAM.map((m) => (
+          <li class="team__card ticked">
+            <img
+              class="team__img"
+              src={m.img}
+              alt={`${m.name}, ${m.role} at ${SITE.name}`}
+              width="720"
+              height="900"
+              loading="lazy"
+              decoding="async"
+            />
+            <div class="team__text">
+              <h3 class="team__name">{m.name}</h3>
+              <p class="team__role">{m.role}</p>
+              <p class="team__does">{m.does}</p>
+              <p class="team__bio">{m.bio}</p>
+            </div>
+          </li>
+        ))}
+      </ul>
+
+      <p class="team__where">
+        <span class="team__where-k">Where we are</span>
+        <span class="team__where-v">
+          {STUDIO.hq} — with a branch in {STUDIO.branch}. Clients are worked with async across
+          time zones, which is a habit the studio built long before it built this.
+        </span>
+      </p>
+    </div>
+  </section>
+
+  <!-- =================================================== 7. ORG + HOW WE WORK -->
+  <section class="section section--raised grid-bg grid-bg--center" aria-labelledby="org-title">
+    <div class="wrap wrap--wide">
+      <h2 id="org-title" class="sec__title">One system. Two ways to buy it.</h2>
+      <p class="sec__lede">
+        Same pipeline, same build, same people. What changes is whether your team operates it
+        or we do — and <a href="/engagements/" class="link">the two are priced and scoped
+        separately</a>.
+      </p>
+
+      <div class="org">
+        <article class="org__card ticked">
+          <div class="org__top">
+            <span class="index">01</span>
+            <span class="badge badge--signal">Builds</span>
+          </div>
+          <h3 class="org__name">You operate it</h3>
+          <p class="org__body">
+            Discovery, workflow teardown, the pipeline build, then a parallel run against
+            your existing process until output is consistently publishable. Handover gives you
+            the running system, plus the documentation and runbooks to operate it.
+          </p>
+          <p class="org__meta">Engagement — {build.name}</p>
+        </article>
+
+        <article class="org__card ticked">
+          <div class="org__top">
+            <span class="index">02</span>
+            <span class="badge">Operates</span>
+          </div>
+          <h3 class="org__name">We operate it</h3>
+          <p class="org__body">
+            The same system, run as a managed service: planning with your team, the approval
+            workflow your governance needs, scheduling and reporting per channel. Your
+            accounts, your data.
+          </p>
+          <p class="org__meta">Engagement — {managed.name}</p>
+        </article>
+      </div>
+
+      <div class="work ticked">
+        <div class="work__bar">
+          <span class="work__bar-label">How we work</span>
+          <span class="work__bar-meta">Remote delivery</span>
+        </div>
+
+        <dl class="work__list">
+          {WORKING.map((w) => (
+            <div class="work__row">
+              <dt class="work__k">{w.k}</dt>
+              <dd class="work__v">{w.v}</dd>
+            </div>
+          ))}
+        </dl>
+
+        <div class="work__cov">
+          {REGIONS.map((r) => (
+            <div class="cov">
+              <span class="cov__tier">
+                <span class:list={['dot', r.status]} aria-hidden="true"></span>{r.tier}
+              </span>
+              <span class="chip-row">
+                {r.places.map((p) => <span class="chip">{p}</span>)}
+              </span>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      <div class="org__foot">
+        <p class="org__hook">
+          If the tools you publish through disappeared tomorrow, how much of your content
+          operation would still exist?
+        </p>
+        <a href="/contact/" class="btn btn--primary org__cta">
+          Book a build call
+          <svg class="btn__arrow" width="12" height="12" viewBox="0 0 12 12" aria-hidden="true"><path d={arrow} fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="square"/></svg>
+        </a>
+      </div>
+    </div>
+  </section>
+</Base>
+
+<style>
+  /* ---- Shared section heading — same idiom as the home page ---- */
+  .sec__title {
+    margin-inline: auto;
+    font-size: var(--fs-section);
+    line-height: var(--lh-snug);
+    letter-spacing: var(--tr-display);
+    font-weight: 600;
+    text-align: center;
+    text-wrap: balance;
+  }
+  /* ---- Studio facts ---- */
+  .facts {
+    inline-size: 100%;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 11rem), 1fr));
+    gap: var(--sp-5);
+    margin-block-start: var(--sp-7);
+    padding-block-start: var(--sp-5);
+    border-block-start: 1px solid var(--c-line);
+    list-style: none;
+    padding-inline: 0;
+  }
+  .facts__item { display: flex; flex-direction: column; gap: var(--sp-2); }
+  .facts__v {
+    font-size: var(--fs-2xl);
+    font-weight: 600;
+    line-height: 1;
+    letter-spacing: var(--tr-display);
+    color: var(--c-signal-text);
+    font-variant-numeric: tabular-nums;
+  }
+  .facts__k {
+    font-family: var(--font-mono);
+    font-size: var(--fs-2xs);
+    letter-spacing: var(--tr-label);
+    text-transform: uppercase;
+    color: var(--c-ink-3);
+    line-height: var(--lh-relaxed);
+  }
+
+  /* ---- Timeline ----
+     Horizontal rail with the cards hung beneath it. Alternating above and
+     below was considered and rejected: with five evenly-spaced entries there
+     is nothing to stagger around, so it would have cost roughly double the
+     band height and a zigzag reading order for no gain. Below 62em the rail
+     turns vertical, which is the only arrangement that works on a phone. */
+  .story {
+    position: relative;
+    margin: clamp(2.5rem, 1.5rem + 3vw, 3.5rem) 0 0;
+    list-style: none;
+    padding: 0;
+    display: grid;
+    gap: clamp(1.5rem, 1rem + 2vw, 2.25rem);
+  }
+  @media (min-width: 62em) {
+    .story { grid-template-columns: repeat(5, minmax(0, 1fr)); }
+    /* The rail, threaded through the node centres. */
+    .story::before {
+      content: '';
+      position: absolute;
+      inset-block-start: 0.4375rem;
+      inset-inline: 0;
+      block-size: 1px;
+      background: linear-gradient(
+        to right,
+        var(--c-line-2) 0%,
+        var(--c-line-2) 88%,
+        transparent 100%
+      );
+    }
+  }
+
+  .story__item { position: relative; display: flex; flex-direction: column; }
+
+  .story__meta {
+    display: flex;
+    align-items: center;
+    gap: var(--sp-3);
+    padding-inline-start: 1.75rem;
+    min-block-size: 15px;
+  }
+  /* The node sits on the rail, at the start of each column. */
+  .story__item::before {
+    content: '';
+    position: absolute;
+    inset-block-start: 0;
+    inset-inline-start: 0;
+    inline-size: 15px;
+    block-size: 15px;
+    border-radius: 50%;
+    border: 1px solid var(--c-line-strong);
+    background: var(--c-panel-2);
+    z-index: 1;
+  }
+  .story__item.is-now::before {
+    border-color: var(--c-signal);
+    background: var(--c-signal);
+    box-shadow: 0 0 0 4px var(--c-signal-veil), 0 0 16px var(--c-signal-glow);
+  }
+
+  .story__year {
+    font-family: var(--font-mono);
+    font-size: var(--fs-xs);
+    letter-spacing: var(--tr-label);
+    color: var(--c-ink-3);
+    font-variant-numeric: tabular-nums;
+  }
+  .story__item.is-now .story__year { color: var(--c-signal-text); }
+  .story__now {
+    font-family: var(--font-mono);
+    font-size: var(--fs-2xs);
+    letter-spacing: var(--tr-label);
+    text-transform: uppercase;
+    color: var(--c-signal-text);
+    padding: 0.1em 0.45em;
+    border: 1px solid var(--c-line-signal);
+    border-radius: var(--r-1);
+  }
+
+  /* flex:1 so every card in the row bottoms out level regardless of copy. */
+  .story__card {
+    flex: 1;
+    margin-block-start: var(--sp-4);
+    padding: clamp(1rem, 0.85rem + 0.7vw, 1.375rem);
+    border: 1px solid var(--c-line);
+    border-radius: var(--r-2);
+    background: var(--c-panel);
+  }
+  .story__item.is-now .story__card {
+    border-color: var(--c-line-signal);
+    background: linear-gradient(160deg, var(--c-signal-veil), transparent 60%), var(--c-panel);
+  }
+  .story__t {
+    font-size: var(--fs-base);
+    font-weight: 500;
+    line-height: var(--lh-snug);
+    letter-spacing: var(--tr-tight);
+    color: var(--c-ink);
+    text-wrap: balance;
+  }
+  .story__d {
+    margin-block-start: var(--sp-3);
+    font-size: var(--fs-sm);
+    line-height: var(--lh-relaxed);
+    color: var(--c-ink-2);
+    text-wrap: pretty;
+  }
+
+  /* Vertical spine on narrow screens. */
+  @media (max-width: 61.99em) {
+    .story::before {
+      content: '';
+      position: absolute;
+      inset-block: 0.75rem 0;
+      inset-inline-start: 0.4375rem;
+      inline-size: 1px;
+      background: linear-gradient(to bottom, var(--c-line-2) 0%, var(--c-line-2) 82%, transparent 100%);
+    }
+    .story__item { padding-inline-start: 1.75rem; }
+    .story__item::before { inset-block-start: 0.3125rem; }
+    .story__meta { padding-inline-start: 0; }
+  }
+
+
+  /* ---- Headcount ----
+     The figure and the photographs sit side by side because neither carries the
+     point alone: the number is abstract without the room, and the room is just
+     an office photo without the number. */
+  .cut {
+    display: grid;
+    gap: clamp(2rem, 1.4rem + 2.6vw, 3.5rem);
+    margin-block-start: clamp(2.5rem, 1.5rem + 3vw, 3.5rem);
+    align-items: start;
+  }
+  @media (min-width: 62em) {
+    .cut { grid-template-columns: minmax(0, 0.95fr) minmax(0, 1.05fr); }
+  }
+
+  .cut__row { display: flex; align-items: baseline; gap: var(--sp-4); }
+  .cut__was,
+  .cut__now {
+    font-size: clamp(3rem, 2rem + 4.6vw, 5.5rem);
+    font-weight: 600;
+    line-height: 1;
+    letter-spacing: var(--tr-display);
+    font-variant-numeric: tabular-nums;
+  }
+  .cut__was { color: var(--c-amber); text-decoration: line-through; text-decoration-thickness: 3px; }
+  .cut__now { color: var(--c-signal-text); }
+  .cut__arrow { font-size: var(--fs-2xl); color: var(--c-ink-4); }
+  .cut__k {
+    margin-block-start: var(--sp-4);
+    font-family: var(--font-mono);
+    font-size: var(--fs-2xs);
+    letter-spacing: var(--tr-label);
+    text-transform: uppercase;
+    color: var(--c-ink-3);
+  }
+  .cut__note {
+    margin-block-start: var(--sp-5);
+    max-width: 34rem;
+    font-size: var(--fs-md);
+    line-height: var(--lh-relaxed);
+    color: var(--c-ink-2);
+    text-wrap: pretty;
+  }
+  .cut__proof {
+    margin-block-start: var(--sp-5);
+    padding-block-start: var(--sp-5);
+    border-block-start: 1px solid var(--c-line);
+    max-width: 34rem;
+    font-size: var(--fs-sm);
+    line-height: var(--lh-relaxed);
+    color: var(--c-ink-2);
+    text-wrap: pretty;
+  }
+
+  .cut__shots { margin: 0; display: grid; gap: var(--sp-3); }
+  @media (min-width: 34em) { .cut__shots { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+  .cut__img {
+    display: block;
+    inline-size: 100%;
+    block-size: auto;
+    aspect-ratio: 16 / 9;
+    object-fit: cover;
+    border: 1px solid var(--c-line-2);
+    border-radius: var(--r-2);
+    background: var(--c-panel);
+  }
+  .cut__cap {
+    grid-column: 1 / -1;
+    padding-block-start: var(--sp-3);
+    font-family: var(--font-mono);
+    font-size: var(--fs-2xs);
+    line-height: var(--lh-relaxed);
+    letter-spacing: var(--tr-wide);
+    color: var(--c-ink-3);
+  }
+
+  /* ---- Team ----
+     The portraits were shot on a near-white ground, so each sits in its own
+     light tile rather than being keyed out badly. Reads as a photograph on a
+     dark page, which is what it is. */
+  .team {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 15rem), 1fr));
+    gap: clamp(1.25rem, 1rem + 1.4vw, 2rem);
+    margin: clamp(2.5rem, 1.5rem + 3vw, 3.5rem) auto 0;
+    max-inline-size: 52rem;
+    list-style: none;
+    padding: 0;
+  }
+  .team__card {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    border: 1px solid var(--c-line);
+    border-radius: var(--r-2);
+    background: var(--c-panel);
+    overflow: hidden;
+  }
+  .team__img {
+    display: block;
+    inline-size: 100%;
+    block-size: auto;
+    aspect-ratio: 4 / 5;
+    object-fit: cover;
+    object-position: 50% 12%;
+    background: #f2f0f7;
+    border-block-end: 1px solid var(--c-line);
+  }
+  .team__text { display: flex; flex-direction: column; gap: var(--sp-2); padding: var(--sp-5); }
+  .team__name {
+    font-size: var(--fs-base);
+    font-weight: 500;
+    letter-spacing: var(--tr-normal);
+    color: var(--c-ink);
+  }
+  .team__role {
+    font-family: var(--font-mono);
+    font-size: var(--fs-2xs);
+    letter-spacing: var(--tr-label);
+    text-transform: uppercase;
+    color: var(--c-signal-text);
+  }
+  /* What they do on *your* build, as against the career summary underneath. */
+  .team__does {
+    margin-block-start: var(--sp-2);
+    padding-block-start: var(--sp-3);
+    border-block-start: 1px solid var(--c-line);
+    font-size: var(--fs-sm);
+    line-height: var(--lh-snug);
+    color: var(--c-ink);
+  }
+  .team__bio {
+    margin-block-start: var(--sp-2);
+    font-size: var(--fs-sm);
+    line-height: var(--lh-relaxed);
+    color: var(--c-ink-2);
+    text-wrap: pretty;
+  }
+
+  .team__where {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--sp-3);
+    margin: clamp(2rem, 1.4rem + 2vw, 3rem) auto 0;
+    padding-block-start: var(--sp-5);
+    border-block-start: 1px solid var(--c-line);
+    max-inline-size: 52rem;
+    font-size: var(--fs-sm);
+    line-height: var(--lh-relaxed);
+    color: var(--c-ink-2);
+    text-align: center;
+  }
+  .team__where-k {
+    font-family: var(--font-mono);
+    font-size: var(--fs-2xs);
+    letter-spacing: var(--tr-label);
+    text-transform: uppercase;
+    color: var(--c-ink-3);
+  }
+  .team__where-v { max-width: 44rem; text-wrap: pretty; }
+
+  .sec__lede {
+    /* rem, never `ch`: the body face is a system stack, so `ch` gives wider
+       faces a narrower measure — exactly backwards. */
+    margin: var(--sp-5) auto 0;
+    max-width: 50rem;
+    font-size: var(--fs-md);
+    line-height: var(--lh-relaxed);
+    color: var(--c-ink-2);
+    text-align: center;
+    text-wrap: pretty;
+  }
+
+  /* ================================================================ HERO */
+  .ab-hero {
+    position: relative;
+    padding-block: clamp(3.25rem, 1.4rem + 6.4vw, 7rem);
+    overflow: clip;
+    text-align: center;
+  }
+  .ab-hero__bloom {
+    inline-size: min(52rem, 95vw);
+    block-size: 30rem;
+    inset-block-start: -13rem;
+    inset-inline-start: 50%;
+    translate: -50% 0;
+  }
+  .ab-hero__inner {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    max-width: 62rem;
+  }
+
+  /* The shared .eyebrow is a flex row whose dot strands at the far left once
+     the label wraps; rendered as an inline marker it stays on the line. */
+  .ab-hero__eyebrow {
+    display: block;
+    margin-block-end: 0;
+    white-space: nowrap;
+    letter-spacing: var(--tr-label);
+  }
+  .ab-hero__eyebrow::before {
+    display: inline-block;
+    vertical-align: middle;
+    margin-inline-end: var(--sp-2);
+    margin-block-end: 0.1em;
+  }
+  .ab-hero__eyebrow::after { display: none; }
+  @media (min-width: 30em) {
+    .ab-hero__eyebrow { letter-spacing: var(--tr-micro); }
+  }
+
+  .ab-hero__title {
+    margin-block-start: var(--sp-6);
+  }
+  .ab-hero__lede {
+    margin-block-start: var(--sp-6);
+  }
+  .ab-hero__actions { justify-content: center; margin-block-start: var(--sp-7); }
+
+  /* ============================================================== THESIS */
+  .thesis {
+    position: relative;
+    margin-block-start: clamp(2rem, 1.4rem + 2vw, 3rem);
+    border: 1px solid var(--c-line-2);
+    border-radius: var(--r-2);
+    background:
+      linear-gradient(180deg, var(--c-sheen), transparent 42%),
+      var(--c-panel);
+    box-shadow: var(--sh-lift);
+  }
+  .thesis__bar,
+  .so__bar,
+  .work__bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--sp-4);
+    padding: var(--sp-3) clamp(1rem, 0.8rem + 0.9vw, 1.5rem);
+    font-family: var(--font-mono);
+    font-size: var(--fs-2xs);
+    letter-spacing: var(--tr-label);
+    text-transform: uppercase;
+  }
+  /* Corner radius on the bar rather than `overflow: hidden` on the panel:
+     clipping the panel would also clip the .ticked crop marks, which sit at a
+     -1px inset and are the detail that sells the console read. */
+  .thesis__bar {
+    border-block-end: 1px solid var(--c-line);
+    border-radius: var(--r-2) var(--r-2) 0 0;
+  }
+  .thesis__bar-label {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--sp-2);
+    color: var(--c-ink);
+  }
+  .thesis__bar-range { color: var(--c-ink-3); }
+
+  .thesis__list {
+    display: grid;
+    gap: var(--sp-6);
+    padding: clamp(1.25rem, 1rem + 1.2vw, 1.75rem) clamp(1rem, 0.8rem + 0.9vw, 1.5rem);
+  }
+  .thesis__item {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    gap: var(--sp-2) var(--sp-4);
+    align-items: baseline;
+  }
+  .thesis__n {
+    font-family: var(--font-mono);
+    font-size: var(--fs-2xs);
+    letter-spacing: var(--tr-label);
+    /* --c-ink-3 (4.9:1). --c-ink-4 fails AA and is decorative only. */
+    color: var(--c-ink-3);
+  }
+  .thesis__claim {
+    font-size: var(--fs-md);
+    line-height: var(--lh-snug);
+    letter-spacing: var(--tr-tight);
+    color: var(--c-ink);
+    text-wrap: pretty;
+  }
+  .thesis__detail {
+    grid-column: 2 / -1;
+    font-size: var(--fs-sm);
+    line-height: var(--lh-relaxed);
+    color: var(--c-ink-2);
+    text-wrap: pretty;
+  }
+  /* Claim and detail sit side by side once there is room for both. Declared
+     after the base rules at equal specificity, so order decides. */
+  @media (min-width: 56em) {
+    .thesis__item { grid-template-columns: auto minmax(11rem, 19rem) minmax(0, 1fr); gap: var(--sp-2) var(--sp-5); }
+    .thesis__detail { grid-column: 3; }
+  }
+  /* :global because the <b> arrives via set:html and never receives Astro's
+     scoping attribute — a plain `.thesis__detail b` selector cannot match. */
+  .thesis__detail :global(b) { color: var(--c-ink); font-weight: inherit; }
+
+  /* ---- Therefore: the accent panel ---- */
+  .so {
+    position: relative;
+    margin-block-start: var(--sp-4);
+    border: 1px solid var(--c-line-signal);
+    border-radius: var(--r-2);
+    background:
+      linear-gradient(180deg, var(--c-signal-wash), transparent 58%),
+      var(--c-panel);
+  }
+  .so__bar {
+    border-block-end: 1px solid var(--c-line-signal);
+    background: var(--c-signal-wash);
+    border-radius: var(--r-2) var(--r-2) 0 0;
+  }
+  .so__bar-label { color: var(--c-ink); }
+  .so__bar-meta { color: var(--c-signal); }
+  .so__body {
+    display: grid;
+    gap: var(--sp-4);
+    padding: clamp(1.25rem, 1rem + 1.2vw, 1.75rem) clamp(1rem, 0.8rem + 0.9vw, 1.5rem);
+  }
+  @media (min-width: 62em) {
+    .so__body {
+      grid-template-columns: minmax(0, 0.8fr) minmax(0, 1.2fr);
+      gap: var(--sp-6);
+      align-items: start;
+    }
+  }
+  .so__claim {
+    font-size: var(--fs-xl);
+    line-height: var(--lh-snug);
+    letter-spacing: var(--tr-display);
+    font-weight: 500;
+    color: var(--c-ink);
+    text-wrap: balance;
+  }
+  .so__text {
+    font-size: var(--fs-sm);
+    line-height: var(--lh-relaxed);
+    color: var(--c-ink-2);
+    text-wrap: pretty;
+  }
+
+  /* ============================================================= BELIEFS */
+  .creed-sec { border-block: 1px solid var(--c-line-2); }
+  .creed {
+    display: grid;
+    gap: var(--sp-4);
+    margin-block-start: clamp(2rem, 1.4rem + 2vw, 3rem);
+    grid-template-columns: minmax(0, 1fr);
+  }
+  /* Five cards: the lead spans two tracks, so both the 2-column and the
+     3-column layout fill exactly, with no orphan row. */
+  @media (min-width: 48em) {
+    .creed { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .creed__card--lead { grid-column: span 2; }
+  }
+  @media (min-width: 68em) {
+    .creed { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  }
+
+  .creed__card {
+    position: relative;
+    display: grid;
+    gap: var(--sp-3);
+    align-content: start;
+    padding: clamp(1.25rem, 0.9rem + 1.4vw, 1.875rem);
+    border: 1px solid var(--c-line-2);
+    border-radius: var(--r-2);
+    background: var(--c-panel);
+  }
+  .creed__n {
+    font-family: var(--font-mono);
+    font-size: var(--fs-2xs);
+    letter-spacing: var(--tr-label);
+    color: var(--c-ink-3);
+  }
+  .creed__claim {
+    font-size: var(--fs-md);
+    line-height: var(--lh-snug);
+    letter-spacing: var(--tr-tight);
+    font-weight: 500;
+    color: var(--c-ink);
+    text-wrap: balance;
+  }
+  .creed__body {
+    font-size: var(--fs-sm);
+    line-height: var(--lh-relaxed);
+    color: var(--c-ink-2);
+    text-wrap: pretty;
+  }
+  .creed__body :global(b) { color: var(--c-ink); font-weight: inherit; }
+
+  /* The first belief is the argument of the whole company, so it is not one
+     card among five. Kept to size and accent — the layout stays matched. */
+  .creed__card--lead .creed__claim {
+    font-size: var(--fs-xl);
+    letter-spacing: var(--tr-display);
+  }
+  .creed__card--lead .creed__n { color: var(--c-signal-paper); }
+  .creed__card--lead .creed__body { max-width: 44rem; }
+
+  /* ===================================================== ORG + HOW WE WORK */
+  .org {
+    display: grid;
+    gap: var(--sp-4);
+    margin-block-start: clamp(2rem, 1.4rem + 2vw, 3rem);
+    grid-template-columns: minmax(0, 1fr);
+    align-items: stretch;
+  }
+  @media (min-width: 56em) { .org { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+
+  .org__card {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    gap: var(--sp-4);
+    padding: clamp(1.5rem, 1rem + 2.2vw, 2.5rem);
+    border: 1px solid var(--c-line-2);
+    border-radius: var(--r-2);
+    /* --c-panel-2, not --c-panel: the raised section already sits on --c-panel,
+       so a plain panel would read as a border floating on the same tone. */
+    background: var(--c-panel-2);
+    box-shadow: var(--sh-panel);
+  }
+  /* The shared .index numeral is --c-ink-4, which is decorative-only contrast.
+     These two mark an order the reader is meant to follow, so they are lifted. */
+  .org__card .index { color: var(--c-ink-3); }
+  .org__top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--sp-4);
+  }
+  .org__name {
+    font-size: var(--fs-xl);
+    line-height: var(--lh-snug);
+    letter-spacing: var(--tr-display);
+    font-weight: 500;
+    color: var(--c-ink);
+  }
+  .org__body {
+    font-size: var(--fs-sm);
+    line-height: var(--lh-relaxed);
+    color: var(--c-ink-2);
+    text-wrap: pretty;
+  }
+  .org__meta {
+    margin-block-start: auto;
+    padding-block-start: var(--sp-4);
+    border-block-start: 1px solid var(--c-line);
+    font-family: var(--font-mono);
+    font-size: var(--fs-2xs);
+    letter-spacing: var(--tr-wide);
+    color: var(--c-ink-3);
+  }
+
+  /* ---- How we work ---- */
+  .work {
+    position: relative;
+    margin-block-start: var(--sp-4);
+    border: 1px solid var(--c-line-2);
+    border-radius: var(--r-2);
+    background: var(--c-panel);
+  }
+  .work__bar {
+    border-block-end: 1px solid var(--c-line);
+    background: var(--c-panel-2);
+    border-radius: var(--r-2) var(--r-2) 0 0;
+  }
+  .work__bar-label { color: var(--c-ink); }
+  .work__bar-meta { text-transform: none; letter-spacing: var(--tr-wide); color: var(--c-ink-3); }
+
+  .work__list {
+    display: grid;
+    gap: var(--sp-5);
+    padding: clamp(1.25rem, 1rem + 1.2vw, 1.75rem) clamp(1rem, 0.8rem + 0.9vw, 1.5rem);
+  }
+  .work__row { display: grid; gap: var(--sp-2); }
+  @media (min-width: 48em) {
+    .work__row {
+      grid-template-columns: minmax(6.5rem, 0.26fr) minmax(0, 1fr);
+      gap: var(--sp-5);
+      align-items: baseline;
+    }
+  }
+  .work__k {
+    font-family: var(--font-mono);
+    font-size: var(--fs-2xs);
+    letter-spacing: var(--tr-label);
+    text-transform: uppercase;
+    color: var(--c-ink-2);
+  }
+  .work__v {
+    font-size: var(--fs-sm);
+    line-height: var(--lh-relaxed);
+    color: var(--c-ink-2);
+    text-wrap: pretty;
+  }
+
+  .work__cov {
+    display: grid;
+    gap: var(--sp-4);
+    padding: clamp(1.25rem, 1rem + 1.2vw, 1.75rem) clamp(1rem, 0.8rem + 0.9vw, 1.5rem);
+    border-block-start: 1px solid var(--c-line);
+    background: var(--c-sheen);
+    border-radius: 0 0 var(--r-2) var(--r-2);
+  }
+  .cov { display: grid; gap: var(--sp-3); }
+  @media (min-width: 40em) {
+    .cov { grid-template-columns: minmax(6.5rem, 0.26fr) minmax(0, 1fr); align-items: center; gap: var(--sp-5); }
+  }
+  .cov__tier {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--sp-3);
+    font-family: var(--font-mono);
+    font-size: var(--fs-2xs);
+    letter-spacing: var(--tr-label);
+    text-transform: uppercase;
+    color: var(--c-ink-2);
+  }
+
+  /* ---- Close: same pairing the home page closes each section with ---- */
+  .org__foot {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    gap: var(--sp-4) var(--sp-5);
+    margin-block-start: clamp(2rem, 1.4rem + 2vw, 3rem);
+  }
+  .org__hook {
+    font-size: var(--fs-lg);
+    line-height: var(--lh-snug);
+    letter-spacing: var(--tr-tight);
+    font-weight: 500;
+    color: var(--c-ink);
+    text-wrap: balance;
+    max-width: 44rem;
+  }
+  .org__cta { flex: none; }
+</style>

@@ -1,0 +1,297 @@
+---
+/**
+ * The blind comparison. The claim that "AI writes, the craft is held to an
+ * editor's standard" is asserted on three pages and proven on none, so this is
+ * the proof: real published work, made both ways, unlabelled until you ask.
+ *
+ * Blind on purpose. Labelled, a reader sees "made by the system" and goes
+ * looking for the flaw, and finds one because they are looking. Unlabelled,
+ * their own hesitation is the argument.
+ *
+ * Structured as SETS, not as matched pairs, because the assets cannot support
+ * a matched pair: the two videos cover different exams, and the three posts in
+ * each set share a brand palette (yellow, purple) that groups them on sight.
+ * Presenting them as pair-by-pair A/B would have implied a like-for-like test
+ * that a reader defeats in one second, and would have made the copy false.
+ *
+ * The reveal is a CSS-only checkbox so it works with JavaScript off; the only
+ * script is a courtesy that pauses one video when the other starts.
+ */
+const VIDEOS = [
+  { who: 'system', src: '/compare/system.mp4', poster: '/compare/system-poster.webp' },
+  { who: 'human', src: '/compare/human.mp4', poster: '/compare/human-poster.webp' },
+];
+
+/* Set order deliberately puts the system first here and second above, so
+   "the first one is always the machine" never becomes a shortcut. */
+/* Intrinsic sizes carried per item. They were hard-coded as a single 1080
+   pair, but optimise-images.py resized three of the six to 864 and the markup
+   was never updated. Both are 1:1 so nothing shifts, but the attributes stopped
+   describing the files — and the next person reasoning from the markup would
+   have been wrong. */
+const POST_SETS = [
+  {
+    who: 'human',
+    items: [
+      { src: '/compare/posts/human-1.webp', w: 864, h: 864 },
+      { src: '/compare/posts/human-2.png', w: 1080, h: 1080 },
+      { src: '/compare/posts/human-3.png', w: 864, h: 864 },
+    ],
+  },
+  {
+    who: 'system',
+    items: [
+      { src: '/compare/posts/system-1.png', w: 1080, h: 1080 },
+      { src: '/compare/posts/system-2.png', w: 1080, h: 1080 },
+      { src: '/compare/posts/system-3.webp', w: 864, h: 864 },
+    ],
+  },
+];
+
+const AB = ['A', 'B'];
+const NAMED = { human: 'Made by a human editor', system: 'Produced by the system' };
+const NAMED_SET = { human: 'Designed by a human', system: 'Produced by the system' };
+---
+
+<section class="section section--raised cmp" aria-labelledby="cmp-title">
+  <div class="wrap wrap--wide">
+    <p class="eyebrow eyebrow--center">See for yourself</p>
+    <h2 id="cmp-title" class="cmp__h">Can you tell which one <span class="hl">the system made</span>?</h2>
+    <p class="cmp__lede">
+      Two videos and two sets of posts below, all of it work that really went out. One of each
+      was made by a human editor. The other came out of the system. Have a look, then press the
+      button to see the answer.
+    </p>
+
+    <!-- Checkbox first, so every block after it can respond as a sibling. This
+         is the whole reveal mechanism: no script, works with JS disabled. -->
+    <input type="checkbox" id="cmp-reveal" class="cmp__toggle sr-only" />
+
+    <div class="cmp__blocks">
+      <!-- ---------------------------------------------------- video pair -->
+      <div class="cmp__block">
+        <p class="meta cmp__block-k">Short-form video</p>
+        <ul role="list" class="cmp__pair">
+          {VIDEOS.map((v, i) => (
+            <li class="cmp__cell">
+              <div class="cmp__frame">
+                <video
+                  class="cmp__video"
+                  src={v.src}
+                  poster={v.poster}
+                  controls
+                  playsinline
+                  preload="none"
+                  width="1080"
+                  height="1920"
+                  aria-label={`Sample video ${AB[i]}`}
+                ></video>
+              </div>
+              <p class="cmp__id">
+                <span class="cmp__id-blind">Video {AB[i]}</span>
+                <span class="cmp__id-true" data-who={v.who}>{NAMED[v.who]}</span>
+              </p>
+            </li>
+          ))}
+        </ul>
+        <p class="cmp__hint">Sound on. The voiceover is part of what you are judging.</p>
+      </div>
+
+      <!-- ----------------------------------------------------- post sets -->
+      <div class="cmp__block">
+        <p class="meta cmp__block-k">Community posts</p>
+        <p class="cmp__swipe">Swipe each set to see all three.</p>
+        <div class="cmp__sets">
+          {POST_SETS.map((set, i) => (
+            <div class="cmp__set">
+              <p class="cmp__id cmp__id--set">
+                <span class="cmp__id-blind">Set {AB[i]}</span>
+                <span class="cmp__id-true" data-who={set.who}>{NAMED_SET[set.who]}</span>
+              </p>
+              <ul role="list" class="cmp__trio">
+                {set.items.map((item, j) => (
+                  <li class="cmp__cell">
+                    <div class="cmp__frame">
+                      <img
+                        class="cmp__img"
+                        src={item.src}
+                        alt={`Community post ${j + 1} from sample set ${AB[i]}`}
+                        width={item.w}
+                        height={item.h}
+                        loading="lazy"
+                        decoding="async"
+                      />
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+
+    <div class="cmp__revealer">
+      <label for="cmp-reveal" class="btn btn--primary cmp__btn">
+        <span class="cmp__btn-show">Reveal which is which</span>
+        <span class="cmp__btn-hide">Hide the answers</span>
+      </label>
+      <p class="cmp__answer">
+        If you had to look twice, that is the whole point. The system's work is held to the
+        standard a video editor and an animation artist would hold it to, not to a lower one
+        because a machine produced it.
+      </p>
+    </div>
+  </div>
+</section>
+
+<script>
+  /* Progressive enhancement only: playing one sample pauses the other, so the
+     two voiceovers cannot talk over each other. Everything above works without
+     this script running at all. */
+  (() => {
+    const vids = Array.from(document.querySelectorAll('.cmp__video'));
+    vids.forEach((v) => {
+      v.addEventListener('play', () => {
+        vids.forEach((o) => {
+          if (o !== v && !o.paused) o.pause();
+        });
+      });
+    });
+  })();
+</script>
+
+<style>
+  /* Astro scopes per file, so a page's .sec__title cannot reach this heading. */
+  .cmp__h {
+    margin-inline: auto;
+    font-size: var(--fs-section);
+    line-height: var(--lh-snug);
+    letter-spacing: var(--tr-display);
+    font-weight: 600;
+    max-width: 44rem;
+    text-align: center;
+    text-wrap: balance;
+  }
+  .cmp__lede {
+    margin: var(--sp-5) auto 0;
+    max-width: 46rem;
+    font-size: var(--fs-md);
+    line-height: var(--lh-relaxed);
+    color: var(--c-ink-2);
+    text-align: center;
+    text-wrap: pretty;
+  }
+
+  .cmp__blocks {
+    display: grid;
+    gap: clamp(2.5rem, 1.8rem + 2.6vw, 4rem);
+    margin-block-start: clamp(2rem, 1.4rem + 2vw, 3rem);
+  }
+  .cmp__block-k { display: block; margin-block-end: var(--sp-4); text-align: center; }
+
+  /* Two across at every width: the comparison IS the layout, and stacking the
+     two videos on mobile would remove the only thing being asked. */
+  .cmp__pair {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: clamp(0.75rem, 0.4rem + 1.4vw, 1.5rem);
+    list-style: none;
+    margin: 0 auto;
+    padding: 0;
+    max-width: 34rem;
+  }
+
+  .cmp__sets { display: grid; gap: clamp(1.5rem, 1rem + 2vw, 2.5rem); }
+  @media (min-width: 62em) { .cmp__sets { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+  /* Three across squeezes each post to ~106px on a phone, where the question
+     text is unreadable and there is nothing left to judge. Below 46em the trio
+     becomes a scroll-snap track instead, the same native pattern the
+     testimonial carousel uses, so each post arrives at a size worth looking at. */
+  .cmp__trio {
+    display: flex;
+    gap: clamp(0.5rem, 0.3rem + 0.9vw, 0.875rem);
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    scrollbar-width: none;
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior-x: contain;
+  }
+  .cmp__trio::-webkit-scrollbar { display: none; }
+  .cmp__trio > .cmp__cell { flex: 0 0 72%; scroll-snap-align: start; }
+  @media (min-width: 46em) {
+    .cmp__trio { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); overflow: visible; }
+    .cmp__trio > .cmp__cell { flex: initial; }
+  }
+
+  .cmp__cell { min-width: 0; }
+  .cmp__frame {
+    overflow: hidden;
+    border: 1px solid var(--c-line-2);
+    border-radius: var(--r-2);
+    background: var(--c-panel-2);
+  }
+  /* The width/height attributes reserve the box, so nothing shifts on decode. */
+  .cmp__img,
+  .cmp__video { display: block; inline-size: 100%; block-size: auto; }
+  .cmp__video { background: var(--c-panel-3); }
+
+  .cmp__id {
+    margin-block-start: var(--sp-3);
+    font-family: var(--font-mono);
+    font-size: var(--fs-2xs);
+    letter-spacing: var(--tr-label);
+    text-transform: uppercase;
+    text-align: center;
+    color: var(--c-ink-3);
+  }
+  .cmp__id--set { margin-block: 0 var(--sp-3); }
+  .cmp__id-true { display: none; }
+  .cmp__id-true[data-who='system'] { color: var(--c-signal-text); }
+  .cmp__id-true[data-who='human'] { color: var(--c-ink-2); }
+
+  .cmp__swipe {
+    margin-block: calc(var(--sp-4) * -1) var(--sp-4);
+    font-size: var(--fs-xs);
+    color: var(--c-ink-3);
+    text-align: center;
+  }
+  @media (min-width: 46em) { .cmp__swipe { display: none; } }
+
+  .cmp__hint {
+    margin-block-start: var(--sp-4);
+    font-size: var(--fs-xs);
+    line-height: var(--lh-relaxed);
+    color: var(--c-ink-3);
+    text-align: center;
+  }
+
+  .cmp__revealer { margin-block-start: clamp(2rem, 1.4rem + 2vw, 3rem); text-align: center; }
+  .cmp__btn { cursor: pointer; }
+  .cmp__btn-hide { display: none; }
+  .cmp__answer {
+    margin: var(--sp-5) auto 0;
+    max-width: 42rem;
+    display: none;
+    font-size: var(--fs-sm);
+    line-height: var(--lh-relaxed);
+    color: var(--c-ink-2);
+    text-wrap: pretty;
+  }
+
+  /* ---- revealed state, driven entirely by the checkbox ---- */
+  .cmp__toggle:checked ~ .cmp__blocks .cmp__id-blind { display: none; }
+  .cmp__toggle:checked ~ .cmp__blocks .cmp__id-true { display: inline; }
+  .cmp__toggle:checked ~ .cmp__revealer .cmp__btn-show { display: none; }
+  .cmp__toggle:checked ~ .cmp__revealer .cmp__btn-hide { display: inline; }
+  .cmp__toggle:checked ~ .cmp__revealer .cmp__answer { display: block; }
+
+  /* The checkbox is off-screen, so its focus ring has to land on the label. */
+  .cmp__toggle:focus-visible ~ .cmp__revealer .cmp__btn {
+    outline: 2px solid var(--c-signal);
+    outline-offset: 3px;
+  }
+</style>

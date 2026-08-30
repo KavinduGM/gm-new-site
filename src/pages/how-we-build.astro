@@ -1,0 +1,987 @@
+---
+import Base from '../layouts/Base.astro';
+import { PROCESS, BUILD_FAQ } from '../data/content.mjs';
+import { breadcrumbSchema, faqSchema } from '../lib/schema.mjs';
+import FaqSection from '../components/FaqSection.astro';
+import CloseCta from '../components/CloseCta.astro';
+import Craft from '../components/Craft.astro';
+
+/* The single most important thing on this page: a reader who assumes this is a
+   subscription reads every other page through the wrong frame. It was buried on
+   /system; here it is the page. */
+const BUILD_FACTS = [
+  { v: '7 to 21 days', k: 'Typical build time, first call to handover, depending on scope.' },
+  { v: 'From $2,000', k: 'Where a build starts. Cost moves with scope, and there is no package tier to pick.' },
+];
+const BUILT_IN = ['Privacy protection', 'Data security', 'Built to the AI Act rules in force', 'Lower running cost', 'Runs 24/7'];
+const BUILT_OUT = ['No monthly subscription', 'No headcount', 'No HR', 'No payroll', 'No sick leave', 'No employment law'];
+
+/* Screenshots of a system we built and that is running. Client-identifying
+   detail is blurred in the source files, not by CSS, so nothing recoverable
+   ships. Sized here to match the files exactly (1280x720) so the browser
+   reserves the space and the section does not jump as they decode. */
+/* Line glyphs on the same 20x20 grid and 1.4 stroke as every other icon set
+   on the site. */
+const ICO = {
+  brand: '<path d="M10 2.6a7.4 7.4 0 1 0 0 14.8c.9 0 1.6-.7 1.6-1.6 0-.4-.2-.8-.5-1.1a1.5 1.5 0 0 1 1.1-2.5h1.8a3.9 3.9 0 0 0 3.9-3.9c0-3.2-3.5-5.7-7.9-5.7z"/><circle cx="6.5" cy="9.6" r=".9"/><circle cx="9.3" cy="6.5" r=".9"/><circle cx="13" cy="7.7" r=".9"/>',
+  rig: '<rect x="2.8" y="3.4" width="14.4" height="5.2" rx="1.3"/><rect x="2.8" y="11.4" width="14.4" height="5.2" rx="1.3"/><circle cx="5.9" cy="6" r=".7"/><circle cx="5.9" cy="14" r=".7"/>',
+  who: '<circle cx="10" cy="6.9" r="3"/><path d="M4.2 16.8a5.8 5.8 0 0 1 11.6 0"/>',
+  scale: '<path d="M3.4 16.6h13.2"/><path d="M6.3 16.6V9.9M10 16.6V5.5M13.7 16.6v-4.3"/>',
+  tested: '<path d="M3.6 10.4l3.9 3.9 8.9-8.9"/>',
+  watched: '<path d="M1.9 10S5.1 4.7 10 4.7 18.1 10 18.1 10 14.9 15.3 10 15.3 1.9 10 1.9 10z"/><circle cx="10" cy="10" r="2.3"/>',
+  guard: '<path d="M10 2.5l6.1 2.3v4.6c0 3.8-2.5 7.1-6.1 8.1-3.6-1-6.1-4.3-6.1-8.1V4.8z"/><path d="M7.5 10.1l1.9 1.9 3.4-3.4"/>',
+};
+
+/* Section 5 — the client's side of the build. Every phase above describes what
+   we do; without this the reader cannot tell what it costs them in time. */
+const NEEDS = [
+  {
+    ico: 'brand',
+    t: 'Your brand',
+    items: [
+      'Colours, fonts and logo files',
+      'Your website, and the links you want carried',
+      'Videos and graphics you have run before, or references you want matched',
+    ],
+    note: 'The first stage of the build is trained on these. It is why the output looks like you and not like a template.',
+  },
+  {
+    ico: 'rig',
+    t: 'Where it runs',
+    items: [
+      'Local machine or cloud. We recommend local.',
+      'The machine and its specification: a Windows PC, or which Mac',
+      'A UPS and a steady connection, so a power cut cannot stop a run mid-production',
+    ],
+  },
+  {
+    ico: 'who',
+    t: 'Who runs it',
+    items: [
+      'Who monitors the system day to day',
+      'Who else needs access to it',
+      'Which of them need a login of their own',
+    ],
+  },
+  {
+    ico: 'scale',
+    t: 'How much, and where',
+    items: [
+      'How many pieces you publish in a month',
+      'Which platforms you need covered',
+    ],
+  },
+];
+
+/* Connecting the channels is the one step that needs a decision rather than an
+   answer, so it gets its own pair of cards. */
+const ACCESS = [
+  {
+    n: 'Option 01',
+    t: 'You give us access',
+    d: 'We connect every account and configure the whole thing. Faster, and when setup is done you reset your own passwords, so our access ends there.',
+    rec: true,
+  },
+  {
+    n: 'Option 02',
+    t: 'You set it up yourself',
+    d: 'Your team makes each connection and we walk you through it, one platform at a time. Nothing leaves your side.',
+  },
+];
+
+/* Section 7 — what the retained codebase actually buys the client. */
+const AFTER = [
+  {
+    ico: 'tested',
+    t: 'Tested before it launches',
+    d: 'We run the whole thing end to end on our own demo channels and social accounts, several times over rather than once. A system only reaches your channels after it has already published to ours, which is why most of what we launch never produces a bug in production.',
+  },
+  {
+    ico: 'watched',
+    t: 'Watched after it launches',
+    d: 'A monitoring agent checks the system continuously and repairs most faults on its own, without anyone being called. On top of that we monitor every new system by hand, daily, for the first thirty days.',
+  },
+  {
+    ico: 'guard',
+    t: 'When a platform pushes back',
+    d: 'Instagram and TikTok occasionally reject a post or flag it as spam, usually when a description carries too many links. Every link, hashtag and description is checked before a piece is queued, and we publish through the official platform APIs rather than around them.',
+  },
+];
+
+const GUARANTEE = [
+  ['24/7', 'Support, raised by ticket'],
+  ['30 days', 'Daily monitoring of the live system'],
+  ['Guaranteed', 'Bug-free build and service'],
+  ['Quoted', 'Changes and updates, priced separately'],
+];
+
+const SHOTS = [
+  {
+    src: '/case/video-automation-hub.webp',
+    alt: 'The operator screen of a client content system: a document upload area, publish date and time controls, and a queue of documents each showing its stage, the pieces produced for it and its run cost.',
+    t: 'Where the work goes in',
+    d: 'The operator adds documents, sets the date and time they should go live, and leaves. Each row shows what stage that piece is at, which files are finished, and what the run cost to produce.',
+  },
+  {
+    src: '/case/analytics-dashboard.webp',
+    alt: 'The analytics screen of the same system: spend, exam count, upload count and an attention counter across the top, a cost breakdown and daily spend chart below, and a table of connected channels.',
+    t: 'The whole operation on one screen',
+    d: 'Schedule, status, spend and channel health in one view. Anything needing a person is raised rather than left to be found, down to a channel whose connection is about to expire.',
+  },
+];
+---
+
+<Base
+  title="How we build your custom AI content system"
+  description="Built for one client, from their own workflow. What the build covers, the six phases from first call to handover, and what we need from your side to start."
+  schema={[breadcrumbSchema([{ name: 'How We Build', href: '/how-we-build/' }]), faqSchema(BUILD_FAQ)]}
+  hideFooterCta
+>
+  <!-- =========================================================== 1. HERO -->
+  <section class="hero grid-bg" aria-labelledby="hwb-title">
+    <span class="bloom hero__bloom" aria-hidden="true"></span>
+    <div class="wrap hero__inner">
+      <p class="eyebrow hero__eyebrow">How we build</p>
+      <h1 id="hwb-title" class="hero__title">
+        Built around <span class="hl">your workflow</span>. Not the other way round.
+      </h1>
+      <p class="hero__lede">
+        Between one and three weeks from the first call to handover. This is not a product you
+        configure or a seat you rent. The system is designed around your workflow, it runs for
+        you alone, and you operate it.
+      </p>
+      <div class="btn-row hero__actions">
+        <a href="/contact/" class="btn btn--primary btn--lg">
+          Book a build call
+          <svg class="btn__arrow" width="12" height="12" viewBox="0 0 12 12" aria-hidden="true"><path d="M1 6h9M6.5 2 10.5 6l-4 4" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="square"/></svg>
+        </a>
+        <a href="/system/" class="btn btn--ghost btn--lg">See what it does</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========================================================= 2. CUSTOM -->
+  <section class="section cus" aria-labelledby="cus-title">
+    <div class="wrap wrap--wide">
+      <div class="cus__panel ticked">
+        <p class="meta meta--signal cus__k">
+          <span class="dot dot--done" aria-hidden="true"></span>Read this first
+        </p>
+
+        <h2 id="cus-title" class="cus__h">
+          Every system is <span class="hl">built for one client</span>. Not sold to many.
+        </h2>
+
+        <p class="cus__lede">
+          This is not a subscription, and not a product you configure. There is no shared
+          platform, no seat licence and no template. We build the system around your
+          workflow, your inputs, your output formats and your channels, then hand it over.
+          An agency, a solo founder and a hundred person company each get a different
+          build, because the requirements are different.
+        </p>
+
+        <ul role="list" class="cus__facts">
+          {BUILD_FACTS.map((f) => (
+            <li class="cus__fact">
+              <p class="cus__v">{f.v}</p>
+              <p class="cus__d">{f.k}</p>
+            </li>
+          ))}
+        </ul>
+
+        <div class="cus__grid">
+          <div class="cus__col">
+            <p class="meta cus__col-k">In every build</p>
+            <ul role="list" class="cus__list">
+              {BUILT_IN.map((x) => (
+                <li class="cus__item">
+                  <svg class="cus__tick" width="11" height="11" viewBox="0 0 12 12" aria-hidden="true"><path d="M2 6.3 4.6 9 10 3.2" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                  <span>{x}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
+          <div class="cus__col">
+            <p class="meta cus__col-k">Gone from your side</p>
+            <ul role="list" class="cus__list">
+              {BUILT_OUT.map((x) => (
+                <li class="cus__item cus__item--out">
+                  <svg class="cus__tick" width="11" height="11" viewBox="0 0 12 12" aria-hidden="true"><path d="M3 3l6 6M9 3l-6 6" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+                  <span>{x}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
+        </div>
+
+        <p class="cus__foot">You monitor it. The system does the work.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========================================================== 3. CRAFT -->
+  <Craft
+    eyebrow="What you are buying"
+    title="Not a generator. A [production standard]."
+    lede={`The reason a build takes days rather than minutes is that the output has to hold up as work, not as output. AI covers the writing. The craft is held to the bar an editor and an animation artist would hold it to — which is what took <a href="/insights/the-40-percent-you-already-paid-for/" class="link">right-first-time from 60% to 98.5%</a> on the account we measured.`}
+  />
+
+  <!-- ======================================================== 4. PHASES -->
+  <section class="section section--raised grid-bg grid-bg--center ph" id="phases" aria-labelledby="ph-title">
+    <div class="wrap wrap--wide">
+      <p class="eyebrow eyebrow--center">The build</p>
+      <h2 id="ph-title" class="ph__h">
+        From your workflow to <span class="hl">a system that runs it</span>.
+      </h2>
+      <p class="ph__lede">
+        We do not start from a template. We map how your content gets made today, agree what
+        the system should run on its own and what stays with your team, build it to the
+        machines and platforms you already use, then stay responsible for it once it is live.
+      </p>
+
+      <ol role="list" class="ph__list">
+        {PROCESS.map((s) => (
+          <li class:list={['ph__step', s.always && 'ph__step--always']}>
+            <div class="ph__bar">
+              <span class="ph__n">{s.always ? 'Built in' : `Phase ${s.n}`}</span>
+              {s.duration && <span class="ph__dur">{s.duration}</span>}
+            </div>
+            <div class="ph__body">
+              <h3 class="ph__name">{s.name}</h3>
+              <p class="ph__d">{s.body}</p>
+              {s.more && (
+                <a href={s.more.href} class="link ph__more">
+                  {s.more.label}
+                  <svg width="10" height="10" viewBox="0 0 12 12" aria-hidden="true"><path d="M1 6h9M6.5 2 10.5 6l-4 4" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="square"/></svg>
+                </a>
+              )}
+            </div>
+          </li>
+        ))}
+      </ol>
+
+      <p class="ph__note">
+        Scope moves the length. A single channel with one format sits near the short end;
+        a multi-brand build with approval gates and several destinations sits at the long end.
+      </p>
+    </div>
+  </section>
+
+  <!-- ============================================================ 5. BUILT -->
+  <!-- Proof, placed after the method: the reader has just been told how a build
+       goes, so this is the answer to "what does one look like when it is done". -->
+  <section class="section shots" aria-labelledby="shots-title">
+    <div class="wrap wrap--wide">
+      <p class="eyebrow eyebrow--center">A real build</p>
+      <h2 id="shots-title" class="shots__h">
+        A system we built, <span class="hl">in use today</span>.
+      </h2>
+      <p class="shots__lede">
+        This is the front end of a system we designed and built for a client, in use today.
+        Their document names, file paths and channel names are blurred out. Everything else is
+        exactly what their team sees.
+      </p>
+
+      <div class="shots__grid">
+        {SHOTS.map((s) => (
+          <figure class="shots__fig">
+            <div class="shots__frame">
+              <img
+                class="shots__img"
+                src={s.src}
+                alt={s.alt}
+                width="1280"
+                height="720"
+                loading="lazy"
+                decoding="async"
+              />
+            </div>
+            <figcaption class="shots__cap">
+              <h3 class="shots__t">{s.t}</h3>
+              <p class="shots__d">{s.d}</p>
+            </figcaption>
+          </figure>
+        ))}
+      </div>
+
+      <p class="shots__note">
+        Built for one client, around their workflow. Not a template they filled in, and not a
+        seat on a platform shared with anyone else.
+      </p>
+    </div>
+  </section>
+
+  <!-- ============================================================ 6. AFTER -->
+  <!-- The page says the codebase stays with us. This is what that buys, and
+       without it the retained source reads as a restriction rather than a
+       support guarantee. -->
+  <section class="section section--raised after" aria-labelledby="after-title">
+    <div class="wrap wrap--wide">
+      <p class="eyebrow eyebrow--center">After handover</p>
+      <h2 id="after-title" class="after__h">What happens once it <span class="hl">goes live</span>.</h2>
+      <p class="after__lede">
+        The build has a finish line. The support does not. The code behind it stays with us,
+        and this is what that is for.
+      </p>
+
+      <ul role="list" class="after__grid">
+        {AFTER.map((a) => (
+          <li class="after__card">
+            <span class="after__ico" aria-hidden="true">
+              <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor"
+                stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" set:html={ICO[a.ico]} />
+            </span>
+            <h3 class="after__t">{a.t}</h3>
+            <p class="after__d">{a.d}</p>
+          </li>
+        ))}
+      </ul>
+
+      <ul role="list" class="after__bar">
+        {GUARANTEE.map(([v, k]) => (
+          <li class="after__g">
+            <p class="after__v">{v}</p>
+            <p class="after__k">{k}</p>
+          </li>
+        ))}
+      </ul>
+
+    </div>
+  </section>
+
+  <!-- ============================================================ 7. NEEDS -->
+  <!-- The phases above are all our side. This is the reader's own commitment,
+       which is the first thing an operations lead wants and the last thing most
+       build pages state. -->
+  <section class="section needs" aria-labelledby="needs-title">
+    <div class="wrap wrap--wide">
+      <p class="eyebrow eyebrow--center">Your part</p>
+      <h2 id="needs-title" class="needs__h">What we need from <span class="hl">your side</span>.</h2>
+      <p class="needs__lede">
+        We do the building. These are the things only you can hand over, and the decisions
+        only you can make. Gather them before the first call and the build starts the same week.
+      </p>
+
+      <ul role="list" class="needs__grid">
+        {NEEDS.map((n) => (
+          <li class="needs__card">
+            <span class="needs__ico" aria-hidden="true">
+              <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor"
+                stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" set:html={ICO[n.ico]} />
+            </span>
+            <h3 class="needs__t">{n.t}</h3>
+            <ul role="list" class="needs__list">
+              {n.items.map((x) => (
+                <li class="needs__item">
+                  <svg class="needs__tick" width="11" height="11" viewBox="0 0 12 12" aria-hidden="true"><path d="M2 6.3 4.6 9 10 3.2" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                  <span>{x}</span>
+                </li>
+              ))}
+            </ul>
+            {n.note && <p class="needs__note">{n.note}</p>}
+          </li>
+        ))}
+      </ul>
+
+      <div class="needs__access">
+        <p class="meta meta--signal needs__access-k">
+          <span class="dot dot--done" aria-hidden="true"></span>Connecting your channels, two ways
+        </p>
+        <div class="needs__pair">
+          {ACCESS.map((o) => (
+            <div class:list={['needs__opt', o.rec && 'needs__opt--rec']}>
+              <p class="needs__opt-n">
+                {o.n}{o.rec && <span class="needs__rec">Recommended</span>}
+              </p>
+              <h3 class="needs__opt-t">{o.t}</h3>
+              <p class="needs__opt-d">{o.d}</p>
+            </div>
+          ))}
+        </div>
+
+        <p class="needs__fresh">
+          <span class="needs__fresh-ico" aria-hidden="true">
+            <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor"
+              stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M10 3.4v13.2M3.4 10h13.2"/></svg>
+          </span>
+          <span>
+            <b>No accounts yet? That is fine.</b> If you are starting from scratch we create the
+            channels and set them up for you, profile and cover artwork designed with them. There
+            is nothing you need to build before the build starts.
+          </span>
+        </p>
+      </div>
+
+      <div class="needs__close">
+        <p class="needs__foot">
+          At least three meetings. One to agree the requirements, one to watch the system
+          demo, one to sign off the changes that came out of it.
+        </p>
+        <a href="/contact/" class="btn btn--ghost needs__cta">
+          Book the first one
+          <svg class="btn__arrow" width="12" height="12" viewBox="0 0 12 12" aria-hidden="true"><path d="M1 6h9M6.5 2 10.5 6l-4 4" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="square"/></svg>
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================================================ 8. FAQ -->
+  <FaqSection
+    items={BUILD_FAQ}
+    eyebrow="Before the build call"
+    title="What people ask before [they commit]."
+  />
+
+  <!-- ========================================================== 9. CLOSE -->
+  <CloseCta
+    title="Tell us what your team [does by hand]."
+    body="Bring your current workflow to the call. We will tell you what a system for it would cover, roughly how long it would take, and whether it is worth building at your volume."
+  />
+</Base>
+
+<style>
+  /* Measured: this page ran 8,913px with actions at 6%, 21%, 40% and then
+     nothing until 92% — a 52% stretch across the screenshots, the after-launch
+     section and this one. The closing line above already names the first
+     meeting, so the button needs no copy of its own beyond "the first one".
+     Ghost, because the primary close is 15% further down. */
+  /* Stacked, not paired. Two earlier attempts put the note and the button on one
+     row: the first let .needs__foot's `margin: … auto 0` absorb the free space
+     and pinned the button 203px away at the container's right edge; the second
+     centred the pair but left a 3-line ragged-centre mono paragraph sitting
+     beside a button, which still read as two unrelated things. A centred note
+     with the action beneath it is unambiguous at every width.
+
+     The top margin lives here rather than on .needs__foot — moving it to the
+     paragraph is what glued this block to the panel above it. */
+  .needs__close {
+    margin-block-start: clamp(2rem, 1.4rem + 2vw, 3rem);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--sp-5);
+    text-align: center;
+  }
+  .needs__close .needs__foot {
+    margin: 0;
+    max-inline-size: 46rem;
+  }
+  .needs__cta { flex: none; }
+  /* Full-bleed only where a thumb needs the width; a 700px-wide button on a
+     tablet reads as a layout error rather than emphasis. */
+  @media (max-width: 30em) {
+    .needs__cta { inline-size: 100%; }
+  }
+
+  /* Optional per-phase link. Mirrors .wf__card-more on /system so the two
+     process sections read as the same component family. */
+  .ph__more {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--sp-2);
+    margin-block-start: var(--sp-3);
+    font-size: var(--fs-sm);
+  }
+  .ph__more svg { flex: none; }
+  @media (pointer: coarse) { .ph__more { min-block-size: 2.75rem; } }
+
+  /* ================================================================ HERO */
+  .hero {
+    position: relative;
+    padding-block: clamp(4rem, 2.4rem + 6vw, 7rem) 0;
+    overflow: clip;
+    /* The CTAs sit flush with the bottom edge, and the focus ring is 2px at a
+       3px offset. Without this the ring is clipped where it matters most. */
+    overflow-clip-margin: 6px;
+  }
+  .hero__bloom {
+    inline-size: min(46rem, 92vw);
+    block-size: 26rem;
+    inset-block-start: -10rem;
+    inset-inline-start: 50%;
+    translate: -50% 0;
+  }
+  .hero__inner { text-align: center; display: flex; flex-direction: column; align-items: center; max-width: 54rem; }
+  .hero__eyebrow { display: block; margin-block-end: 0; letter-spacing: var(--tr-label); }
+  .hero__title {
+    margin-block-start: var(--sp-4);
+  }
+  .hero__lede {
+    margin-block-start: var(--sp-5);
+  }
+  .hero__actions { margin-block-start: var(--sp-7); justify-content: center; }
+
+  /* ============================================================== CUSTOM */
+  .cus__panel {
+    position: relative;
+    padding: clamp(1.5rem, 1rem + 2.4vw, 3rem);
+    border: 1px solid var(--c-line-signal);
+    border-radius: var(--r-2);
+    background:
+      radial-gradient(ellipse 80% 90% at 50% 0%, var(--c-signal-wash) 0%, transparent 68%),
+      var(--c-panel-2);
+  }
+  .cus__k { display: inline-flex; align-items: center; gap: var(--sp-2); }
+  .cus__h {
+    margin-block-start: var(--sp-4);
+    font-size: var(--fs-section);
+    line-height: var(--lh-snug);
+    letter-spacing: var(--tr-display);
+    font-weight: 600;
+    max-width: 34rem;
+    text-wrap: balance;
+  }
+  .cus__lede {
+    margin-block-start: var(--sp-4);
+    max-width: 46rem;
+    font-size: var(--fs-md);
+    line-height: var(--lh-relaxed);
+    color: var(--c-ink-2);
+    text-wrap: pretty;
+  }
+  .cus__facts { display: grid; gap: var(--sp-4); list-style: none; margin: var(--sp-6) 0 0; padding: 0; }
+  @media (min-width: 42em) { .cus__facts { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--sp-5); } }
+  .cus__fact { padding-inline-start: var(--sp-4); border-inline-start: 1px solid var(--c-line-signal); }
+  .cus__v {
+    font-family: var(--font-mono);
+    font-size: var(--fs-lg);
+    line-height: 1.1;
+    letter-spacing: var(--tr-display);
+    color: var(--c-ink);
+  }
+  .cus__d { margin-block-start: var(--sp-2); font-size: var(--fs-sm); line-height: var(--lh-relaxed); color: var(--c-ink-2); }
+  .cus__grid {
+    display: grid;
+    gap: var(--sp-5);
+    margin-block-start: var(--sp-6);
+    padding-block-start: var(--sp-5);
+    border-block-start: 1px solid var(--c-line);
+  }
+  @media (min-width: 42em) { .cus__grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+  .cus__col-k { margin-block-end: var(--sp-3); }
+  .cus__list { display: grid; gap: var(--sp-2h); list-style: none; margin: 0; padding: 0; }
+  .cus__item {
+    display: grid;
+    grid-template-columns: 0.75rem minmax(0, 1fr);
+    gap: var(--sp-2);
+    align-items: center;
+    font-size: var(--fs-sm);
+    color: var(--c-ink);
+  }
+  .cus__tick { color: var(--c-signal); }
+  .cus__item--out { color: var(--c-ink-2); }
+  /* --c-rose is the site's existing "blocked / attention" tone, already used for
+     the strike-throughs. A grey cross read as another tick at a glance. */
+  .cus__item--out .cus__tick { color: var(--c-rose); }
+  .cus__foot {
+    margin-block-start: var(--sp-5);
+    padding-block-start: var(--sp-4);
+    border-block-start: 1px solid var(--c-line);
+    font-family: var(--font-mono);
+    font-size: var(--fs-xs);
+    letter-spacing: var(--tr-wide);
+    font-weight: 600;
+    color: var(--c-signal-text);
+  }
+
+  /* =============================================================== NEEDS */
+  .needs__h, .after__h {
+    margin-inline: auto;
+    font-size: var(--fs-section);
+    line-height: var(--lh-snug);
+    letter-spacing: var(--tr-display);
+    font-weight: 600;
+    max-width: 44rem;
+    text-align: center;
+    text-wrap: balance;
+  }
+  .needs__lede, .after__lede {
+    margin: var(--sp-5) auto 0;
+    max-width: 46rem;
+    font-size: var(--fs-md);
+    line-height: var(--lh-relaxed);
+    color: var(--c-ink-2);
+    text-align: center;
+    text-wrap: pretty;
+  }
+
+  .needs__grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--sp-4);
+    list-style: none;
+    margin: clamp(2rem, 1.4rem + 2vw, 3rem) 0 0;
+    padding: 0;
+  }
+  @media (min-width: 46em) { .needs__grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+  @media (min-width: 82em) { .needs__grid { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
+
+  .needs__card {
+    display: flex;
+    flex-direction: column;
+    gap: var(--sp-3);
+    padding: clamp(1.125rem, 0.9rem + 1.1vw, 1.5rem);
+    border: 1px solid var(--c-line-2);
+    border-radius: var(--r-2);
+    background: linear-gradient(180deg, rgb(255 255 255 / 2.2%) 0%, transparent 46%), var(--c-panel-2);
+  }
+  .needs__ico {
+    display: grid;
+    place-items: center;
+    inline-size: 2.25rem;
+    block-size: 2.25rem;
+    border-radius: 50%;
+    border: 1px solid var(--c-line-signal);
+    background: var(--c-panel-3);
+    color: var(--c-signal);
+  }
+  .needs__ico svg { display: block; }
+  .needs__t, .after__t {
+    font-size: var(--fs-md);
+    line-height: var(--lh-snug);
+    letter-spacing: var(--tr-display);
+    font-weight: 600;
+    color: var(--c-ink);
+    text-wrap: balance;
+  }
+  .needs__list { display: grid; gap: var(--sp-2); list-style: none; margin: 0; padding: 0; }
+  .needs__item {
+    display: grid;
+    grid-template-columns: 0.75rem minmax(0, 1fr);
+    gap: var(--sp-2);
+    align-items: start;
+    font-size: var(--fs-sm);
+    line-height: var(--lh-normal);
+    color: var(--c-ink-2);
+  }
+  .needs__tick { color: var(--c-ink-3); margin-block-start: 0.2rem; }
+  .needs__note {
+    margin-block-start: auto;
+    padding-block-start: var(--sp-3);
+    border-block-start: 1px solid var(--c-line);
+    font-size: var(--fs-xs);
+    line-height: var(--lh-relaxed);
+    color: var(--c-ink-3);
+    text-wrap: pretty;
+  }
+
+  .needs__access { margin-block-start: var(--sp-6); }
+  .needs__access-k {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--sp-2);
+    margin-block-end: var(--sp-4);
+  }
+  .needs__pair { display: grid; grid-template-columns: minmax(0, 1fr); gap: var(--sp-4); }
+  @media (min-width: 52em) { .needs__pair { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+  .needs__opt {
+    padding: clamp(1.125rem, 0.9rem + 1.1vw, 1.5rem);
+    border: 1px solid var(--c-line-2);
+    border-radius: var(--r-2);
+    background: var(--c-panel-2);
+  }
+  .needs__opt--rec {
+    border-color: var(--c-line-signal);
+    background:
+      radial-gradient(ellipse 90% 100% at 0% 0%, var(--c-signal-wash) 0%, transparent 62%),
+      var(--c-panel-2);
+  }
+  .needs__opt-n {
+    display: flex;
+    align-items: center;
+    gap: var(--sp-3);
+    font-family: var(--font-mono);
+    font-size: var(--fs-2xs);
+    letter-spacing: var(--tr-label);
+    text-transform: uppercase;
+    color: var(--c-ink-3);
+  }
+  .needs__opt--rec .needs__opt-n { color: var(--c-signal-text); }
+  .needs__rec {
+    padding: 0.15rem var(--sp-2);
+    border: 1px solid var(--c-line-signal);
+    border-radius: var(--r-1);
+    color: var(--c-signal-text);
+  }
+  .needs__opt-t {
+    margin-block-start: var(--sp-3);
+    font-size: var(--fs-lg);
+    line-height: var(--lh-snug);
+    letter-spacing: var(--tr-display);
+    font-weight: 600;
+    color: var(--c-ink);
+  }
+  .needs__opt-d {
+    margin-block-start: var(--sp-2);
+    font-size: var(--fs-sm);
+    line-height: var(--lh-relaxed);
+    color: var(--c-ink-2);
+    text-wrap: pretty;
+  }
+  .needs__fresh {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    gap: var(--sp-3);
+    align-items: center;
+    margin-block-start: var(--sp-4);
+    padding: clamp(1rem, 0.85rem + 0.9vw, 1.375rem);
+    border: 1px solid var(--c-line-signal);
+    border-radius: var(--r-2);
+    background:
+      radial-gradient(ellipse 70% 130% at 0% 50%, var(--c-signal-wash) 0%, transparent 64%),
+      var(--c-panel-2);
+    font-size: var(--fs-sm);
+    line-height: var(--lh-relaxed);
+    color: var(--c-ink-2);
+    text-wrap: pretty;
+  }
+  .needs__fresh b { color: var(--c-ink); font-weight: 600; }
+  .needs__fresh-ico {
+    display: grid;
+    place-items: center;
+    inline-size: 2.25rem;
+    block-size: 2.25rem;
+    border-radius: 50%;
+    border: 1px solid var(--c-line-signal);
+    background: var(--c-panel-3);
+    color: var(--c-signal);
+  }
+  .needs__fresh-ico svg { display: block; }
+
+  .needs__foot {
+    margin: clamp(2rem, 1.4rem + 2vw, 3rem) auto 0;
+    max-width: 46rem;
+    font-family: var(--font-mono);
+    font-size: var(--fs-xs);
+    line-height: var(--lh-relaxed);
+    letter-spacing: var(--tr-wide);
+    color: var(--c-signal-text);
+    text-align: center;
+    text-wrap: pretty;
+  }
+
+  /* =============================================================== AFTER */
+  .after__grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--sp-4);
+    list-style: none;
+    margin: clamp(2rem, 1.4rem + 2vw, 3rem) 0 0;
+    padding: 0;
+  }
+  @media (min-width: 62em) { .after__grid { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+  .after__card {
+    display: flex;
+    flex-direction: column;
+    gap: var(--sp-3);
+    padding: clamp(1.25rem, 0.9rem + 1.4vw, 1.75rem);
+    border: 1px solid var(--c-line-2);
+    border-radius: var(--r-2);
+    /* .section--raised resolves to --c-panel, so these lift a step. */
+    background: linear-gradient(180deg, rgb(255 255 255 / 2.2%) 0%, transparent 46%), var(--c-panel-2);
+  }
+  .after__ico {
+    display: grid;
+    place-items: center;
+    inline-size: 2.25rem;
+    block-size: 2.25rem;
+    border-radius: 50%;
+    border: 1px solid var(--c-line-signal);
+    background: var(--c-panel-3);
+    color: var(--c-signal);
+  }
+  .after__ico svg { display: block; }
+  .after__d {
+    font-size: var(--fs-sm);
+    line-height: var(--lh-relaxed);
+    color: var(--c-ink-2);
+    text-wrap: pretty;
+  }
+
+  .after__bar {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--sp-4);
+    list-style: none;
+    margin: var(--sp-5) 0 0;
+    padding: clamp(1.125rem, 0.9rem + 1.1vw, 1.5rem);
+    border: 1px solid var(--c-line-signal);
+    border-radius: var(--r-2);
+    background:
+      radial-gradient(ellipse 70% 120% at 50% 0%, var(--c-signal-wash) 0%, transparent 66%),
+      var(--c-panel-2);
+  }
+  @media (min-width: 62em) { .after__bar { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
+  .after__v {
+    font-family: var(--font-mono);
+    font-size: var(--fs-md);
+    letter-spacing: var(--tr-tight);
+    font-weight: 600;
+    color: var(--c-signal-text);
+  }
+  .after__k {
+    margin-block-start: var(--sp-2);
+    font-size: var(--fs-xs);
+    line-height: var(--lh-relaxed);
+    color: var(--c-ink-2);
+    text-wrap: pretty;
+  }
+
+  /* =============================================================== SHOTS */
+  /* Astro scopes per file, so the page's .sec__title cannot reach this. */
+  .shots__h {
+    margin-inline: auto;
+    font-size: var(--fs-section);
+    line-height: var(--lh-snug);
+    letter-spacing: var(--tr-display);
+    font-weight: 600;
+    max-width: 44rem;
+    text-align: center;
+    text-wrap: balance;
+  }
+  .shots__lede {
+    margin: var(--sp-5) auto 0;
+    max-width: 46rem;
+    font-size: var(--fs-md);
+    line-height: var(--lh-relaxed);
+    color: var(--c-ink-2);
+    text-align: center;
+    text-wrap: pretty;
+  }
+  .shots__grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--sp-5);
+    margin-block-start: clamp(2rem, 1.4rem + 2vw, 3rem);
+  }
+  @media (min-width: 62em) { .shots__grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--sp-6); } }
+
+  .shots__fig { margin: 0; min-width: 0; }
+  /* A little breathing room around the capture so a dark UI on a dark page
+     still reads as a screen rather than as part of the section. */
+  .shots__frame {
+    padding: clamp(0.5rem, 0.35rem + 0.7vw, 0.875rem);
+    border: 1px solid var(--c-line-2);
+    border-radius: var(--r-2);
+    background:
+      radial-gradient(ellipse 80% 90% at 50% 0%, var(--c-signal-wash) 0%, transparent 62%),
+      var(--c-panel-2);
+  }
+  .shots__img {
+    display: block;
+    inline-size: 100%;
+    block-size: auto;
+    border: 1px solid var(--c-line);
+    border-radius: var(--r-1);
+  }
+  .shots__cap { margin-block-start: var(--sp-4); }
+  .shots__t {
+    font-size: var(--fs-lg);
+    line-height: var(--lh-snug);
+    letter-spacing: var(--tr-display);
+    font-weight: 600;
+    color: var(--c-ink);
+    text-wrap: balance;
+  }
+  .shots__d {
+    margin-block-start: var(--sp-2);
+    font-size: var(--fs-sm);
+    line-height: var(--lh-relaxed);
+    color: var(--c-ink-2);
+    text-wrap: pretty;
+  }
+  .shots__note {
+    margin: clamp(2rem, 1.4rem + 2vw, 3rem) auto 0;
+    max-width: 46rem;
+    font-family: var(--font-mono);
+    font-size: var(--fs-xs);
+    line-height: var(--lh-relaxed);
+    letter-spacing: var(--tr-wide);
+    color: var(--c-ink-2);
+    text-align: center;
+    text-wrap: pretty;
+  }
+
+  /* ============================================================== PHASES */
+  .ph__h {
+    margin-inline: auto;
+    font-size: var(--fs-section);
+    line-height: var(--lh-snug);
+    letter-spacing: var(--tr-display);
+    font-weight: 600;
+    max-width: 44rem;
+    text-align: center;
+    text-wrap: balance;
+  }
+  .ph__lede {
+    margin: var(--sp-5) auto 0;
+    max-width: 46rem;
+    font-size: var(--fs-md);
+    line-height: var(--lh-relaxed);
+    color: var(--c-ink-2);
+    text-align: center;
+    text-wrap: pretty;
+  }
+  .ph__list {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--sp-4);
+    list-style: none;
+    margin: clamp(2rem, 1.4rem + 2vw, 3rem) 0 0;
+    padding: 0;
+  }
+  @media (min-width: 52em) { .ph__list { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+  @media (min-width: 82em) { .ph__list { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+  .ph__step {
+    display: flex;
+    flex-direction: column;
+    /* .panel resolves to --c-panel, which is the --section--raised background,
+       so the card would have no interior of its own. */
+    background: linear-gradient(180deg, rgb(255 255 255 / 2.2%) 0%, transparent 46%), var(--c-panel-2);
+    border: 1px solid var(--c-line-2);
+    border-radius: var(--r-2);
+  }
+  .ph__bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: var(--sp-3);
+    padding: var(--sp-3) clamp(0.875rem, 0.7rem + 0.8vw, 1.25rem);
+    border-block-end: 1px solid var(--c-line);
+    font-family: var(--font-mono);
+    font-size: var(--fs-2xs);
+    letter-spacing: var(--tr-label);
+    text-transform: uppercase;
+  }
+  .ph__n { color: var(--c-ink); }
+  /* The standard applied across the build rather than a step within it, so it
+     reads as a different kind of card without shouting over the sequence. */
+  .ph__step--always {
+    background:
+      radial-gradient(ellipse 90% 100% at 0% 0%, var(--c-signal-wash) 0%, transparent 60%),
+      var(--c-panel-2);
+    border-color: var(--c-line-signal);
+  }
+  .ph__step--always .ph__n { color: var(--c-signal-text); }
+  .ph__dur { color: var(--c-signal-text); font-variant-numeric: tabular-nums; }
+  .ph__body { display: grid; gap: var(--sp-3); padding: clamp(1rem, 0.85rem + 0.9vw, 1.5rem); }
+  .ph__name {
+    font-size: var(--fs-lg);
+    line-height: var(--lh-snug);
+    letter-spacing: var(--tr-display);
+    font-weight: 600;
+    color: var(--c-ink);
+  }
+  .ph__d { font-size: var(--fs-sm); line-height: var(--lh-relaxed); color: var(--c-ink-2); text-wrap: pretty; }
+  .ph__note {
+    margin: var(--sp-6) auto 0;
+    max-width: 46rem;
+    font-family: var(--font-mono);
+    font-size: var(--fs-xs);
+    line-height: var(--lh-relaxed);
+    letter-spacing: var(--tr-wide);
+    color: var(--c-ink-2);
+    text-align: center;
+    text-wrap: pretty;
+  }
+</style>

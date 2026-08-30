@@ -1,0 +1,1038 @@
+---
+import Base from '../layouts/Base.astro';
+import { SITE } from '../site.config.mjs';
+
+/* There is no scheduler: the contact form is the only intake route. Falling
+   back to /contact rather than reading SITE.bookingUrl directly matters —
+   bookingUrl is empty, and an empty href resolves to the current page, so these
+   two buttons would silently link this page to itself. */
+const BOOK = SITE.bookingUrl || '/contact/';
+import { ENGAGEMENTS, PROCESS, ENGAGEMENT_FAQ } from '../data/content.mjs';
+import FaqSection from '../components/FaqSection.astro';
+import CloseCta from '../components/CloseCta.astro';
+
+/* PROCESS carries one entry that is a standard applied across the build rather
+   than a step in it. This timeline is a step sequence, so it is filtered out
+   here and lives in full on /how-we-build. */
+const STEPS = PROCESS.filter((s) => !s.always);
+const COUNT = ['', 'One', 'Two', 'Three', 'Four', 'Five', 'Six', 'Seven'][STEPS.length] ?? STEPS.length;
+import { breadcrumbSchema, faqSchema } from '../lib/schema.mjs';
+
+/* Column heads are derived from ENGAGEMENTS so the table can never drift out
+   of step with the two cards above it. */
+const [BUILD, MANAGED] = ENGAGEMENTS;
+
+/* Seven decision points, in the order a buyer actually asks them. Cells are
+   deliberately short — the cards above carry the detail, this is the scan. */
+/* Rewritten against the real difference between the two. The previous table
+   was built on the premise that the client owns the system either way, which
+   is not true of the managed plan: there GroovyMark owns it, holds the files
+   and the credentials, and sells a monthly allowance. Ownership, volume and
+   cost shape are the three rows people actually decide on, so they lead. */
+const DECISIONS: { k: string; note?: string; build: string; managed: string }[] = [
+  {
+    k: 'Who owns the system',
+    build: 'You do. The system, the files and the credentials sit where you choose — your own machines by default.',
+    managed: 'We do. You are buying the output rather than the asset.',
+  },
+  {
+    k: 'How much you can publish',
+    note: 'The difference most people feel first.',
+    build: 'No limit. As many long videos, shorts and posts as you want to run.',
+    managed: 'A monthly allowance set by your package. Need more, move up a package.',
+  },
+  {
+    k: 'How you pay',
+    build: 'One build cost, then only what the AI and platform vendors charge for the runs you make.',
+    managed: 'A monthly plan. Much lower to start, and it continues for as long as you use it.',
+  },
+  {
+    k: 'Time to the first published run',
+    build: 'Seven to twenty one days, depending on scope.',
+    managed: 'Usually under a week. There is nothing to build.',
+  },
+  {
+    k: 'Where your files and credentials live',
+    build: 'On your machines by default, or your own cloud if you pick it. Either way the logs, finished files and keys are yours.',
+    managed: 'With us, under the same privacy and security commitments we run everything on.',
+  },
+  {
+    k: 'Running several client brands',
+    note: 'The deciding factor for most agencies.',
+    build: 'One system covers all of them, because it is built around how you work.',
+    managed: 'One package per brand.',
+  },
+  {
+    k: 'Who carries it when it matters',
+    build: 'You operate it. We guarantee the build and fix anything that breaks.',
+    managed: 'We carry it end to end, including getting content out on schedule.',
+  },
+  {
+    k: 'Reporting',
+    build: 'Analytics sit in your own system, in front of you.',
+    managed: 'Analytics you can check remotely, plus a monthly report.',
+  },
+];
+
+/* What actually moves the number ON A BUILD. The managed plans are priced and
+   published at /pricing; a build is not, because these drivers decide it and a
+   single published figure would be right for exactly one buyer. */
+const DRIVERS = [
+  {
+    k: 'Channels',
+    v: 'Each one is its own render specs, metadata rules and publishing integration, plus the logic deciding which cut goes where.',
+  },
+  {
+    k: 'Brands',
+    v: 'One profile is one voice, one claims policy, one template set. An agency running twelve clients needs twelve, kept apart.',
+  },
+  {
+    k: 'Volume per month',
+    v: 'Ten runs and four hundred are different engineering problems. Queueing, cost control and failure handling all change shape.',
+  },
+  {
+    k: 'Approval workflow',
+    v: 'One reviewer is a gate. Legal at script, brand at render and client sign-off before publish is a workflow with an audit trail.',
+  },
+  {
+    k: 'Integration depth',
+    v: 'Reading your content calendar is straightforward. Writing back into a DAM, a PIM or a client portal is the part that takes weeks.',
+  },
+  {
+    k: 'Who operates it after',
+    v: `Handover needs runbooks, training and a supported window. Us operating it needs staffing and reporting instead.`,
+  },
+];
+
+/* The endpoints of the 7 to 21 day band stated everywhere else on the site.
+      Deliberately not split into invented sub-ranges. */
+/* The two routes, not two ends of one build. The build figure is stated as its
+   ceiling so it stays consistent with the 7 to 21 day window quoted elsewhere. */
+const RAMP = [
+  {
+    v: 'Under 7 days',
+    k: `Fully managed. We onboard your brand onto the system already running, connect your channels and start publishing.`,
+  },
+  {
+    v: 'Up to 21 days',
+    k: 'Your own custom build. Seven days at the short end for one brand and one channel, twenty one at the long end for multi-brand with approval workflows.',
+  },
+];
+
+/* Folded in from the old standalone section: the three inputs that actually
+   hold a build up. Decisions delay projects far more often than engineering. */
+const NEEDS = [
+  {
+    k: 'A named content owner',
+    v: 'One person who can approve a plan and settle a brand question without convening a committee.',
+  },
+  {
+    k: 'Your own channel accounts',
+    v: 'YouTube, Meta and the rest, with a role granted to your system. Nothing publishes from a shared pool.',
+  },
+  {
+    k: 'A claims policy, or the appetite to write one',
+    v: 'What your content may and may not assert. The script stage enforces it on every run.',
+  },
+];
+---
+
+<Base
+  title="Engagement models: own it, or we run it"
+  description="Two ways to work with GroovyMark: we build your content system and your team operates it, or we operate it for you. Compare both, side by side."
+  schema={[breadcrumbSchema([{ name: 'Engagements', href: '/engagements/' }]), faqSchema(ENGAGEMENT_FAQ)]}
+  hideFooterCta
+>
+  <!-- ============================================================ 1. HERO -->
+  <section class="hero grid-bg" aria-labelledby="hero-title">
+    <span class="bloom hero__bloom" aria-hidden="true"></span>
+    <div class="wrap hero__inner">
+      <p class="eyebrow eyebrow--center hero__eyebrow">How you buy it</p>
+      <h1 id="hero-title" class="hero__title">
+        You <span class="hl">own</span> it. Or we <span class="hl">run</span> it.
+      </h1>
+      <p class="hero__lede">
+        Two engagements, one system. We build it around your workflow and hand
+        you the system, or we take the operating seat and run it for
+        you. <b>What changes is what you own, and how much you can publish.</b>
+      </p>
+      <div class="btn-row hero__actions">
+        <a href={BOOK} class="btn btn--primary btn--lg">
+          Book a build call
+          <svg class="btn__arrow" width="12" height="12" viewBox="0 0 12 12" aria-hidden="true"><path d="M1 6h9M6.5 2 10.5 6l-4 4" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="square"/></svg>
+        </a>
+        <a href="#models" class="btn btn--ghost btn--lg">Compare the two</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- ====================================================== 2. TWO MODELS -->
+  <section class="section mdl-sec" id="models" aria-labelledby="mdl-title">
+    <div class="wrap wrap--wide">
+      <h2 id="mdl-title" class="sec__title">Two engagements, one system.</h2>
+      <p class="sec__lede">
+        Same <a href="/system/" class="link">pipeline</a> underneath, built the same
+        <a href="/how-we-build/" class="link">way</a>. What changes is who owns it, how much you
+        can publish, and whether you pay once or every month.
+      </p>
+
+      <!-- Matched cards, each numbered in its own right: they are two forms of
+           the same engagement, not a ten-item list split across a gap. -->
+      <div class="mdl__cards">
+        {ENGAGEMENTS.map((e) => (
+          <article class="mdl__card ticked">
+            <div class="mdl__bar">
+              <span class="mdl__bar-label">
+                <span class="dot dot--done" aria-hidden="true"></span>{e.name}
+                {e.relation && <span class="mdl__bar-rel">({e.relation})</span>}
+              </span>
+              <span class="mdl__bar-meta">{e.kicker}</span>
+            </div>
+
+            <p class="mdl__sum">{e.summary}</p>
+
+            <div class="mdl__rule">
+              <span class="mdl__rule-k">Includes</span>
+              <span class="mdl__rule-n">01–{String(e.includes.length).padStart(2, '0')}</span>
+            </div>
+
+            <ul role="list" class="mdl__list">
+              {e.includes.map((it, i) => (
+                <li class="mdl__item">
+                  <span class="mdl__n">{String(i + 1).padStart(2, '0')}</span>
+                  <span class="mdl__t">{it}</span>
+                </li>
+              ))}
+            </ul>
+
+            <dl class="mdl__foot">
+              <dt class="mdl__k">For</dt>
+              <dd class="mdl__v">{e.forWho}</dd>
+              <dt class="mdl__k">Outcome</dt>
+              <dd class="mdl__v mdl__v--out">{e.outcome}</dd>
+            </dl>
+          </article>
+        ))}
+      </div>
+    </div>
+  </section>
+
+  <!-- ================================================ 2b. MANAGED ROUTE -->
+  <!-- Sits directly under the two engagement cards: the reader has just read
+       what "Fully managed" is, and this is the only place on the page that
+       takes them to what it costs. -->
+  <section class="section gm-sec" aria-labelledby="gm-title">
+    <div class="wrap wrap--wide">
+      <div class="gm ticked">
+        <div class="gm__copy">
+          <p class="meta meta--signal gm__k">
+            <span class="dot dot--done" aria-hidden="true"></span>The managed route
+          </p>
+          <h2 id="gm-title" class="gm__t">
+            Not ready to build one? <span class="hl">Start on the monthly plan</span>.
+          </h2>
+          <p class="gm__d">
+            We already run this system for other brands. We onboard yours, connect your
+            channels and start publishing, usually inside a week. No build to wait for, no
+            system to run, and you can commission your own whenever you decide to.
+          </p>
+        </div>
+        <div class="gm__act">
+          <a href="/pricing/" class="btn btn--primary btn--lg">
+            View the monthly plans
+            <svg class="btn__arrow" width="12" height="12" viewBox="0 0 12 12" aria-hidden="true"><path d="M1 6h9M6.5 2 10.5 6l-4 4" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="square"/></svg>
+          </a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ====================================================== 3. COMPARISON -->
+  <section class="section section--raised grid-bg grid-bg--center" aria-labelledby="vs-title">
+    <div class="wrap wrap--wide">
+      <h2 id="vs-title" class="sec__title">Same system. <span class="hl">Different deal</span>.</h2>
+      <p class="sec__lede">
+        Both run the same pipeline. What changes is who owns it, how much you can publish, and
+        whether you pay once or every month.
+      </p>
+
+      <table class="vs__table">
+        <caption class="sr-only">
+          How build and hand over compares with a fully managed
+          engagement across eight decision points.
+        </caption>
+        <thead>
+          <tr>
+            <th scope="col"><span class="sr-only">Decision point</span></th>
+            <th scope="col" class="vs__col">
+              <span class="vs__col-name">{BUILD.name}</span>
+              <span class="vs__col-desc">{BUILD.kicker}</span>
+            </th>
+            <th scope="col" class="vs__col">
+              <span class="vs__col-name">{MANAGED.name}</span>
+              <span class="vs__col-desc">{MANAGED.kicker}</span>
+            </th>
+          </tr>
+        </thead>
+        <tbody>
+          {DECISIONS.map((d) => (
+            <tr>
+              <th scope="row" class="vs__k">
+                <span class="vs__k-name">{d.k}</span>
+                {d.note && <span class="vs__k-note">{d.note}</span>}
+              </th>
+              <td class="vs__v" data-col={BUILD.name}>{d.build}</td>
+              <td class="vs__v" data-col={MANAGED.name}>{d.managed}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- ========================================================= 4. PROCESS -->
+  <section class="section proc-sec" id="process" aria-labelledby="proc-title">
+    <div class="wrap wrap--wide">
+      <h2 id="proc-title" class="sec__title">
+        From first call to a <span class="hl">finished system</span>.
+      </h2>
+      <p class="sec__lede">
+        {COUNT} steps to a system of your own. The managed plan skips almost all of it: we
+        onboard your brand onto the system we already run, usually inside a week. Either way,
+        <a href="/insights/oap-client-production-review/" class="link">what the finished thing
+        actually did on one account</a> is published in full.
+      </p>
+
+      <ol role="list" class="tl">
+        {STEPS.map((s) => (
+          <li class="tl__step">
+            <span class="tl__node" aria-hidden="true"></span>
+            <span class="tl__meta">
+              <span class="index tl__n">{s.n}</span>
+              {s.duration && <span class="tl__dur">{s.duration}</span>}
+            </span>
+            <span class="tl__body">
+              <span class="tl__name">{s.name}</span>
+              <span class="tl__text">{s.body}</span>
+            </span>
+          </li>
+        ))}
+      </ol>
+    </div>
+  </section>
+
+  <!-- =========================================== 5. SCOPING & PRICING -->
+  <section class="section paper scope-sec" aria-labelledby="scope-title">
+    <div class="wrap wrap--wide">
+      <h2 id="scope-title" class="sec__title">How we <span class="hl">scope and price</span>.</h2>
+      <p class="sec__lede">
+        The monthly plans are <a href="/pricing/" class="link">published in full</a>. A build is
+        priced per engagement, after the call: a single-channel pipeline and a multi-brand system
+        are not the same job, and one rate card would be honest about neither.
+      </p>
+
+      <div class="scope__grid">
+        <div class="scope__panel ticked">
+          <div class="scope__bar">
+            <span class="scope__bar-label">What moves the number</span>
+            <span class="scope__bar-meta">01–{String(DRIVERS.length).padStart(2, '0')}</span>
+          </div>
+          <ul role="list" class="scope__list">
+            {DRIVERS.map((d, i) => (
+              <li class="scope__item">
+                <span class="scope__n">{String(i + 1).padStart(2, '0')}</span>
+                <span class="scope__body">
+                  <span class="scope__t">{d.k}</span>
+                  <span class="scope__d">{d.v}</span>
+                </span>
+              </li>
+            ))}
+          </ul>
+        </div>
+
+        <div class="scope__side">
+          <div class="scope__panel ticked">
+            <div class="scope__bar">
+              <span class="scope__bar-label">Indicative timelines</span>
+              <span class="scope__bar-meta">To first live run</span>
+            </div>
+            <dl class="scope__ramp">
+              {RAMP.map((r) => (
+                <div class="scope__ramp-row">
+                  <dt class="scope__ramp-v">{r.v}</dt>
+                  <dd class="scope__ramp-k">{r.k}</dd>
+                </div>
+              ))}
+            </dl>
+          </div>
+
+          <div class="scope__panel ticked">
+            <div class="scope__bar">
+              <span class="scope__bar-label">What we need from you</span>
+              <span class="scope__bar-meta">01–{String(NEEDS.length).padStart(2, '0')}</span>
+            </div>
+            <ul role="list" class="scope__list scope__list--tight">
+              {NEEDS.map((n, i) => (
+                <li class="scope__item">
+                  <span class="scope__n">{String(i + 1).padStart(2, '0')}</span>
+                  <span class="scope__body">
+                    <span class="scope__t">{n.k}</span>
+                    <span class="scope__d">{n.v}</span>
+                  </span>
+                </li>
+              ))}
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <ul role="list" class="quote">
+        <li class="quote__card">
+          <p class="meta quote__k">Fully managed</p>
+          <p class="quote__d">
+            Priced by how much you publish each month, on a monthly plan. Live in under a week.
+          </p>
+          <a href="/pricing/" class="btn btn--ghost btn--lg quote__btn">
+            View pricing
+            <svg class="btn__arrow" width="12" height="12" viewBox="0 0 12 12" aria-hidden="true"><path d="M1 6h9M6.5 2 10.5 6l-4 4" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="square"/></svg>
+          </a>
+        </li>
+        <li class="quote__card quote__card--lead">
+          <p class="meta quote__k">Your own build</p>
+          <p class="quote__d">
+            Scoped to what has to be built, from $2,000. Tell us the shape of it and we will
+            quote it.
+          </p>
+          <a href={BOOK} class="btn btn--primary btn--lg quote__btn">
+            Get a quote
+            <svg class="btn__arrow" width="12" height="12" viewBox="0 0 12 12" aria-hidden="true"><path d="M1 6h9M6.5 2 10.5 6l-4 4" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="square"/></svg>
+          </a>
+        </li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- ============================================================= 6. FAQ -->
+  <FaqSection
+    items={ENGAGEMENT_FAQ}
+    eyebrow="Choosing between them"
+    title="Which one is [right for us]?"
+  />
+
+  <!-- =========================================================== 7. CLOSE -->
+  <CloseCta
+    title="Not sure which one [fits you]?"
+    body="Bring your monthly volume and the number of brands you run to the call. We will tell you plainly whether a build pays for itself at your size, or whether the monthly plan is the cheaper answer."
+  />
+</Base>
+
+<style>
+  /* ---- Shared section heading, matching the home page's idiom ---- */
+  .sec__title {
+    margin-inline: auto;
+    font-size: var(--fs-section);
+    line-height: var(--lh-snug);
+    letter-spacing: var(--tr-display);
+    font-weight: 600;
+    text-align: center;
+    text-wrap: balance;
+  }
+  .sec__lede {
+    /* rem, never `ch`: the body face is a system stack, so `ch` gives a WIDER
+       face a NARROWER measure — exactly backwards. */
+    margin: var(--sp-5) auto 0;
+    max-width: 50rem;
+    font-size: var(--fs-md);
+    line-height: var(--lh-relaxed);
+    color: var(--c-ink-2);
+    text-align: center;
+    text-wrap: pretty;
+  }
+
+  /* ================================================================ HERO */
+  .hero {
+    position: relative;
+    padding-block: clamp(3.25rem, 1.4rem + 6.4vw, 7rem);
+    overflow: clip;
+    text-align: center;
+  }
+  .hero__bloom {
+    inline-size: min(52rem, 95vw);
+    block-size: 30rem;
+    inset-block-start: -13rem;
+    inset-inline-start: 50%;
+    translate: -50% 0;
+  }
+  .hero__inner {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    max-width: 64rem;
+  }
+
+  /* The shared .eyebrow is a flex row whose dot strands at the far left once
+     the label wraps; as an inline marker it stays on the line. */
+  .hero__eyebrow {
+    display: block;
+    margin-block-end: 0;
+    white-space: nowrap;
+    letter-spacing: var(--tr-label);
+  }
+  .hero__eyebrow::before {
+    display: inline-block;
+    vertical-align: middle;
+    margin-inline-end: var(--sp-2);
+    margin-block-end: 0.1em;
+  }
+  .hero__eyebrow::after { display: none; }
+  @media (min-width: 30em) {
+    .hero__eyebrow { letter-spacing: var(--tr-micro); }
+  }
+
+  .hero__title {
+    margin-block-start: var(--sp-6);
+  }
+  .hero__lede {
+    margin-block-start: var(--sp-6);
+  }
+  /* White for emphasis inside muted copy — never more purple; the CTA below
+     is already carrying the accent. */
+  .hero__lede b { color: var(--c-ink); font-weight: inherit; }
+  .hero__actions { justify-content: center; margin-block-start: var(--sp-7); }
+
+  /* ========================================================== TWO MODELS */
+  .mdl-sec { padding-block: clamp(3rem, 1.8rem + 3.6vw, 4.75rem); }
+
+  .mdl__cards {
+    display: grid;
+    gap: var(--sp-4);
+    margin-block-start: clamp(2rem, 1.4rem + 2vw, 3rem);
+    grid-template-columns: minmax(0, 1fr);
+    align-items: stretch;
+  }
+  @media (min-width: 62em) { .mdl__cards { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+
+  /* The accent variant, used for the one block carrying the page's argument:
+     these two cards ARE the offer. Nothing else on the page takes the wash. */
+  .mdl__card {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    border: 1px solid var(--c-line-signal);
+    border-radius: var(--r-2);
+    background:
+      radial-gradient(ellipse 100% 55% at 50% 0%, var(--c-signal-wash), transparent 70%),
+      linear-gradient(180deg, var(--c-sheen), transparent 40%),
+      var(--c-panel);
+    box-shadow: var(--sh-lift);
+    overflow: hidden;
+  }
+
+  .mdl__bar {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--sp-2) var(--sp-4);
+    padding: var(--sp-3) clamp(1rem, 0.8rem + 0.9vw, 1.5rem);
+    border-block-end: 1px solid var(--c-line-signal);
+    background: var(--c-signal-wash);
+    font-family: var(--font-mono);
+    font-size: var(--fs-2xs);
+    letter-spacing: var(--tr-label);
+    text-transform: uppercase;
+  }
+  .mdl__bar-label { display: inline-flex; align-items: center; gap: var(--sp-2); color: var(--c-ink); }
+  /* Quieter than the name it follows: it is context, not a second title. */
+  .mdl__bar-rel { color: var(--c-ink-3); }
+  .mdl__bar-meta { color: var(--c-signal); }
+
+  .mdl__sum {
+    padding: clamp(1.125rem, 0.9rem + 1.1vw, 1.5rem) clamp(1rem, 0.8rem + 0.9vw, 1.5rem) 0;
+    font-size: var(--fs-sm);
+    line-height: var(--lh-relaxed);
+    color: var(--c-ink-2);
+  }
+
+  /* Hairline label rather than a rule under every row — three ruled lists in a
+     column is what made an earlier pass read as one flat sheet. */
+  .mdl__rule {
+    display: flex;
+    align-items: center;
+    gap: var(--sp-3);
+    margin: clamp(1.125rem, 0.9rem + 1.1vw, 1.5rem) clamp(1rem, 0.8rem + 0.9vw, 1.5rem) 0;
+    padding-block-end: var(--sp-3);
+    border-block-end: 1px solid var(--c-line);
+    font-family: var(--font-mono);
+    font-size: var(--fs-2xs);
+    letter-spacing: var(--tr-label);
+    text-transform: uppercase;
+  }
+  .mdl__rule-k { color: var(--c-ink-3); }
+  .mdl__rule-n { margin-inline-start: auto; color: var(--c-ink-3); }
+
+  .mdl__list {
+    display: grid;
+    gap: var(--sp-3h);
+    padding: var(--sp-5) clamp(1rem, 0.8rem + 0.9vw, 1.5rem);
+  }
+  .mdl__item {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    gap: var(--sp-3);
+    align-items: baseline;
+  }
+  .mdl__n {
+    font-family: var(--font-mono);
+    font-size: var(--fs-2xs);
+    letter-spacing: var(--tr-label);
+    /* --c-ink-3 (4.9:1), never --c-ink-4: these numerals convey order. */
+    color: var(--c-ink-3);
+  }
+  .mdl__t {
+    font-size: var(--fs-sm);
+    line-height: var(--lh-snug);
+    color: var(--c-ink);
+    text-wrap: pretty;
+  }
+
+  /* Bookends the header bar, so the card opens and closes on the accent. */
+  .mdl__foot {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    gap: var(--sp-3) var(--sp-4);
+    margin-block-start: auto;
+    padding: var(--sp-4) clamp(1rem, 0.8rem + 0.9vw, 1.5rem);
+    border-block-start: 1px solid var(--c-line-signal);
+    background: var(--c-signal-wash);
+  }
+  .mdl__k {
+    font-family: var(--font-mono);
+    font-size: var(--fs-2xs);
+    letter-spacing: var(--tr-label);
+    text-transform: uppercase;
+    color: var(--c-signal);
+    padding-block-start: 0.15em;
+  }
+  .mdl__v {
+    font-size: var(--fs-sm);
+    line-height: var(--lh-snug);
+    color: var(--c-ink-2);
+    text-wrap: pretty;
+  }
+  .mdl__v--out { color: var(--c-ink); }
+  /* Below 30em the mono key and its value together leave the value about nine
+     characters of measure, so the pair stacks instead. */
+  @media (max-width: 30em) {
+    .mdl__foot { grid-template-columns: minmax(0, 1fr); gap: var(--sp-1); }
+    .mdl__k { padding-block-start: var(--sp-2); }
+    .mdl__foot > .mdl__k:first-child { padding-block-start: 0; }
+  }
+
+  /* ========================================================== COMPARISON */
+  .vs__table {
+    inline-size: 100%;
+    border-collapse: collapse;
+    margin-block-start: clamp(2rem, 1.2rem + 2.6vw, 3.25rem);
+    text-align: left;
+  }
+
+  /* ---- Column heads ---- */
+  .vs__col {
+    padding: var(--sp-3) var(--sp-4) var(--sp-4);
+    font-weight: 500;
+    /* Top, not bottom: bottom-aligning drops the names to different heights the
+       moment one descriptor wraps to a second line. */
+    vertical-align: top;
+    border-block-end: 1px solid var(--c-line-2);
+    inline-size: 37%;
+  }
+  .vs__col-name {
+    display: block;
+    font-family: var(--font-mono);
+    font-size: var(--fs-2xs);
+    letter-spacing: var(--tr-label);
+    text-transform: uppercase;
+    /* Both columns are ours. Neither gets the winning treatment, because
+       neither is the answer for every buyer. */
+    color: var(--c-signal);
+  }
+  .vs__col-desc {
+    display: block;
+    margin-block-start: var(--sp-2);
+    font-size: var(--fs-xs);
+    line-height: var(--lh-snug);
+    letter-spacing: var(--tr-normal);
+    text-transform: none;
+    color: var(--c-ink-3);
+    max-width: 20rem;
+  }
+
+  /* ---- Row heads: their own tint and an accent tick, so the decision points
+     read as headers you can scan rather than a third column of copy. ---- */
+  .vs__k {
+    position: relative;
+    padding: var(--sp-4) var(--sp-4) var(--sp-4) var(--sp-5);
+    font-weight: 500;
+    vertical-align: middle;
+    background: var(--c-sheen);
+    border-block-end: 1px solid var(--c-line);
+    inline-size: 26%;
+  }
+  .vs__k::before {
+    content: '';
+    position: absolute;
+    inset-block: var(--sp-4);
+    inset-inline-start: var(--sp-3);
+    inline-size: 2px;
+    border-radius: var(--r-pill);
+    background: var(--c-line-signal);
+  }
+  .vs__k-name {
+    display: block;
+    font-family: var(--font-mono);
+    font-size: var(--fs-2xs);
+    letter-spacing: var(--tr-label);
+    text-transform: uppercase;
+    color: var(--c-ink);
+  }
+  .vs__k-note {
+    display: block;
+    margin-block-start: var(--sp-2);
+    font-size: var(--fs-xs);
+    line-height: var(--lh-snug);
+    color: var(--c-ink-3);
+    max-width: 20rem;
+  }
+
+  /* ---- Cells ---- */
+  .vs__v {
+    padding: var(--sp-4);
+    font-size: var(--fs-sm);
+    line-height: var(--lh-snug);
+    color: var(--c-ink-2);
+    vertical-align: middle;
+    border-block-end: 1px solid var(--c-line);
+    border-inline-start: 1px solid var(--c-line);
+  }
+
+  /* ---- Stacked cards below 60em — never a horizontal scroll ---- */
+  @media (max-width: 60em) {
+    .vs__table, .vs__table tbody, .vs__table tr, .vs__table td, .vs__table th { display: block; }
+    .vs__table thead { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
+    .vs__table tr {
+      border: 1px solid var(--c-line);
+      border-radius: var(--r-2);
+      background: var(--c-panel);
+      margin-block-start: var(--sp-4);
+      overflow: hidden;
+    }
+    /* Qualified with the element: `.vs__table th` above is (0,1,1) and beats a
+       bare `.vs__k` (0,1,0), which would leave these unstyled blocks. */
+    .vs__table th.vs__k {
+      inline-size: auto;
+      padding-inline-start: var(--sp-4);
+      background: var(--c-panel-2);
+      border-block-end: 1px solid var(--c-line);
+    }
+    .vs__table th.vs__k::before { display: none; }
+    .vs__table td.vs__v {
+      display: grid;
+      grid-template-columns: minmax(0, 9rem) minmax(0, 1fr);
+      gap: var(--sp-2) var(--sp-4);
+      align-items: baseline;
+      border-inline-start: 0;
+      border-block-end: 1px solid var(--c-line);
+    }
+    .vs__table td.vs__v:last-child { border-block-end: 0; }
+    .vs__table td.vs__v::before {
+      content: attr(data-col);
+      font-family: var(--font-mono);
+      font-size: var(--fs-2xs);
+      letter-spacing: var(--tr-label);
+      text-transform: uppercase;
+      line-height: var(--lh-snug);
+      color: var(--c-signal);
+    }
+    /* Under 30em the label column eats the measure, so the pair stacks. */
+    @media (max-width: 30em) {
+      .vs__table td.vs__v { grid-template-columns: minmax(0, 1fr); gap: var(--sp-1); }
+    }
+  }
+
+  /* ======================================================= MANAGED ROUTE */
+  .gm-sec { padding-block: clamp(2.5rem, 1.6rem + 3vw, 4rem); }
+  .gm {
+    /* .ticked pins its corner marks at -1px, so it needs a positioned parent.
+       Without this they resolve against a distant ancestor and land a pixel
+       past the viewport, which is a real horizontal scroll. */
+    position: relative;
+    display: grid;
+    gap: var(--sp-5);
+    align-items: center;
+    padding: clamp(1.5rem, 1.1rem + 1.8vw, 2.5rem);
+    border: 1px solid var(--c-line-signal);
+    border-radius: var(--r-2);
+    background:
+      radial-gradient(ellipse 70% 130% at 0% 50%, var(--c-signal-wash) 0%, transparent 64%),
+      var(--c-panel-2);
+  }
+  /* The action sits beside the copy where there is room, and drops beneath it
+     rather than shrinking the button below a comfortable target. */
+  @media (min-width: 56em) {
+    .gm { grid-template-columns: minmax(0, 1fr) auto; gap: var(--sp-6); }
+  }
+  .gm__copy { min-width: 0; }
+  .gm__k { display: inline-flex; align-items: center; gap: var(--sp-2); }
+  .gm__t {
+    margin-block-start: var(--sp-3);
+    font-size: var(--fs-xl);
+    line-height: var(--lh-snug);
+    letter-spacing: var(--tr-display);
+    font-weight: 600;
+    color: var(--c-ink);
+    text-wrap: balance;
+  }
+  .gm__d {
+    margin-block-start: var(--sp-3);
+    max-width: 44rem;
+    font-size: var(--fs-sm);
+    line-height: var(--lh-relaxed);
+    color: var(--c-ink-2);
+    text-wrap: pretty;
+  }
+  .gm__act { justify-self: start; }
+
+  /* ------------------------------------------------- two routes to a price */
+  .quote {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--sp-4);
+    list-style: none;
+    margin: clamp(1.5rem, 1.2rem + 1.4vw, 2.25rem) 0 0;
+    padding: 0;
+  }
+  @media (min-width: 52em) { .quote { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+  .quote__card {
+    display: flex;
+    flex-direction: column;
+    align-items: start;
+    gap: var(--sp-3);
+    padding: clamp(1.25rem, 1rem + 1.2vw, 1.625rem);
+    border: 1px solid var(--c-line-2);
+    border-radius: var(--r-2);
+    background: var(--c-panel-2);
+  }
+  /* The build is this page's own product, so it takes the accent and the solid
+     button; the managed route is offered rather than pushed. */
+  .quote__card--lead { border-color: var(--c-line-signal); }
+  .quote__k { color: var(--c-signal-text); }
+  .quote__d {
+    font-size: var(--fs-sm);
+    line-height: var(--lh-relaxed);
+    color: var(--c-ink-2);
+    text-wrap: pretty;
+  }
+  .quote__btn { margin-block-start: auto; }
+
+  /* ============================================================= PROCESS */
+  .proc-sec { padding-block: clamp(3rem, 1.8rem + 3.6vw, 4.75rem); }
+
+  .tl {
+    margin-block-start: clamp(2rem, 1.4rem + 2vw, 3rem);
+    margin-inline: auto;
+    max-width: 52rem;
+  }
+
+  .tl__step {
+    position: relative;
+    display: grid;
+    grid-template-columns: 11px minmax(0, 1fr);
+    column-gap: var(--sp-4);
+    row-gap: var(--sp-2);
+    padding-block-end: var(--sp-5);
+  }
+  .tl__step:last-child { padding-block-end: 0; }
+
+  /* Connecting rule: drawn per step so it stops cleanly at the last node
+     instead of running past it to the container edge. */
+  .tl__step::before {
+    content: '';
+    position: absolute;
+    inset-block: 1.2rem 0;
+    inset-inline-start: 5px;
+    inline-size: 1px;
+    background: var(--c-line-2);
+  }
+  .tl__step:last-child::before { display: none; }
+
+  /* Node: a station on the rail. Opaque centre so the rule passes behind it. */
+  .tl__node {
+    position: relative;
+    display: block;
+    inline-size: 11px;
+    block-size: 11px;
+    border-radius: 50%;
+    border: 1px solid var(--c-line-signal);
+    background: var(--c-void);
+    margin-block-start: var(--nudge-2);
+  }
+  .tl__node::after {
+    content: '';
+    position: absolute;
+    inset: 2px;
+    border-radius: 50%;
+    background: var(--c-signal);
+    box-shadow: 0 0 8px var(--c-signal-glow);
+  }
+
+  .tl__meta { display: flex; align-items: baseline; gap: var(--sp-3); }
+  /* The .index primitive paints --c-ink-4 (3.1:1, decorative only). The scoped
+     selector is (0,2,0) against its (0,1,0), so this wins wherever it sits. */
+  .tl__n { color: var(--c-ink-3); }
+  .tl__dur {
+    font-family: var(--font-mono);
+    font-size: var(--fs-2xs);
+    letter-spacing: var(--tr-label);
+    text-transform: uppercase;
+    color: var(--c-ink-3);
+  }
+
+  .tl__body { grid-column: 2; display: grid; gap: var(--sp-2); }
+  .tl__name {
+    font-size: var(--fs-md);
+    line-height: var(--lh-snug);
+    letter-spacing: var(--tr-tight);
+    color: var(--c-ink);
+  }
+  .tl__text {
+    font-size: var(--fs-sm);
+    line-height: var(--lh-relaxed);
+    color: var(--c-ink-2);
+    text-wrap: pretty;
+  }
+
+  @media (min-width: 48em) {
+    .tl__step { grid-template-columns: 11px minmax(6rem, 7.5rem) minmax(0, 1fr); }
+    .tl__meta { flex-direction: column; align-items: start; gap: var(--sp-2); }
+    .tl__body { grid-column: 3; }
+  }
+
+  /* ================================================== SCOPING & PRICING */
+  /* The one paper band on the page. Tokens remap inside .paper, so the accent
+     here is --c-signal-paper (6.9:1 on paper); --c-signal is unreadable on it. */
+  .scope-sec { border-block-start: 1px solid var(--c-line-2); }
+
+  .scope__grid {
+    display: grid;
+    gap: var(--sp-4);
+    margin-block-start: clamp(2rem, 1.4rem + 2vw, 3rem);
+    grid-template-columns: minmax(0, 1fr);
+    align-items: start;
+  }
+  @media (min-width: 62em) {
+    .scope__grid { grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr); }
+  }
+  .scope__side { display: grid; gap: var(--sp-4); }
+
+  .scope__panel {
+    position: relative;
+    border: 1px solid var(--c-line-2);
+    border-radius: var(--r-2);
+    background: var(--c-panel);
+    overflow: hidden;
+  }
+
+  .scope__bar {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--sp-2) var(--sp-4);
+    padding: var(--sp-3) clamp(1rem, 0.8rem + 0.9vw, 1.5rem);
+    border-block-end: 1px solid var(--c-line-2);
+    background: var(--c-panel-2);
+    font-family: var(--font-mono);
+    font-size: var(--fs-2xs);
+    letter-spacing: var(--tr-label);
+    text-transform: uppercase;
+  }
+  .scope__bar-label { color: var(--c-ink); }
+  .scope__bar-meta { color: var(--c-signal-paper); }
+
+  .scope__list {
+    display: grid;
+    gap: var(--sp-5);
+    padding: clamp(1.25rem, 1rem + 1.2vw, 1.75rem) clamp(1rem, 0.8rem + 0.9vw, 1.5rem);
+  }
+  .scope__list--tight { gap: var(--sp-4); }
+
+  .scope__item {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    gap: var(--sp-3);
+  }
+  .scope__n {
+    font-family: var(--font-mono);
+    font-size: var(--fs-2xs);
+    letter-spacing: var(--tr-label);
+    /* NOT --c-ink-3: .paper remaps the ramp, and its --c-ink-3 is 3.8:1 on this
+       panel — below AA. Its --c-ink-2 is 7.6:1 and still reads as a numeral. */
+    color: var(--c-ink-2);
+    padding-block-start: 0.28em;
+  }
+  .scope__body { display: grid; gap: var(--sp-1); }
+  .scope__t {
+    font-size: var(--fs-md);
+    line-height: var(--lh-snug);
+    letter-spacing: var(--tr-normal);
+    color: var(--c-ink);
+    text-wrap: pretty;
+  }
+  .scope__d {
+    font-size: var(--fs-sm);
+    line-height: var(--lh-relaxed);
+    color: var(--c-ink-2);
+    text-wrap: pretty;
+  }
+
+  .scope__ramp {
+    display: grid;
+    gap: var(--sp-5);
+    padding: clamp(1.25rem, 1rem + 1.2vw, 1.75rem) clamp(1rem, 0.8rem + 0.9vw, 1.5rem);
+  }
+  .scope__ramp-row { display: grid; gap: var(--sp-2); }
+  .scope__ramp-v {
+    font-family: var(--font-mono);
+    font-size: var(--fs-lg);
+    letter-spacing: var(--tr-display);
+    line-height: 1;
+    color: var(--c-signal-paper);
+  }
+  .scope__ramp-k {
+    font-size: var(--fs-sm);
+    line-height: var(--lh-relaxed);
+    color: var(--c-ink-2);
+    text-wrap: pretty;
+  }
+
+  /* Same closing pattern as every other page: hook question, one button. */
+  .scope__foot {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    gap: var(--sp-4) var(--sp-5);
+    margin-block-start: clamp(2rem, 1.4rem + 2vw, 3rem);
+  }
+  .scope__hook {
+    font-size: var(--fs-lg);
+    line-height: var(--lh-snug);
+    letter-spacing: var(--tr-tight);
+    font-weight: 500;
+    color: var(--c-ink);
+    text-wrap: balance;
+  }
+  .scope__cta { flex: none; }
+</style>

@@ -1,0 +1,509 @@
+---
+import { SITE } from '../site.config.mjs';
+
+/**
+ * Cookie consent banner, wired to the GroovyMark CRM.
+ *
+ * The CRM supplies the consent endpoints and stores the record; this component
+ * supplies the interface. Three things differ from the stock CRM snippet, all
+ * of them deliberate:
+ *
+ *  1. The markup lives in this template rather than being built by innerHTML.
+ *     Astro's scoped styles only reach elements that exist at build time, the
+ *     CSP forbids inline <style> without a hash, and CRM-supplied copy has to
+ *     land in textContent rather than innerHTML or the banner becomes an
+ *     injection point for whoever can edit the CRM record.
+ *  2. Accept and Reject carry identical visual weight. Under GDPR consent has
+ *     to be as easy to refuse as to give, so the two are the same size, the
+ *     same colour and side by side. Do not "improve" this by making Accept the
+ *     only filled button.
+ *  3. If the CRM is unreachable the banner still renders and still records the
+ *     choice in localStorage, so a CRM outage cannot silently stop us asking.
+ *
+ * Nothing on this site currently sets an analytics, functional or marketing
+ * cookie. The categories exist because the CRM tracks them and because the
+ * choice has to be recorded before anything is added — see /legal/cookies/.
+ */
+
+/** Categories the CRM records. `necessary` is locked on and cannot be refused. */
+const CATEGORIES = [
+  {
+    id: 'necessary',
+    name: 'Strictly necessary',
+    locked: true,
+    text:
+      'Remembers this choice so you are not asked again, and keeps the record ' +
+      'that proves we asked. Cannot be switched off.',
+  },
+  /* Offered only when it is actually honoured. With
+     analyticsRequiresConsent false the tracker runs regardless, and showing a
+     switch that does nothing when someone turns it OFF is a worse deception
+     than not offering one. */
+  {
+    id: 'analytics',
+    name: 'Analytics',
+    locked: false,
+    onlyWhenGated: true,
+    text:
+      'Counts visits, pages and where you arrived from, using our own analytics. ' +
+      'Refuse and the script is never loaded.',
+    // Accurate for when analyticsRequiresConsent flips to true and this returns.
+  },
+  {
+    id: 'functional',
+    name: 'Functional',
+    locked: false,
+    text: 'Would remember preferences between visits. Nothing uses this today.',
+  },
+  {
+    id: 'marketing',
+    name: 'Marketing',
+    locked: false,
+    text: 'Would build an advertising profile. We do not do this, and will ask again if that ever changes.',
+  },
+];
+
+/* Hide any category the site does not currently act on. */
+const VISIBLE_CATEGORIES = CATEGORIES.filter(
+  (c) => !c.onlyWhenGated || SITE.analyticsRequiresConsent,
+);
+---
+
+<div
+  id="cc"
+  class="cc"
+  data-analytics-src={SITE.analyticsSrc || undefined}
+  data-analytics-id={SITE.analyticsId || undefined}
+  role="dialog"
+  aria-modal="false"
+  aria-labelledby="cc-title"
+  aria-describedby="cc-text"
+  hidden
+>
+  <div class="cc__panel">
+    <p class="meta cc__label">
+      <span class="dot dot--queued" aria-hidden="true"></span>
+      <span>Cookie choice</span>
+    </p>
+
+    <h2 id="cc-title" class="heading-sm cc__title">You choose what this site stores</h2>
+
+    <p id="cc-text" class="body-sm cc__text">
+      We keep three entries on your device so you are not asked this again. Nothing here
+      profiles you, and nothing is shared with an advertiser. Change it whenever you
+      like, or ask us to delete the record entirely.
+    </p>
+
+    <div class="cc__cats" id="cc-cats" hidden>
+      {
+        VISIBLE_CATEGORIES.map((c) => (
+          <div class="cc__cat">
+            <label class="cc__cat-head" for={`cc-${c.id}`}>
+              <input
+                class="cc__box"
+                type="checkbox"
+                id={`cc-${c.id}`}
+                data-cat={c.id}
+                checked={c.locked}
+                disabled={c.locked}
+              />
+              <span class="cc__cat-name">{c.name}</span>
+              {c.locked && <span class="cc__lock">Always on</span>}
+            </label>
+            <p class="cc__cat-text">{c.text}</p>
+          </div>
+        ))
+      }
+    </div>
+
+    <div class="cc__acts">
+      <button class="btn cc__btn" type="button" data-cc="accept">Accept all</button>
+      <button class="btn cc__btn" type="button" data-cc="reject">Reject all</button>
+      <button class="btn btn--ghost cc__btn" type="button" data-cc="custom" aria-expanded="false" aria-controls="cc-cats">
+        Customise
+      </button>
+      <button class="btn btn--ghost cc__btn cc__btn--save" type="button" data-cc="save" hidden>
+        Save my choice
+      </button>
+    </div>
+
+    <p class="cc__fine">
+      <a href="/legal/cookies/">Cookie policy</a>
+      <span aria-hidden="true">·</span>
+      <a href="/legal/privacy/">Privacy notice</a>
+    </p>
+  </div>
+</div>
+
+<style>
+  /* Bottom-anchored rather than a full-screen scrim: the page stays readable
+     while the choice is open, which is both better manners and one less
+     dark-pattern to defend. aria-modal is false for the same reason. */
+  .cc {
+    position: fixed;
+    z-index: 60;
+    inset-block-end: 0;
+    inset-inline: 0;
+    padding: var(--sp-4);
+    pointer-events: none;
+  }
+  .cc[hidden] { display: none; }
+  /* The mobile nav panel does not reach the foot of the screen, so an open
+     menu would otherwise have the banner poking out beneath it. The header
+     owns no state class, so this keys off the toggle's own aria-expanded. */
+  body:has(#nav-toggle[aria-expanded='true']) .cc { display: none; }
+
+  .cc__panel {
+    pointer-events: auto;
+    max-inline-size: 34rem;
+    margin-inline: auto;
+    padding: var(--sp-5);
+    background: var(--c-panel-2);
+    border: 1px solid var(--c-line-2);
+    box-shadow: 0 -1px 0 var(--c-line-signal), 0 24px 60px rgb(0 0 0 / 55%);
+  }
+  @media (min-width: 48em) {
+    /* Anchored to the corner on a wide screen so it never sits over the
+       middle of the page the visitor is trying to read. */
+    .cc { padding: var(--sp-5); }
+    .cc__panel { margin-inline: 0 auto; }
+  }
+  @media (min-width: 73em) {
+    .cc__panel { margin-inline-start: var(--sp-5); }
+  }
+
+  .cc__label { display: flex; align-items: center; gap: var(--sp-2); color: var(--c-ink-3); }
+  .cc__title { margin-block-start: var(--sp-3); }
+  .cc__text { margin-block-start: var(--sp-3); color: var(--c-ink-2); }
+
+  /* ---- Category list, revealed by Customise ---- */
+  .cc__cats {
+    margin-block-start: var(--sp-4);
+    border-block-start: 1px solid var(--c-line);
+    /* Tall enough to show two categories on a short phone, and capped against
+       the viewport so the panel never grows past the screen. */
+    max-block-size: min(15rem, 42vh);
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    /* The scrollbar would otherwise sit on top of the "Always on" label and
+       clip it — measured at 360px. */
+    scrollbar-gutter: stable;
+    padding-inline-end: var(--sp-3);
+  }
+  .cc__cats[hidden] { display: none; }
+
+  .cc__cat { padding-block: var(--sp-3); border-block-end: 1px solid var(--c-line); }
+  .cc__cat:last-child { border-block-end: 0; }
+
+  .cc__cat-head {
+    display: flex;
+    align-items: center;
+    gap: var(--sp-3);
+    cursor: pointer;
+    min-block-size: 1.75rem;
+  }
+  .cc__cat-head:has(.cc__box:disabled) { cursor: default; }
+
+  .cc__box { inline-size: 1rem; block-size: 1rem; flex: none; accent-color: var(--c-signal); }
+  .cc__box:disabled { opacity: 0.55; }
+
+  .cc__cat-name { font-size: var(--fs-sm); color: var(--c-ink); }
+  .cc__lock {
+    margin-inline-start: auto;
+    font-family: var(--font-mono);
+    font-size: var(--fs-xs);
+    /* ink-3, not ink-4: this label states that the category cannot be turned
+       off, so it is meaningful text and has to clear AA. ink-4 measured
+       2.86:1 here. */
+    color: var(--c-ink-3);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+  }
+  .cc__cat-text {
+    margin-block-start: var(--sp-2);
+    margin-inline-start: calc(1rem + var(--sp-3));
+    font-size: var(--fs-xs);
+    line-height: 1.55;
+    color: var(--c-ink-3);
+  }
+
+  /* ---- Actions ---- */
+  .cc__acts {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--sp-3);
+    margin-block-start: var(--sp-5);
+  }
+  /* Accept and Reject are the same element, same size, same colour, side by
+     side. Consent has to be as easy to refuse as to give. */
+  .cc__btn {
+    flex: 1 1 auto;
+    justify-content: center;
+    padding-inline: var(--sp-4);
+    font-size: var(--fs-sm);
+    min-block-size: 2.75rem;
+  }
+  .cc__btn[hidden] { display: none; }
+
+  .cc__fine {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--sp-2);
+    margin-block-start: var(--sp-4);
+    font-family: var(--font-mono);
+    font-size: var(--fs-xs);
+    color: var(--c-ink-4);
+  }
+  .cc__fine a { color: var(--c-ink-3); text-underline-offset: 3px; }
+  .cc__fine a:hover { color: var(--c-signal-text); }
+
+  /* Entry motion, suppressed for anyone who has asked for less of it. */
+  @media (prefers-reduced-motion: no-preference) {
+    .cc__panel { animation: cc-in 260ms cubic-bezier(0.2, 0.7, 0.3, 1) both; }
+    @keyframes cc-in {
+      from { opacity: 0; translate: 0 12px; }
+      to { opacity: 1; translate: 0 0; }
+    }
+  }
+</style>
+
+<script is:inline>
+  (function () {
+    if (window.__crmCookieInit) return;
+    window.__crmCookieInit = true;
+
+    /* Contract with the CRM. These four values and the three global function
+       names below are the integration surface — the CRM reads and writes
+       against them, so renaming anything here breaks consent recording. */
+    var SLUG = 'groovymark-2';
+    var BASE = 'https://crm.groovymark.com';
+    var KEY = 'crm_cookie_consent_id';
+    var DONE = 'crm_cookie_consent_done';
+    var CHOICES = 'crm_cookie_consent_choices';
+
+    var el = document.getElementById('cc');
+    if (!el) return;
+
+    var cats = document.getElementById('cc-cats');
+    var boxes = el.querySelectorAll('.cc__box');
+    var saveBtn = el.querySelector('[data-cc="save"]');
+    var customBtn = el.querySelector('[data-cc="custom"]');
+
+    /* Private browsing and locked-down browsers throw on storage access
+       rather than returning null, which would take the whole banner down. */
+    function get(k) { try { return localStorage.getItem(k); } catch (e) { return null; } }
+    function set(k, v) { try { localStorage.setItem(k, v); } catch (e) {} }
+    function del(k) { try { localStorage.removeItem(k); } catch (e) {} }
+
+    function ua() {
+      var s = navigator.userAgent;
+      var browser = /Edg\//.test(s) ? 'Edge'
+        : /OPR\//.test(s) ? 'Opera'
+        : /Chrome\//.test(s) ? 'Chrome'
+        : /Safari\//.test(s) ? 'Safari'
+        : /Firefox\//.test(s) ? 'Firefox' : 'Other';
+      var os = /Windows/.test(s) ? 'Windows'
+        : /Android/.test(s) ? 'Android'
+        : /iPhone|iPad|iPod/.test(s) ? 'iOS'
+        : /Mac OS X/.test(s) ? 'macOS'
+        : /Linux/.test(s) ? 'Linux' : 'Other';
+      var device = /iPad|Tablet/.test(s) ? 'tablet'
+        : /Mobi|Android/.test(s) ? 'mobile' : 'desktop';
+      /* `device` matches the CRM's current snippet, `device_type` the previous
+         one. The API accepts either and reports success for both, so there is
+         no way to tell from a response which field it reads — send both. */
+      return {
+        browser: browser,
+        os: os,
+        device: device.charAt(0).toUpperCase() + device.slice(1),
+        device_type: device,
+        user_agent: s,
+      };
+    }
+
+    function show(focus) {
+      el.hidden = false;
+      if (focus) {
+        var h = el.querySelector('.cc__title');
+        if (h) { h.setAttribute('tabindex', '-1'); h.focus(); }
+      }
+    }
+    function hide() { el.hidden = true; }
+
+    /** Records the choice. Local first, so a CRM outage cannot lose it. */
+    window.crmCookieConsent = function (choices) {
+      var payload = Object.assign(
+        { necessary: true, analytics: false, functional: false, marketing: false },
+        choices || {}
+      );
+      set(DONE, '1');
+      set(CHOICES, JSON.stringify(payload));
+      hide();
+      /* The CRM's snippet has moved from document to window between versions.
+         Fire both so anything written against either one keeps working. */
+      var ev = new CustomEvent('crmCookieConsent', { detail: payload });
+      document.dispatchEvent(ev);
+      window.dispatchEvent(new CustomEvent('crmCookieConsent', { detail: payload }));
+      // Start tracking the moment it is allowed, rather than on the next page.
+      if (payload.analytics) loadAnalytics();
+
+      var id = get(KEY);
+      var url = BASE + '/api/public/' + SLUG + '/cookie-consent' + (id ? '/' + id : '');
+      return fetch(url, {
+        method: id ? 'PUT' : 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        /* Verified against the live endpoint: the key is `consent_choices`
+           (`consent` returns 400) and the reply carries `consent_id`, not
+           `id`. Both were wrong on the first pass and failed silently,
+           because a failed POST is caught and the choice is already stored
+           locally by then. */
+        body: JSON.stringify(Object.assign({ consent_choices: payload }, ua())),
+      })
+        .then(function (r) { return r.ok ? r.json() : null; })
+        .then(function (d) { if (d && d.consent_id) set(KEY, d.consent_id); })
+        .catch(function () { /* choice already honoured locally */ });
+    };
+
+    /** Erases the consent record at the CRM, then asks again. */
+    window.crmCookieWithdraw = function () {
+      var id = get(KEY);
+      /* DONE and CHOICES go immediately — the visitor asked to withdraw and
+         that must hold on their device whatever the network does. The id is
+         kept unless the delete is confirmed: dropping it on a failed request
+         would orphan the CRM record with nothing left to identify it by, so
+         erasure could never be retried. A kept id retries on the next
+         withdrawal, and updates the same record rather than creating a
+         second one if they consent again. */
+      del(DONE); del(CHOICES);
+      var done = id
+        ? fetch(BASE + '/api/public/' + SLUG + '/cookie-consent/' + id, { method: 'DELETE' })
+            .then(function (r) { if (r.ok) del(KEY); })
+            .catch(function () {})
+        : Promise.resolve();
+      return done.then(function () { show(true); });
+    };
+
+    /** Reopens the panel so a stored choice can be changed. */
+    window.crmCookieReopen = function () {
+      del(DONE);
+      var saved = get(CHOICES);
+      var c = null;
+      if (saved) { try { c = JSON.parse(saved); } catch (e) {} }
+      boxes.forEach(function (b) {
+        if (b.disabled) return;
+        b.checked = c ? !!c[b.dataset.cat] : false;
+      });
+      openCustom();
+      show(true);
+    };
+
+    /*
+     * The analytics tracker, loaded ONLY once the visitor has allowed the
+     * analytics category.
+     *
+     * The vendor's install instructions say to paste the tag into <head> on
+     * every page. Doing that would load it for everyone before they are asked,
+     * and it writes a persistent visitor id (liq_vid) plus three session keys —
+     * so under the ePrivacy rules it needs consent first, exactly like a
+     * cookie. The script itself has no consent handling at all, so the gate has
+     * to live here. This is also what makes the analytics toggle on the banner
+     * mean something rather than being decoration.
+     */
+    function loadAnalytics() {
+      var src = el.dataset.analyticsSrc;
+      var tid = el.dataset.analyticsId;
+      if (!src || !tid) return;
+      if (document.querySelector('script[data-tid="' + tid + '"]')) return;
+      var t = document.createElement('script');
+      t.async = true;
+      t.src = src;
+      t.setAttribute('data-tid', tid);
+      document.head.appendChild(t);
+    }
+
+    /** Already allowed on a previous visit: honour it without asking again. */
+    (function () {
+      try {
+        var c = JSON.parse(get(CHOICES) || 'null');
+        if (c && c.analytics) loadAnalytics();
+      } catch (e) {}
+    })();
+
+    /** Current choice, for anything that needs to gate on it later. */
+    window.crmCookieChoices = function () {
+      try { return JSON.parse(get(CHOICES) || 'null'); } catch (e) { return null; }
+    };
+
+    function openCustom() {
+      cats.hidden = false;
+      saveBtn.hidden = false;
+      customBtn.hidden = true;
+      customBtn.setAttribute('aria-expanded', 'true');
+    }
+
+    function read() {
+      var out = {};
+      boxes.forEach(function (b) { out[b.dataset.cat] = b.disabled ? true : b.checked; });
+      return out;
+    }
+
+    el.addEventListener('click', function (e) {
+      var btn = e.target.closest('[data-cc]');
+      if (!btn) return;
+      var act = btn.dataset.cc;
+      if (act === 'custom') return openCustom();
+      if (act === 'accept') {
+        return window.crmCookieConsent({ necessary: true, analytics: true, functional: true, marketing: true });
+      }
+      if (act === 'reject') {
+        return window.crmCookieConsent({ necessary: true, analytics: false, functional: false, marketing: false });
+      }
+      if (act === 'save') return window.crmCookieConsent(read());
+    });
+
+    /* Any element can reopen the panel by carrying data-cookie-settings —
+       the footer link uses this. */
+    document.addEventListener('click', function (e) {
+      var t = e.target.closest('[data-cookie-settings]');
+      if (!t) return;
+      e.preventDefault();
+      window.crmCookieReopen();
+    });
+
+    if (get(DONE)) return;
+
+    /* The banner is currently switched off in the CRM, and nothing ever writes
+       DONE in that case — so the config fetch repeated on every navigation, for
+       every visitor, permanently, to be told "off" each time. Remember the
+       verdict for the session instead.
+       sessionStorage, deliberately, NOT the DONE key: writing DONE would
+       suppress the banner for good, so switching it back on in the CRM would
+       never reach anyone who had already visited. This self-heals on the
+       visitor's next session. */
+    var OFF = 'crm_cookie_banner_off';
+    try {
+      if (sessionStorage.getItem(OFF)) return;
+    } catch (e) {}
+
+    /* The CRM can switch the banner off centrally. If it is unreachable we
+       still ask — failing closed here would mean silently not asking. */
+    fetch(BASE + '/api/public/' + SLUG)
+      .then(function (r) { return r.ok ? r.json() : null; })
+      .then(function (cfg) {
+        var b = cfg && cfg.cookie_banner;
+        if (b && b.enabled === false) {
+          try { sessionStorage.setItem(OFF, '1'); } catch (e) {}
+          return;
+        }
+        /* The CRM also returns title/message, and they are deliberately NOT
+           applied. Its stored default says this site analyses traffic and
+           personalises content; this site does neither, and a consent banner
+           that misdescribes what it is asking for is worse than no banner.
+           The copy in the template above was written against what the site
+           actually stores. If the CRM copy is ever corrected to match, wire it
+           through here via textContent — never innerHTML. */
+        show(false);
+      })
+      .catch(function () { show(false); });
+  })();
+</script>

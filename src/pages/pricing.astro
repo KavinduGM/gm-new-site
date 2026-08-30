@@ -1,0 +1,424 @@
+---
+import Base from '../layouts/Base.astro';
+import CloseCta from '../components/CloseCta.astro';
+import FaqSection from '../components/FaqSection.astro';
+import { PACKAGES, INCLUDED, ADDON, PRICING_FAQ } from '../data/pricing.mjs';
+import { breadcrumbSchema, faqSchema } from '../lib/schema.mjs';
+
+/**
+ * Prices for the managed service only.
+ *
+ * /engagements sells two things and deliberately quotes neither: a build is
+ * scoped per client, and the monthly plan was described as "an allowance set by
+ * your package" with no package list to point at. This page is that list.
+ * The build stays unpriced here on purpose — there is no tier for it.
+ *
+ * Linked from the FOOTER only, not the header nav, at the owner's instruction.
+ *
+ * Line glyphs on the house 20x20 grid, 1.4 stroke, same as every other icon set.
+ */
+const ICO = {
+  video: '<rect x="2.5" y="4.5" width="15" height="11" rx="1.6"/><path d="M8.4 8.2l4 1.8-4 1.8z"/>',
+  short: '<rect x="6" y="2.6" width="8" height="14.8" rx="1.6"/><path d="M9 10h2"/>',
+  post: '<path d="M3.2 4.6h13.6v8.2H8.4L5 15.9v-3.1H3.2z"/>',
+  accounts: '<circle cx="7.2" cy="7.6" r="2.6"/><path d="M2.8 16.4a4.6 4.6 0 0 1 8.8 0"/><path d="M13.2 5.4a2.6 2.6 0 0 1 0 4.9"/><path d="M14.4 12.6a4.6 4.6 0 0 1 2.8 3.8"/>',
+};
+
+/* produces[] is ordered long / short / posts in the data, so the glyph order
+   is fixed rather than keyed — one fewer field to keep in step. */
+const ROW_ICO = [ICO.video, ICO.short, ICO.post];
+
+const money = (n) => `$${n.toLocaleString('en-US')}`;
+---
+
+<Base
+  title="Managed content plans and pricing"
+  description={`Monthly plans for the fully managed service: ${PACKAGES.map((p) => `${p.name} ${money(p.price)}`).join(', ')}. Social media management in every plan, on four to six of your channels.`}
+  schema={[breadcrumbSchema([{ name: 'Pricing', href: '/pricing/' }]), faqSchema(PRICING_FAQ)]}
+  hideFooterCta
+>
+  <!-- ============================================================ 1. HERO -->
+  <section class="hero grid-bg" aria-labelledby="pricing-title">
+    <span class="bloom hero__bloom" aria-hidden="true"></span>
+    <div class="wrap hero__inner">
+      <p class="eyebrow eyebrow--center hero__eyebrow">Managed plans</p>
+      <h1 id="pricing-title" class="hero__title">
+        We run it. <span class="hl">You approve and the system publishes.</span>
+      </h1>
+      <p class="hero__lede">
+        Three monthly plans for the fully managed service, priced by how much you publish.
+        No build to wait for, and no system for your team to run.
+      </p>
+      <div class="btn-row hero__actions">
+        <a href="/contact/" class="btn btn--primary btn--lg">
+          Ask about the monthly plan
+          <svg class="btn__arrow" width="12" height="12" viewBox="0 0 12 12" aria-hidden="true"><path d="M1 6h9M6.5 2 10.5 6l-4 4" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="square"/></svg>
+        </a>
+        <a href="/engagements/" class="btn btn--ghost btn--lg">Or own the system instead</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- ======================================================== 2. PACKAGES -->
+  <section class="section section--raised grid-bg grid-bg--center" id="plans" aria-labelledby="plans-title">
+    <div class="wrap wrap--wide">
+      <h2 id="plans-title" class="sec__title">Pick the volume, <span class="hl">not the features</span>.</h2>
+      <p class="sec__lede">
+        Every plan runs the same pipeline and the same review gates. What changes between them is
+        how much comes out each month, and how many channels it goes to.
+      </p>
+
+      <ul role="list" class="plans">
+        {PACKAGES.map((p) => (
+          <li class:list={['plan', p.rec && 'plan--rec']}>
+            {p.rec && <p class="plan__flag">Recommended</p>}
+            <h3 class="meta plan__k"><span class="index" aria-hidden="true">{p.n}</span>{p.name}</h3>
+
+            <p class="plan__price">
+              <span class="plan__amt">{money(p.price)}</span>
+              <span class="plan__per">/month</span>
+            </p>
+            <p class="plan__d">{p.summary}</p>
+
+            <p class="meta plan__lbl">Produced every month</p>
+            <ul role="list" class="plan__list">
+              {p.produces.map(([n, what], i) => (
+                <li class="plan__row">
+                  <span class="plan__ico" aria-hidden="true">
+                    <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor"
+                      stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" set:html={ROW_ICO[i]} />
+                  </span>
+                  <span><b class="plan__n">{n}</b> {what}</span>
+                </li>
+              ))}
+              <li class="plan__row">
+                <span class="plan__ico" aria-hidden="true">
+                  <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor"
+                    stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" set:html={ICO.accounts} />
+                </span>
+                <span><b class="plan__n">{p.accounts}</b> {p.accountsNote.replace(/^\w+\s/, '')}</span>
+              </li>
+            </ul>
+
+            <a
+              href={`/contact/?plan=${p.name}`}
+              class:list={['btn', p.rec ? 'btn--primary' : 'btn--ghost', 'plan__cta']}
+            >
+              Start on {p.name}
+              <svg class="btn__arrow" width="12" height="12" viewBox="0 0 12 12" aria-hidden="true"><path d="M1 6h9M6.5 2 10.5 6l-4 4" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="square"/></svg>
+            </a>
+          </li>
+        ))}
+      </ul>
+
+      <p class="plans__foot">
+        Social media management is in every plan, on the accounts you pick. Blog articles and
+        newsletters are an add-on rather than part of a plan — see
+        <a href="/system/" class="link">every stage of the pipeline</a>.
+      </p>
+    </div>
+  </section>
+
+  <!-- ========================================================= 3. INCLUDED -->
+  <section class="section" aria-labelledby="incl-title">
+    <div class="wrap wrap--wide">
+      <h2 id="incl-title" class="sec__title">In every plan, at <span class="hl">every price</span>.</h2>
+
+      <ul role="list" class="incl">
+        {INCLUDED.map((x) => (
+          <li class="incl__item">
+            <svg class="incl__tick" width="14" height="14" viewBox="0 0 12 12" aria-hidden="true"><path d="M2 6.4 4.6 9 10 3" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            <span>{x}</span>
+          </li>
+        ))}
+      </ul>
+
+
+    </div>
+  </section>
+
+  <!-- ============================================================ 4. ADDON -->
+  <section class="section section--raised" id="crm" aria-labelledby="addon-title">
+    <div class="wrap wrap--wide">
+      <p class="eyebrow eyebrow--center">{ADDON.k}</p>
+      <h2 id="addon-title" class="sec__title">{ADDON.name}.</h2>
+      <p class="sec__lede">{ADDON.summary}</p>
+
+      <ul role="list" class="addon">
+        {ADDON.items.map((x) => (
+          <li class="addon__item">
+            <svg class="addon__tick" width="12" height="12" viewBox="0 0 12 12" aria-hidden="true"><path d="M2 6.4 4.6 9 10 3" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            <span>{x}</span>
+          </li>
+        ))}
+      </ul>
+
+      <p class="addon__foot">
+        Not in any plan price, and not needed to publish. Ask for it on the call and it is added
+        to whichever plan you take.
+      </p>
+    </div>
+  </section>
+
+  <!-- ============================================================== 5. FAQ -->
+  <FaqSection
+    items={PRICING_FAQ}
+    eyebrow="Before you pick one"
+    title="What the price list [does not say]."
+  />
+
+  <!-- ============================================================ 6. CLOSE -->
+  <CloseCta
+    title="Bring your monthly volume to [the call]."
+    body="Tell us how much you publish now and on how many channels. We will tell you which plan fits, or whether a build of your own is the cheaper answer at your size."
+  />
+</Base>
+
+<style>
+  /* =============================================================== HERO */
+  /* Every page defines its own .hero. Without this one the eyebrow centred
+     itself, the title and lede centred as BLOCKS but set their text left, and
+     the buttons sat hard left — four elements, three different alignments. */
+  .hero {
+    position: relative;
+    padding-block: clamp(3rem, 1.4rem + 5.6vw, 6.5rem) clamp(2.5rem, 1.6rem + 3vw, 4rem);
+    overflow: clip;
+    overflow-clip-margin: 6px;
+    text-align: center;
+  }
+  .hero__bloom {
+    inline-size: min(48rem, 94vw);
+    block-size: 26rem;
+    inset-block-start: -8rem;
+    inset-inline-start: 50%;
+    translate: -50% 0;
+  }
+  .hero__inner { position: relative; z-index: 1; }
+  .hero__eyebrow { justify-content: center; }
+  .hero__title {
+    margin-block-start: var(--sp-6);
+    max-width: 72rem;
+  }
+  .hero__title .hl { display: block; }
+  .hero__lede { margin-block-start: var(--sp-5); }
+  .hero__actions { justify-content: center; margin-block-start: var(--sp-7); }
+
+  /* ============================================================== PLANS */
+  .plans {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--sp-5);
+    margin: clamp(2.5rem, 1.8rem + 2.6vw, 4rem) 0 0;
+    padding: 0;
+    list-style: none;
+    align-items: stretch;
+  }
+  /* Three abreast only once each card can hold its price and its longest row
+     ("60 short-form videos") without wrapping. Below that they stack; a
+     two-across middle state would orphan the third card. */
+  @media (min-width: 62em) {
+    .plans { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--sp-4); }
+  }
+
+  .plan {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    padding: clamp(1.5rem, 1.2rem + 1.4vw, 2rem);
+    border: 1px solid var(--c-line-2);
+    border-radius: var(--r-2);
+    background: linear-gradient(180deg, rgb(255 255 255 / 2.2%) 0%, transparent 42%), var(--c-panel-2);
+  }
+  .plan--rec {
+    border-color: var(--c-line-signal);
+    background:
+      radial-gradient(ellipse 90% 60% at 50% 0%, var(--c-signal-wash) 0%, transparent 60%),
+      var(--c-panel-2);
+  }
+  /* Sits on the border rather than above it, so the row keeps a flat top edge
+     and the flag cannot push the recommended card out of alignment. */
+  .plan__flag {
+    position: absolute;
+    inset-block-start: 0;
+    inset-inline-start: 50%;
+    transform: translate(-50%, -50%);
+    padding: 0.25rem 0.75rem;
+    border: 1px solid var(--c-line-signal);
+    border-radius: 999px;
+    background: var(--c-panel-3);
+    color: var(--c-signal-text);
+    font-family: var(--font-mono);
+    font-size: var(--fs-2xs);
+    letter-spacing: var(--tr-label);
+    text-transform: uppercase;
+    white-space: nowrap;
+  }
+
+  .plan__k { display: inline-flex; align-items: baseline; gap: var(--sp-3); }
+  .plan--rec .plan__k { color: var(--c-signal-text); }
+
+  .plan__price {
+    display: flex;
+    align-items: baseline;
+    gap: var(--sp-2);
+    margin-block-start: var(--sp-4);
+  }
+  .plan__amt {
+    font-family: var(--font-mono);
+    font-size: var(--fs-3xl);
+    line-height: 1;
+    letter-spacing: var(--tr-tight);
+    font-variant-numeric: tabular-nums;
+    font-weight: 600;
+    color: var(--c-ink);
+  }
+  .plan__per { font-size: var(--fs-sm); color: var(--c-ink-2); }
+  .plan__d {
+    margin-block-start: var(--sp-4);
+    font-size: var(--fs-sm);
+    line-height: var(--lh-relaxed);
+    color: var(--c-ink-2);
+    text-wrap: pretty;
+  }
+
+  .plan__lbl {
+    margin-block-start: var(--sp-5);
+    padding-block-start: var(--sp-4);
+    border-block-start: 1px solid var(--c-line);
+  }
+  .plan__list {
+    display: grid;
+    gap: var(--sp-3);
+    margin: var(--sp-4) 0 0;
+    padding: 0;
+    list-style: none;
+      margin-block-end: var(--sp-6);
+  }
+  .plan__row {
+    display: grid;
+    grid-template-columns: 1.25rem minmax(0, 1fr);
+    gap: var(--sp-3);
+    align-items: start;
+    font-size: var(--fs-sm);
+    line-height: var(--lh-normal);
+    color: var(--c-ink-2);
+  }
+  .plan__ico { color: var(--c-signal); }
+  /* base.css sets svg { display: block }, so the glyph needs nudging back onto
+     the text baseline of the row it labels. */
+  .plan__ico svg { display: block; margin-block-start: -0.0625rem; }
+  .plan__n {
+    color: var(--c-ink);
+    font-variant-numeric: tabular-nums;
+    font-weight: 600;
+  }
+
+  /* auto pushes the button to the card bottom, which only works because .plan
+     is a flex column — the same declaration was inert on two other pages where
+     the card was not. */
+  .plan__cta {
+    position: relative;
+    margin-block-start: auto;
+    inline-size: 100%;
+  }
+  .plan__cta .btn__arrow {
+    position: absolute;
+    inset-inline-end: clamp(0.875rem, 0.7rem + 0.7vw, 1.25rem);
+    inset-block-start: 50%;
+    translate: 0 -50%;
+  }
+  .plan__cta:hover .btn__arrow { transform: none; translate: 3px -50%; }
+
+  .plans__foot {
+    max-width: 44rem;
+    margin: clamp(1.75rem, 1.4rem + 1.4vw, 2.5rem) auto 0;
+    font-family: var(--font-mono);
+    font-size: var(--fs-xs);
+    line-height: var(--lh-relaxed);
+    letter-spacing: var(--tr-wide);
+    color: var(--c-signal-text);
+    text-align: center;
+    text-wrap: pretty;
+  }
+
+  /* =========================================================== INCLUDED */
+  /* Was a 2-column split: three one-line items in a 1fr column beside the fee
+     card, which left most of the left half empty and a band of dead space under
+     both. Three across reads as one row of equal facts, and the fee — which is
+     not an inclusion — gets its own centred callout underneath instead of
+     competing for the same row. */
+  .incl {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--sp-3);
+    margin: clamp(2rem, 1.6rem + 2vw, 3rem) 0 0;
+    padding: 0;
+    list-style: none;
+  }
+  @media (min-width: 46em) { .incl { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--sp-4); } }
+  .incl__item {
+    /* Flex rather than a 1rem + 1fr grid: the grid pinned the tick to the left
+       edge and let the text column stretch, so a short item like "A monthly
+       strategy call" sat against the left of a much wider box. Flex lets the
+       tick-and-text group shrink to its content and centre as one unit.
+       align-items stays at the top so the tick tracks the first line when the
+       text wraps on a narrow screen, rather than floating beside line two. */
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    gap: var(--sp-3);
+    text-align: center;
+    padding: clamp(1.125rem, 1rem + 0.6vw, 1.5rem);
+    border: 1px solid var(--c-line-2);
+    border-radius: var(--r-2);
+    background: var(--c-panel-2);
+    font-size: var(--fs-md);
+    line-height: var(--lh-snug);
+    color: var(--c-ink);
+    text-wrap: pretty;
+  }
+  .incl__tick { flex: none; color: var(--c-signal); margin-block-start: 0.1875rem; }
+
+  /* Two across from 40em: four short lines stacked under a big number left a
+     column of ragged whitespace beside it. */
+
+  /* ============================================================== ADDON */
+  .addon {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--sp-3);
+    margin: clamp(2rem, 1.6rem + 2vw, 3rem) 0 0;
+    padding: 0;
+    list-style: none;
+  }
+  @media (min-width: 46em) { .addon { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+  @media (min-width: 72em) { .addon { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+  .addon__item {
+    /* Centred as one tick-and-text unit, same as .incl__item. The item widths
+       here vary a lot ("Full spam filtration" against "Auto lead management
+       with customised auto replies"), which is exactly the case where a
+       left-pinned tick leaves the short ones stranded against the left edge. */
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    gap: var(--sp-3);
+    text-align: center;
+    padding: var(--sp-4);
+    border: 1px solid var(--c-line-2);
+    border-radius: var(--r-2);
+    background: var(--c-panel-2);
+    font-size: var(--fs-sm);
+    line-height: var(--lh-normal);
+    color: var(--c-ink);
+  }
+  .addon__tick { flex: none; color: var(--c-signal); margin-block-start: 0.25rem; }
+  .addon__foot {
+    max-width: 44rem;
+    margin: clamp(1.75rem, 1.4rem + 1.4vw, 2.5rem) auto 0;
+    font-size: var(--fs-sm);
+    line-height: var(--lh-relaxed);
+    color: var(--c-ink-2);
+    text-align: center;
+    text-wrap: pretty;
+  }
+</style>

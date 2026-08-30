@@ -1,0 +1,61 @@
+---
+import Faq from './Faq.astro';
+import { FAQ } from '../data/home.mjs';
+
+/**
+ * The FAQ band. Shared so every page can carry it above the closing CTA, and
+ * so the FAQPage JSON-LD and the visible answers can never drift apart — both
+ * read the same array.
+ *
+ * Pages that want their own questions pass `items`; the schema is emitted by
+ * the page, not here, because only one FAQPage node belongs per document.
+ *
+ * `title` accepts [bracketed] words, which render in the accent colour.
+ */
+interface Props {
+  items?: { q: string; a: string }[];
+  eyebrow?: string;
+  title?: string;
+}
+const {
+  items = FAQ,
+  eyebrow = 'Before you book',
+  title = 'The six things people [ask us first].',
+} = Astro.props;
+
+const parts = title.split(/\[([^\]]+)\]/).map((t, i) => ({ t, hl: i % 2 === 1 }));
+---
+
+<section class="section section--raised faq-sec" aria-labelledby="faq-title">
+  <div class="wrap wrap--wide">
+    <p class="eyebrow eyebrow--center">{eyebrow}</p>
+    <h2 id="faq-title" class="sec__title">
+      {parts.map((p) => (p.hl ? <span class="hl">{p.t}</span> : p.t))}
+    </h2>
+    <div class="faq-sec__body">
+      <Faq items={items} />
+    </div>
+  </div>
+</section>
+
+<style>
+  /* .sec__title is declared per page and Astro scopes styles per file, so the
+     page's rule cannot reach this heading. Restated here to match the house
+     heading exactly — the same trap the testimonial title fell into. */
+  .sec__title {
+    margin-inline: auto;
+    font-size: var(--fs-section);
+    line-height: var(--lh-snug);
+    letter-spacing: var(--tr-display);
+    font-weight: 600;
+    max-width: 44rem;
+    text-align: center;
+    text-wrap: balance;
+  }
+  .faq-sec__body {
+    margin: clamp(2rem, 1.4rem + 2vw, 3rem) auto 0;
+    /* Narrower than the section: an accordion of long answers reads badly at
+       full container width. */
+    max-width: 52rem;
+  }
+</style>

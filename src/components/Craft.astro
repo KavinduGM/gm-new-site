@@ -1,0 +1,235 @@
+---
+/**
+ * The distinction the rest of the site depends on: AI writes and checks, the
+ * craft is produced to editor standard. Without it "custom AI content system"
+ * reads as the generic thing a buyer can already do themselves with a tool.
+ *
+ * Deliberately split into two columns rather than written as a denial. Saying
+ * "we do not use AI" would be false and would also undercut the disclosure
+ * story on /trust, which exists precisely because AI IS used here. Naming where
+ * it is used and where it is not is both accurate and the stronger claim.
+ */
+interface Props { eyebrow?: string; title?: string; lede?: string }
+const {
+  eyebrow = 'The difference',
+  title = 'Made with [editor’s standards], not just generated.',
+  lede =
+    'Anyone can generate a clip in a browser, which is exactly why one is worth little. ' +
+    'AI writes and checks the work here. Everything you actually watch is built to the ' +
+    'standard a video editor and an animation artist would hold it to.',
+} = Astro.props;
+
+const parts = title.split(/\[([^\]]+)\]/).map((t, i) => ({ t, hl: i % 2 === 1 }));
+
+const AI_DOES = [
+  'Writes and researches the script',
+  'Generates the voiceover',
+  'Writes descriptions, keywords and hashtags',
+  'Reviews every asset before it is queued',
+];
+
+/* Line glyphs on a 20x20 grid, same 1.4 stroke as the diagrams elsewhere. */
+const ICON = {
+  cut: '<path d="M4 4l12 12M16 4L8.6 11.4"/><circle cx="5.4" cy="15.1" r="2.1"/><circle cx="14.6" cy="15.1" r="2.1"/>',
+  type: '<path d="M3 16.5L8.2 4h1.6l5.2 12.5"/><path d="M5.2 12h7.6"/><path d="M17 8.5v8"/>',
+  pen: '<path d="M14.6 2.9l2.5 2.5-9 9L4.5 16l1.6-3.6z"/><path d="M12.8 4.7l2.5 2.5"/><path d="M3.5 18.4h13"/>',
+  story: '<path d="M3.2 4.6h5a2.6 2.6 0 0 1 2.6 2.6v9a2 2 0 0 0-2-2h-5.6z"/><path d="M16.8 4.6h-5a2.6 2.6 0 0 0-2.6 2.6v9a2 2 0 0 1 2-2h5.6z"/>',
+  mark: '<path d="M10 2.6c-2 0-3.6 1.6-3.6 3.6v3.4"/><path d="M13.6 6.2a3.6 3.6 0 0 0-7.2 0v5.6"/><path d="M10 6.2v6.4"/><path d="M16.4 10.6c0 3.6-1.2 5.6-2.4 6.8"/><path d="M3.6 13.4c.6-.9 1-2 1-3.2"/>',
+  brush: '<path d="M3.4 12.6L12.6 3.4a2 2 0 0 1 2.8 0l1.2 1.2a2 2 0 0 1 0 2.8L7.4 16.6z"/><path d="M11.2 4.8l4 4"/><path d="M6.4 15.6l-3 1 1-3"/>',
+};
+
+const CRAFT = [
+  ['cut', 'Edited, not generated', 'Intros, outros, music, transitions and pacing, cut the way an editor cuts them.'],
+  ['type', 'Typography and motion', 'Kinetic type, lower thirds and motion graphics built against your design system.'],
+  ['pen', 'Animation with a hand in it', 'Drawn-style animation, letterforms and shapes, the way an animation artist would tablet them.'],
+  ['story', 'Told as a story', 'Structured to hold attention and carry authority, not assembled to fill a slot.'],
+  ['mark', 'Yours, not a template', 'Every run is composed against your brand. No two clients receive the same treatment.'],
+  ['brush', 'Graphics finished by hand', 'Thumbnails and posts composed piece by piece, not poured into a preset.'],
+];
+---
+
+<section class="section craft" aria-labelledby="craft-title">
+  <div class="wrap wrap--wide">
+    <p class="eyebrow eyebrow--center">{eyebrow}</p>
+    <h2 id="craft-title" class="craft__h">
+      {parts.map((p) => (p.hl ? <span class="hl">{p.t}</span> : p.t))}
+    </h2>
+    <p class="craft__lede"><Fragment set:html={lede} /></p>
+
+    <div class="craft__split">
+      <div class="craft__col craft__col--ai">
+        <p class="meta craft__col-k">Where AI does the work</p>
+        <ul role="list" class="craft__list">
+          {AI_DOES.map((x) => (
+            <li class="craft__item">
+              <svg class="craft__tick" width="11" height="11" viewBox="0 0 12 12" aria-hidden="true"><path d="M2 6.3 4.6 9 10 3.2" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              <span>{x}</span>
+            </li>
+          ))}
+        </ul>
+        <p class="craft__note">
+          These uses are disclosed at the point of generation and recorded on every asset,
+          because that is what the rules in force require.
+        </p>
+      </div>
+
+      <div class="craft__col craft__col--craft">
+        <p class="meta meta--signal craft__col-k">
+          <span class="dot dot--done" aria-hidden="true"></span>Where the craft is
+        </p>
+        <ul role="list" class="craft__grid">
+          {CRAFT.map(([ic, t, d]) => (
+            <li class="craft__card">
+              <span class="craft__ico" aria-hidden="true">
+                <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor"
+                  stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" set:html={ICON[ic]} />
+              </span>
+              <h3 class="craft__t">{t}</h3>
+              <p class="craft__d">{d}</p>
+            </li>
+          ))}
+        </ul>
+      </div>
+    </div>
+
+    <p class="craft__foot">
+      One system standing in for a video editor and an animation artist, at the same
+      standard, in less time and at lower cost.
+    </p>
+  </div>
+</section>
+
+<style>
+  /* Astro scopes per file, so a page's .sec__title cannot reach this heading. */
+  .craft__h {
+    margin-inline: auto;
+    font-size: var(--fs-section);
+    line-height: var(--lh-snug);
+    letter-spacing: var(--tr-display);
+    font-weight: 600;
+    max-width: 44rem;
+    text-align: center;
+    text-wrap: balance;
+  }
+  .craft__lede {
+    margin: var(--sp-5) auto 0;
+    max-width: 48rem;
+    font-size: var(--fs-md);
+    line-height: var(--lh-relaxed);
+    color: var(--c-ink-2);
+    text-align: center;
+    text-wrap: pretty;
+  }
+
+  .craft__split {
+    display: grid;
+    gap: var(--sp-5);
+    margin-block-start: clamp(2rem, 1.4rem + 2vw, 3rem);
+  }
+  /* The craft side gets roughly twice the room: it carries the argument, and an
+     even split made the four AI lines look like half the story. */
+  @media (min-width: 62em) {
+    /* stretch, not start: the AI column is roughly half the height of the craft
+       column, so top-aligning left it floating against a much taller neighbour.
+       Stretching runs its rule the full height and the content centres inside. */
+    .craft__split { grid-template-columns: minmax(0, 1fr) minmax(0, 2fr); gap: var(--sp-6); align-items: stretch; }
+  }
+
+  .craft__col { min-width: 0; }
+  .craft__col-k { display: inline-flex; align-items: center; gap: var(--sp-2); margin-block-end: var(--sp-4); }
+
+  /* Deliberately quieter than the craft side: a bordered panel gave the four
+     AI lines the same visual weight as the six that carry the argument. */
+  .craft__col--ai {
+    padding-inline-start: var(--sp-4);
+    border-inline-start: 1px solid var(--c-line-2);
+  }
+  @media (min-width: 62em) {
+    .craft__col--ai { display: flex; flex-direction: column; justify-content: center; }
+  }
+  .craft__list { display: grid; gap: var(--sp-3); list-style: none; margin: 0; padding: 0; }
+  .craft__item {
+    display: grid;
+    grid-template-columns: 0.75rem minmax(0, 1fr);
+    gap: var(--sp-2);
+    align-items: start;
+    font-size: var(--fs-sm);
+    line-height: var(--lh-normal);
+    color: var(--c-ink-2);
+  }
+  .craft__tick { color: var(--c-ink-3); margin-block-start: 0.2rem; }
+  .craft__note {
+    margin-block-start: var(--sp-4);
+    padding-block-start: var(--sp-4);
+    border-block-start: 1px solid var(--c-line);
+    font-size: var(--fs-xs);
+    line-height: var(--lh-relaxed);
+    color: var(--c-ink-3);
+    text-wrap: pretty;
+  }
+
+  .craft__grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--sp-3);
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+  @media (min-width: 40em) { .craft__grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+  .craft__card {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    column-gap: var(--sp-3);
+    row-gap: var(--sp-2);
+    align-items: center;
+    padding: clamp(1rem, 0.85rem + 0.9vw, 1.375rem);
+    border: 1px solid var(--c-line-signal);
+    border-radius: var(--r-2);
+    background:
+      radial-gradient(ellipse 90% 100% at 0% 0%, var(--c-signal-wash) 0%, transparent 64%),
+      var(--c-panel-2);
+  }
+  .craft__t {
+    font-size: var(--fs-md);
+    line-height: var(--lh-snug);
+    letter-spacing: var(--tr-display);
+    font-weight: 600;
+    color: var(--c-ink);
+    text-wrap: balance;
+  }
+  .craft__ico {
+    grid-row: 1 / span 2;
+    display: grid;
+    place-items: center;
+    inline-size: 2.25rem;
+    block-size: 2.25rem;
+    border-radius: 50%;
+    border: 1px solid var(--c-line-signal);
+    background: var(--c-panel-3);
+    color: var(--c-signal);
+    flex: none;
+  }
+  .craft__ico svg { display: block; }
+  .craft__t { align-self: end; }
+  .craft__d {
+    align-self: start;
+    font-size: var(--fs-sm);
+    line-height: var(--lh-relaxed);
+    color: var(--c-ink-2);
+    text-wrap: pretty;
+  }
+
+  .craft__foot {
+    margin: clamp(2rem, 1.4rem + 2vw, 3rem) auto 0;
+    max-width: 46rem;
+    font-family: var(--font-mono);
+    font-size: var(--fs-xs);
+    line-height: var(--lh-relaxed);
+    letter-spacing: var(--tr-wide);
+    font-weight: 600;
+    color: var(--c-signal-text);
+    text-align: center;
+    text-wrap: pretty;
+  }
+</style>

@@ -1,0 +1,73 @@
+---
+interface Props { items: { q: string; a: string }[]; startIndex?: number }
+const { items, startIndex = 1 } = Astro.props;
+---
+<div class="faq">
+  {items.map((item, i) => (
+    <details class="faq__item" name="faq">
+      <summary class="faq__q">
+        <span class="index faq__n" aria-hidden="true">{String(startIndex + i).padStart(2, '0')}</span>
+        <span class="faq__q-text">{item.q}</span>
+        <span class="faq__icon" aria-hidden="true"></span>
+      </summary>
+      <div class="faq__a"><p>{item.a}</p></div>
+    </details>
+  ))}
+</div>
+
+<style>
+  .faq { border-block-start: 1px solid var(--c-line); }
+  .faq__item { border-block-end: 1px solid var(--c-line); }
+
+  .faq__q {
+    display: flex;
+    align-items: flex-start;
+    gap: var(--sp-4);
+    padding-block: var(--sp-5);
+    cursor: pointer;
+    list-style: none;
+    font-size: var(--fs-md);
+    letter-spacing: var(--tr-tight);
+    color: var(--c-ink-2);
+    transition: color var(--dur-2) var(--ease-out);
+  }
+  .faq__q::-webkit-details-marker { display: none; }
+  .faq__q:hover { color: var(--c-ink); }
+  .faq__item[open] .faq__q { color: var(--c-ink); }
+  .faq__n { flex: none; padding-block-start: var(--nudge-1); }
+  .faq__item[open] .faq__n { color: var(--c-signal); }
+  .faq__q-text { flex: 1; text-wrap: pretty; }
+
+  /* Plus → minus, drawn with two rules so it stays crisp at any size. */
+  .faq__icon {
+    position: relative;
+    flex: none;
+    inline-size: 14px;
+    block-size: 14px;
+    margin-block-start: var(--nudge-1);
+  }
+  .faq__icon::before,
+  .faq__icon::after {
+    content: '';
+    position: absolute;
+    inset-block-start: 50%;
+    inset-inline-start: 0;
+    inline-size: 14px;
+    block-size: 1.5px;
+    background: currentColor;
+    transition: transform var(--dur-2) var(--ease-out);
+  }
+  .faq__icon::after { transform: rotate(90deg); }
+  .faq__item[open] .faq__icon { color: var(--c-signal); }
+  .faq__item[open] .faq__icon::after { transform: rotate(0deg); }
+
+  .faq__a {
+    padding-block-end: var(--sp-5);
+    padding-inline-start: calc(var(--sp-4) + var(--sp-5));
+    /* rem, never `ch` — see the note in Footer.astro. */
+    max-width: 34rem;
+    color: var(--c-ink-2);
+    line-height: var(--lh-relaxed);
+    font-size: var(--fs-sm);
+  }
+</style>

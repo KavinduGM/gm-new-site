@@ -1,0 +1,1363 @@
+---
+import Base from '../layouts/Base.astro';
+import LogoWall from '../components/LogoWall.astro';
+import Testimonials from '../components/Testimonials.astro';
+import Formats from '../components/Formats.astro';
+import Craft from '../components/Craft.astro';
+import Compare from '../components/Compare.astro';
+import FaqSection from '../components/FaqSection.astro';
+import CloseCta from '../components/CloseCta.astro';
+import RoleCollapse from '../components/RoleCollapse.astro';
+import { SITE } from '../site.config.mjs';
+import { FLOW, OUTCOMES, COMPARISON, WAYS_IN, FAQ } from '../data/home.mjs';
+import { serviceSchema, faqSchema } from '../lib/schema.mjs';
+
+/* Splits 'a [b] c' into segments so accent words can be marked up without
+   set:html — which would escape this component's scoped styles and need a
+   :global() hatch to reach the <span>. Odd indices are the bracketed parts. */
+const hlParts = (str) => str.split(/\[([^\]]+)\]/).map((t, i) => ({ t, hl: i % 2 === 1 }));
+
+---
+
+<Base
+  title={`${SITE.name} — Custom AI Content Production Systems`}
+  bareTitle
+  description="We build custom AI systems that produce and publish your content — scripts, voiceovers, video, thumbnails, posts — to every social channel, blog and newsletter."
+  schema={[serviceSchema(), faqSchema(FAQ)]}
+  hideFooterCta
+>
+  <!-- ============================================================ 1. HERO -->
+  <section class="hero grid-bg">
+    <span class="bloom hero__bloom" aria-hidden="true"></span>
+    <span class="hero__surge" aria-hidden="true"></span>
+    <div class="wrap hero__inner">
+      <p class="eyebrow eyebrow--center hero__eyebrow">For agencies, brands and media teams</p>
+      <h1 class="hero__title">
+        We build <span class="hl">custom AI</span> content <span class="hl">production systems</span>
+      </h1>
+      <p class="hero__lede">
+        Built around how your team already works, then handed over to you. One
+        content plan in, scripts, voiceovers, motion graphics, video, thumbnails
+        and posts, published on schedule to every social channel, blog and
+        newsletter you run.
+      </p>
+      <div class="btn-row hero__actions">
+        <a href="/contact/" class="btn btn--primary btn--lg">
+          Book a build call
+          <svg class="btn__arrow" width="12" height="12" viewBox="0 0 12 12" aria-hidden="true"><path d="M1 6h9M6.5 2 10.5 6l-4 4" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="square"/></svg>
+        </a>
+        <a href="/system/" class="btn btn--ghost btn--lg">See how it works</a>
+      </div>
+    </div>
+  </section>
+
+  <LogoWall />
+
+  <!-- ============================================================ 2. FLOW -->
+  <!-- Sits directly under the logo wall, where there was dead space, and where a
+       scanning reader still is. Answers "what is this" before the page starts
+       arguing why. -->
+  <section class="section section--raised grid-bg grid-bg--center flow" aria-labelledby="flow-title">
+    <div class="wrap wrap--wide">
+      <p class="eyebrow eyebrow--center flow__eyebrow">{FLOW.eyebrow}</p>
+      <h2 id="flow-title" class="sec__title flow__title">
+        {hlParts(FLOW.title).map((p) => (p.hl ? <span class="hl">{p.t}</span> : p.t))}
+      </h2>
+      <p class="flow__lede">
+        {FLOW.lede}{' '}
+        <a href="/system/" class="link">See every stage of the pipeline</a>.
+      </p>
+
+      <!-- role="list" is restored explicitly: Safari drops list semantics when
+           list-style is none. -->
+      <ol role="list" class="flow__beats">
+        {FLOW.beats.map((b) => (
+          <li class={`flow__beat flow__beat--${b.n}`}>
+            <article class="flow__card panel panel--pad ticked">
+              <div class="flow__viz" aria-hidden="true">
+                {b.n === '01' && (
+                  <svg viewBox="16 0 163 96" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <g stroke="var(--viz-dim)" stroke-width="1.25">
+                      <rect x="28" y="30" width="32" height="48" rx="2" transform="rotate(-9 44 54)"/>
+                      <rect x="36" y="26" width="32" height="48" rx="2" transform="rotate(-4 52 50)"/>
+                    </g>
+                    <path d="M46 22h22l8 8v42a2 2 0 0 1-2 2H46a2 2 0 0 1-2-2V24a2 2 0 0 1 2-2z" fill="var(--c-panel-3)" stroke="var(--viz-ink)" stroke-width="1.25"/>
+                    <path d="M68 22v8h8" stroke="var(--viz-ink)" stroke-width="1.25"/>
+                    <g stroke="var(--viz-dim)" stroke-width="1.25" stroke-linecap="round">
+                      <path d="M51 46h18M51 54h18M51 62h11"/>
+                    </g>
+                    <path d="M86 48h24" stroke="var(--c-signal)" stroke-width="1.25" stroke-dasharray="3 3"/>
+                    <path d="M106 43l5 5-5 5" stroke="var(--c-signal)" stroke-width="1.25" stroke-linecap="round" stroke-linejoin="round"/>
+                    <path d="M138 22h-8a4 4 0 0 0-4 4v44a4 4 0 0 0 4 4h8" stroke="var(--c-signal)" stroke-width="1.25"/>
+                    <path d="M158 22h8a4 4 0 0 1 4 4v44a4 4 0 0 1-4 4h-8" stroke="var(--c-signal)" stroke-width="1.25"/>
+                    <rect x="141" y="41" width="14" height="14" rx="2" fill="var(--c-signal)"/>
+                  </svg>
+                )}
+                {b.n === '02' && (
+                  <svg viewBox="9 0 438 96" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M20 26h18l7 7v30a2 2 0 0 1-2 2H20a2 2 0 0 1-2-2V28a2 2 0 0 1 2-2z" fill="var(--c-panel-3)" stroke="var(--viz-ink)" stroke-width="1.25"/>
+                    <path d="M38 26v7h7" stroke="var(--viz-ink)" stroke-width="1.25"/>
+                    <path d="M52 48h20" stroke="var(--c-signal)" stroke-width="1.25" stroke-dasharray="3 3"/>
+                    <path d="M68 44l5 4-5 4" stroke="var(--c-signal)" stroke-width="1.25" stroke-linecap="round" stroke-linejoin="round"/>
+                    <rect x="82" y="12" width="250" height="72" rx="4" fill="var(--c-panel-3)" stroke="var(--c-viz-edge)" stroke-width="1.25"/>
+                    <g stroke="var(--viz-ink)" stroke-width="1.25">
+                      <rect x="96" y="28" width="48" height="40" rx="2"/>
+                      <g stroke="var(--viz-dim)" stroke-linecap="round"><path d="M106 40h28M106 48h28M106 56h17"/></g>
+                      <rect x="154" y="28" width="48" height="40" rx="2"/>
+                      <g stroke="var(--c-signal)" stroke-linecap="round"><path d="M164 48v-6M171 48v-12M178 48v-16M185 48v-9M192 48v-4" transform="translate(0 8)"/></g>
+                      <rect x="212" y="28" width="48" height="40" rx="2"/>
+                      <circle cx="228" cy="45" r="8" stroke="var(--viz-dim)"/>
+                      <path d="M234 56l9-14 9 14z" stroke="var(--viz-dim)" stroke-linejoin="round"/>
+                      <rect x="270" y="28" width="48" height="40" rx="2"/>
+                      <path d="M289 40l10 8-10 8z" fill="var(--c-signal)" stroke="var(--c-signal)" stroke-linejoin="round"/>
+                    </g>
+                    <path d="M344 48h20" stroke="var(--c-signal)" stroke-width="1.25" stroke-dasharray="3 3"/>
+                    <path d="M360 44l5 4-5 4" stroke="var(--c-signal)" stroke-width="1.25" stroke-linecap="round" stroke-linejoin="round"/>
+                    <g stroke="var(--viz-ink)" stroke-width="1.25">
+                      <rect x="378" y="24" width="34" height="44" rx="2" fill="var(--c-panel-3)" transform="rotate(-6 395 46)"/>
+                      <rect x="386" y="22" width="34" height="44" rx="2" fill="var(--c-panel-3)"/>
+                    </g>
+                    <circle cx="428" cy="62" r="11" fill="var(--c-signal)"/>
+                    <path d="M423 62l3.5 3.5 6.5-7" stroke="var(--c-signal-ink)" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"/>
+                  </svg>
+                )}
+                {b.n === '03' && (
+                  <svg viewBox="5 0 271 96" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <rect x="14" y="24" width="42" height="46" rx="3" fill="var(--c-panel-3)" stroke="var(--viz-ink)" stroke-width="1.25"/>
+                    <path d="M14 35h42" stroke="var(--viz-ink)" stroke-width="1.25"/>
+                    <g fill="var(--viz-dim)">
+                      <circle cx="24" cy="45" r="2"/><circle cx="35" cy="45" r="2"/><circle cx="46" cy="45" r="2"/>
+                      <circle cx="24" cy="57" r="2"/><circle cx="35" cy="57" r="2"/>
+                    </g>
+                    <circle cx="46" cy="57" r="3" fill="var(--c-signal)"/>
+                    <path d="M62 48h26" stroke="var(--c-signal)" stroke-width="1.25" stroke-dasharray="3 3"/>
+                    <path d="M84 44l5 4-5 4" stroke="var(--c-signal)" stroke-width="1.25" stroke-linecap="round" stroke-linejoin="round"/>
+                    <path d="M100 14v64" stroke="var(--c-signal)" stroke-width="1.25"/>
+                    <g stroke="var(--c-signal)" stroke-width="1.25" stroke-dasharray="3 3">
+                      <path d="M100 14h44M100 35h44M100 57h44M100 78h44"/>
+                    </g>
+                    <g fill="var(--c-signal)">
+                      <circle cx="100" cy="14" r="2.5"/><circle cx="100" cy="35" r="2.5"/>
+                      <circle cx="100" cy="57" r="2.5"/><circle cx="100" cy="78" r="2.5"/>
+                    </g>
+                    <g fill="var(--c-panel-3)" stroke="var(--viz-ink)" stroke-width="1.25">
+                      <rect x="146" y="5" width="18" height="18" rx="4"/>
+                      <rect x="146" y="26" width="18" height="18" rx="4"/>
+                      <rect x="146" y="48" width="18" height="18" rx="4"/>
+                      <rect x="146" y="69" width="18" height="18" rx="4"/>
+                    </g>
+                    <g fill="var(--viz-dim)">
+                      <circle cx="155" cy="14" r="2.5"/><circle cx="155" cy="35" r="2.5"/>
+                      <circle cx="155" cy="57" r="2.5"/><circle cx="155" cy="78" r="2.5"/>
+                    </g>
+                    <g stroke="var(--viz-dim)" stroke-width="1.25">
+                      <path d="M164 14h14l8 12M164 35h20l4 6M164 57h20l4-6M164 78h14l8-12"/>
+                    </g>
+                    <circle cx="200" cy="48" r="12" fill="var(--c-signal)"/>
+                    <path d="M194 48l4 4 7.5-8" stroke="var(--c-signal-ink)" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"/>
+                    <path d="M214 48h10a6 6 0 0 1 6 6v26a6 6 0 0 1-6 6H41a6 6 0 0 1-6-6v-6" stroke="var(--viz-dim)" stroke-width="1.25"/>
+                    <path d="M31 78l4-5 4 5" stroke="var(--viz-dim)" stroke-width="1.25" stroke-linecap="round" stroke-linejoin="round"/>
+                    <g fill="var(--viz-dim)"><circle cx="252" cy="30" r="1.75"/><circle cx="259" cy="30" r="1.75"/><circle cx="266" cy="30" r="1.75"/></g>
+                  </svg>
+                )}
+              </div>
+              <p class="flow__head">
+                <span class="index flow__n">{b.n}</span>
+                <span class="flow__k">{b.k}</span>
+              </p>
+              <p class="flow__lead">{b.lead}</p>
+              {b.note && <p class="flow__note">{b.note}</p>}
+              {b.steps && (
+                <ol role="list" class="flow__steps">
+                  {b.steps.map(([t, d, flag], i) => (
+                    <li class={`flow__step${flag ? ' flow__step--gate' : ''}`}>
+                      <span class="flow__step-n">{String(i + 1).padStart(2, '0')}</span>
+                      <span class="flow__step-t">{t}</span>
+                      {d && <span class="flow__step-d">{d}</span>}
+                    </li>
+                  ))}
+                </ol>
+              )}
+              {b.channels && (
+                <ul role="list" class="flow__chans">
+                  {b.channels.map((c) => (
+                    <li class="flow__chan">{c}</li>
+                  ))}
+                </ul>
+              )}
+              {b.after && (
+                <div class="flow__after">
+                  <p class="meta flow__after-k">{b.after.label}</p>
+                  <ul role="list" class="flow__after-list">
+                    {b.after.items.map((it) => (
+                      <li class="flow__after-item">
+                        <svg class="flow__after-tick" width="11" height="11" viewBox="0 0 12 12" aria-hidden="true"><path d="M2 6.3 4.6 9 10 3.2" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                        <span>{it}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+              {b.foot && <p class="flow__foot">{b.foot}</p>}
+            </article>
+          </li>
+        ))}
+      </ol>
+
+      <!-- The cost argument, as removals. Struck text is decorative here: the
+           word "No" already carries the meaning for a screen reader. -->
+      <div class="flow__without">
+        <p class="meta meta--signal flow__without-k">{FLOW.withoutLabel}</p>
+        <ul role="list" class="flow__without-list">
+          {FLOW.without.map((w) => (
+            <li class="flow__without-item">{w}</li>
+          ))}
+        </ul>
+      </div>
+
+      <div class="flow__always panel">
+        <p class="meta meta--signal flow__always-k">
+          <span class="dot dot--live" aria-hidden="true"></span>{FLOW.always.label}
+        </p>
+        <ul role="list" class="flow__facts">
+          {FLOW.always.facts.map(([v, dsc]) => (
+            <li class="flow__fact">
+              <p class="flow__fact-v">{v}</p>
+              <p class="flow__fact-d">{dsc}</p>
+            </li>
+          ))}
+        </ul>
+        <div class="flow__gov">
+          <p class="flow__gov-t" set:html={FLOW.always.trust} />
+          <a href={FLOW.always.cta.href} class="btn btn--primary flow__gov-cta">
+            {FLOW.always.cta.label}
+            <svg class="btn__arrow" width="12" height="12" viewBox="0 0 12 12" aria-hidden="true"><path d="M1 6h9M6.5 2 10.5 6l-4 4" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="square"/></svg>
+          </a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ======================================================== 6. OUTCOMES -->
+  <section class="section out" aria-labelledby="out-title">
+    <div class="wrap wrap--wide">
+      <!-- One contained panel rather than two columns: the stats and the
+           timeline belong to the same measurement, and stacking four stats in a
+           column made the left side twice the height of the right, which is
+           what left a hole in the layout. -->
+      <div class="out__panel ticked">
+        <div class="out__head">
+          <h2 id="out-title" class="out__tension">
+            Most content operations run on five subscriptions, five job roles,
+            and a spreadsheet nobody trusts.
+          </h2>
+          <p class="out__stamp"><span class="dot dot--done" aria-hidden="true"></span>Before · After</p>
+        </div>
+
+        <ul role="list" class="out__stats">
+          {OUTCOMES.items.map((o) => (
+            <li class="out__stat">
+              <p class="out__fig">
+                {o.from && (
+                  <>
+                    <span class="sr-only">Before: </span>
+                    {o.strike
+                      ? <s class="out__from">{o.from}</s>
+                      : <span class="out__from out__from--plain">{o.from}</span>}
+                    <span class="out__arrow" aria-hidden="true">→</span>
+                    <span class="sr-only">now: </span>
+                  </>
+                )}
+                <span class="out__to">{o.to}</span>
+              </p>
+              <p class="out__cap" set:html={o.label} />
+            </li>
+          ))}
+        </ul>
+
+        <!-- Full width: the proportion is the whole message, and it is far more
+             legible across the panel than inside a 45% column. -->
+        <div class="out__run"><RoleCollapse /></div>
+
+        <p class="out__proof" set:html={OUTCOMES.proof} />
+
+        <div class="out__foot">
+          <p class="out__hook">{OUTCOMES.question}</p>
+          <a href="/contact/" class="btn btn--primary out__cta">
+            Book a build call
+            <svg class="btn__arrow" width="12" height="12" viewBox="0 0 12 12" aria-hidden="true"><path d="M1 6h9M6.5 2 10.5 6l-4 4" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="square"/></svg>
+          </a>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ======================================================== 3. FORMATS -->
+  <Formats />
+
+  <!-- ========================================================== 4. CRAFT -->
+  <Craft />
+
+  <!-- ========================================================= 5. COMPARE -->
+  <!-- Proof for the claim Craft just made, placed directly under it. The
+       argument and its evidence should not be separated by three sections. -->
+  <Compare />
+
+  <!-- ====================================================== 7. COMPARISON -->
+  <section class="section section--raised grid-bg grid-bg--center cmp" aria-labelledby="cmp-table-title">
+    <div class="wrap wrap--wide">
+      <h2 id="cmp-table-title" class="cmp__title">
+        Three ways to automate content. But only <span class="hl">one you own</span>.
+      </h2>
+      <p class="cmp__lede">{COMPARISON.lede}</p>
+
+      <table class="cmp__table">
+        <caption class="sr-only">
+          How a no-code automation agency, off-the-shelf AI tools and a custom
+          build compare across seven decision points.
+        </caption>
+        <thead>
+          <tr>
+            <th scope="col"><span class="sr-only">Decision point</span></th>
+            {COMPARISON.cols.map((c) => (
+              <th scope="col" class:list={['cmp__col', c.us && 'cmp__col--us']}>
+                <span class="cmp__col-name">
+                  {c.us && <span class="dot dot--done" aria-hidden="true"></span>}
+                  {c.us ? `${c.name} · ${SITE.name}` : c.name}
+                </span>
+                <span class="cmp__col-desc">{c.desc}</span>
+              </th>
+            ))}
+          </tr>
+        </thead>
+        <tbody>
+          {COMPARISON.rows.map((r) => (
+            <tr class:list={[r.win ? 'is-win' : 'is-loss']}>
+              <th scope="row" class="cmp__k">
+                <span class="cmp__k-name">{r.k}</span>
+                {r.note && <span class="cmp__k-note">{r.note}</span>}
+              </th>
+              {r.v.map((v, i) => (
+                <td
+                  class:list={['cmp__v', COMPARISON.cols[i].us && 'cmp__v--us', COMPARISON.cols[i].us && !r.win && 'cmp__v--tie']}
+                  data-col={COMPARISON.cols[i].us ? `${COMPARISON.cols[i].name} · ${SITE.name}` : COMPARISON.cols[i].name}
+                >
+                  {COMPARISON.cols[i].us && (
+                    r.win
+                      ? <svg class="cmp__tick" width="12" height="12" viewBox="0 0 12 12" aria-hidden="true"><path d="M2 6.4 4.6 9 10 3" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="square"/></svg>
+                      /* Neutral marker, never a tick: these are the rows we lose,
+                         and dressing them as wins throws away the credibility. */
+                      : <span class="cmp__dash" aria-hidden="true">—</span>
+                  )}
+                  <span>{v}</span>
+                </td>
+              ))}
+            </tr>
+          ))}
+        </tbody>
+      </table>
+
+      <div class="cmp__foot">
+        <p class="cmp__hook">{COMPARISON.hook}</p>
+        <a href="/contact/" class="btn btn--primary cmp__cta">
+          Book a build call
+          <svg class="btn__arrow" width="12" height="12" viewBox="0 0 12 12" aria-hidden="true"><path d="M1 6h9M6.5 2 10.5 6l-4 4" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="square"/></svg>
+        </a>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ==================================================== 8. TESTIMONIALS -->
+  <Testimonials />
+
+  <!-- ====================================================== 9. TWO WAYS IN -->
+  <section class="section paper ways-sec" aria-labelledby="ways-title">
+    <div class="wrap wrap--wide">
+      <h2 id="ways-title" class="sec__title ways__title">
+        {hlParts('One system. [Two ways] to buy it.').map((x) => (x.hl ? <span class="hl">{x.t}</span> : x.t))}
+      </h2>
+      <div class="ways">
+        {WAYS_IN.map((w) => (
+          <article class="ways__card panel panel--pad-lg ticked">
+            <p class="meta ways__kicker">{w.kicker}</p>
+            <h3 class="ways__name">{w.title}</h3>
+            <p class="ways__body">{w.body}</p>
+            <!-- Was a ternary on w.cta.external, which both entries set false, so the
+                 ghost branch was unreachable and the section shipped two identical
+                 primary buttons competing with each other. .ways-sec .btn--ghost
+                 already exists for exactly this second button. -->
+            <a href={w.cta.href} class={`btn ${w.cta.primary ? 'btn--primary' : 'btn--ghost'} ways__cta`}>
+              {w.cta.label}
+              <svg class="btn__arrow" width="12" height="12" viewBox="0 0 12 12" aria-hidden="true"><path d="M1 6h9M6.5 2 10.5 6l-4 4" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="square"/></svg>
+            </a>
+          </article>
+        ))}
+      </div>
+      <p class="ways__note">
+        {hlParts('[The monthly plan] is the way to prove the workflow on real output before committing to [a build of your own].').map((x) => (x.hl ? <span class="hl">{x.t}</span> : x.t))}
+        {' '}<a href="/engagements/" class="link">Compare the two side by side</a>.
+      </p>
+    </div>
+  </section>
+
+  <!-- ============================================================ 10. FAQ -->
+  <FaqSection />
+
+  <!-- =========================================================== 11. CLOSE -->
+  <CloseCta />
+</Base>
+
+<style>
+  /* ---- Shared section heading ----
+     Centred, --fs-2xl, rem measure: the same rule the five inner pages carry as
+     .sec__title, and the same treatment .get__title and .cmp__title already use
+     on this page. It was the last left-aligned h2 on the site.
+     rem, never `ch`: the body face is a system stack, so `ch` scales with the
+     resolved font and hands the wider faces a NARROWER measure — backwards. */
+  .sec__title {
+    margin-inline: auto;
+    font-size: var(--fs-section);
+    line-height: var(--lh-snug);
+    letter-spacing: var(--tr-display);
+    font-weight: 600;
+    max-width: 44rem;
+    text-align: center;
+    text-wrap: balance;
+  }
+
+  /* ================================================================ HERO */
+  .hero {
+    position: relative;
+    /* Symmetric: the block was top-weighted from an earlier pass, which left
+       noticeably more air under the CTAs than above the eyebrow. */
+    padding-block: clamp(3.25rem, 1.4rem + 6.4vw, 7rem);
+    overflow: clip;
+    text-align: center;
+  }
+  .hero__bloom {
+    inline-size: min(52rem, 95vw);
+    block-size: 30rem;
+    inset-block-start: -13rem;
+    inset-inline-start: 50%;
+    translate: -50% 0;
+  }
+  .hero__inner {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    max-width: 64rem;
+  }
+
+  /* The shared .eyebrow is a flex row whose dot strands at the far left once
+     the label wraps. Rendered as an inline marker it stays on the line, and
+     the tighter tracking below 30em keeps it to a single line at 360px. */
+  .hero__eyebrow {
+    display: block;
+    margin-block-end: 0;
+    white-space: nowrap;
+    letter-spacing: var(--tr-label);
+  }
+  .hero__eyebrow::before {
+    display: inline-block;
+    vertical-align: middle;
+    margin-inline-end: var(--sp-2);
+    margin-block-end: 0.1em;
+  }
+  .hero__eyebrow::after { display: none; }
+  @media (min-width: 30em) {
+    .hero__eyebrow { letter-spacing: var(--tr-micro); }
+  }
+
+  .hero__title {
+    margin-block-start: var(--sp-6);
+  }
+
+  .hero__lede {
+    margin-block-start: var(--sp-6);
+    }
+
+  .hero__actions { justify-content: center; margin-block-start: var(--sp-7); }
+
+  /* Surge: a charge leaving the centre and running out through the grid. */
+  .hero__surge {
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    pointer-events: none;
+    background-image:
+      linear-gradient(to right, rgb(160 107 255 / 55%) 1px, transparent 1px),
+      linear-gradient(to bottom, rgb(160 107 255 / 55%) 1px, transparent 1px);
+    background-size: var(--grid-cell) var(--grid-cell);
+    opacity: 0;
+    -webkit-mask-image: var(--surge-ring);
+    mask-image: var(--surge-ring);
+    -webkit-mask-repeat: no-repeat;
+    mask-repeat: no-repeat;
+    -webkit-mask-position: center;
+    mask-position: center;
+    -webkit-mask-size: 0% 0%;
+    mask-size: 0% 0%;
+    --surge-ring: radial-gradient(
+      circle,
+      transparent 0 30%,
+      rgb(0 0 0 / 12%) 36%,
+      rgb(0 0 0 / 62%) 44%,
+      rgb(0 0 0 / 100%) 47%,
+      rgb(0 0 0 / 28%) 52%,
+      transparent 60%
+    );
+  }
+  @media (prefers-reduced-motion: no-preference) {
+    .hero__surge { animation: hero-surge 8s linear infinite; }
+  }
+  /* Percentages are scaled to the 8s cycle so the travel still takes ~3s. */
+  @keyframes hero-surge {
+    0%     { mask-size: 0% 0%;     -webkit-mask-size: 0% 0%;     opacity: 0; }
+    3.75%  { opacity: 1; }
+    27.5%  { opacity: 0.72; }
+    37.5%  { mask-size: 240% 240%; -webkit-mask-size: 240% 240%; opacity: 0; }
+    100%   { mask-size: 240% 240%; -webkit-mask-size: 240% 240%; opacity: 0; }
+  }
+
+  /* ================================================================ FLOW */
+  /* The layout is the argument: a narrow input column, a wide system column and
+     a narrow output column. Reading it left to right should tell the story even
+     with the words switched off. */
+  .flow__eyebrow { margin-block-end: var(--sp-4); }
+  /* Measured: the title needs 610px on one line at the 36px top of the
+     --fs-2xl clamp. 38rem (608px) was two pixels short and wrapped it at
+     >=1440px. 44rem leaves headroom and still wraps naturally on phones. */
+  .flow__title { max-width: 44rem; }
+  .flow__lede {
+    margin: var(--sp-5) auto var(--sp-8);
+    max-width: 52rem;
+    font-size: var(--fs-md);
+    line-height: var(--lh-relaxed);
+    color: var(--c-ink-2);
+    text-align: center;
+    text-wrap: pretty;
+  }
+
+  .flow__beats {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--sp-4);
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+  /* 1 : 2 : 1 — the middle column carries most of the work, so it gets most of
+     the width. Below this the columns stack and the ratio is meaningless. */
+  @media (min-width: 60em) {
+    /* Measured against the real copy, not chosen for tidiness. 1:2:1 left the
+       publish column needing 693px of content in a 289px track, which dragged
+       the row to 693px and stranded ~500px of empty space in the upload card.
+       0.9 : 1.8 : 1.6 lands the row at 455px with 92px unused, and still reads
+       small-input / large-system / substantial-output left to right. */
+    .flow__beats {
+      grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.8fr) minmax(0, 1.6fr);
+      gap: var(--sp-5);
+      align-items: stretch;
+    }
+  }
+  .flow__beat { display: flex; min-width: 0; position: relative; }
+
+  /* ---- Flow connectors ----
+     Drawn into the grid gap so the three cards read as one run rather than
+     three unrelated panels. Decorative: the numbers already carry the order. */
+  .flow__beat:not(:last-child)::after,
+  .flow__beat:not(:last-child)::before {
+    content: '';
+    position: absolute;
+    pointer-events: none;
+  }
+  /* Stacked: rail drops from the bottom edge through the gap. */
+  .flow__beat:not(:last-child)::after {
+    inset-block-start: 100%;
+    inset-inline-start: 50%;
+    inline-size: 1px;
+    block-size: var(--sp-4);
+    transform: translateX(-50%);
+    background: linear-gradient(180deg, var(--c-line-signal), var(--c-signal));
+  }
+  .flow__beat:not(:last-child)::before {
+    inset-block-start: calc(100% + var(--sp-4));
+    inset-inline-start: 50%;
+    inline-size: 0.3125rem;
+    block-size: 0.3125rem;
+    border-inline-end: 1px solid var(--c-signal);
+    border-block-end: 1px solid var(--c-signal);
+    transform: translate(-50%, -100%) rotate(45deg);
+  }
+  @media (min-width: 60em) {
+    /* Three columns: rail crosses the gap horizontally instead. */
+    .flow__beat:not(:last-child)::after {
+      inset-block-start: 50%;
+      inset-inline-start: 100%;
+      inline-size: var(--sp-5);
+      block-size: 1px;
+      transform: translateY(-50%);
+      background: linear-gradient(90deg, var(--c-line-signal), var(--c-signal));
+    }
+    .flow__beat:not(:last-child)::before {
+      inset-block-start: 50%;
+      inset-inline-start: calc(100% + var(--sp-5));
+      border-inline-end: 1px solid var(--c-signal);
+      border-block-end: none;
+      border-block-start: 1px solid var(--c-signal);
+      transform: translate(-100%, -50%) rotate(45deg);
+    }
+  }
+  .flow__card {
+    display: flex;
+    flex-direction: column;
+    gap: var(--sp-3);
+    inline-size: 100%;
+    /* .panel resolves to --c-panel, which is also the .section--raised
+       background — the cards were invisible against it. Lift every card one
+       surface step so all three read as objects, then let 02 take the accent. */
+    background:
+      linear-gradient(180deg, rgb(255 255 255 / 2.2%) 0%, transparent 46%),
+      var(--c-panel-2);
+    border-color: var(--c-line-2);
+  }
+  /* The middle card is the system: lift it so it reads as the centre of gravity. */
+  .flow__beat--02 .flow__card {
+    background:
+      linear-gradient(180deg, var(--c-signal-wash) 0%, transparent 42%),
+      var(--c-panel-2);
+    border-color: var(--c-line-signal);
+  }
+
+  /* ---- Schematic visuals ----
+     Inset "display" at the head of each card: one surface step BELOW the card
+     so it reads as recessed, the way the console panels elsewhere do.
+     Sized by height, not width, so all three sit on the same baseline even
+     though the middle card is twice as wide. Decorative — aria-hidden, the
+     numbered steps carry the meaning. */
+  .flow__viz {
+    --viz-ink: var(--c-ink-2);
+    --viz-dim: var(--c-ink-4);
+    --c-viz-edge: var(--c-line-signal);
+    display: grid;
+    place-items: center;
+    /* Fluid, because the columns are tightest just after the three-up layout
+       engages: at ~1024px a fixed 5.25rem forced the artwork to letterbox down
+       to ~78%, so the three diagrams drew at different stroke weights. This
+       tracks the column width so every drawing stays at 100% scale. */
+    block-size: clamp(4rem, 7.03vw - 0.5rem, 5.25rem);
+    /* No inline padding: each drawing carries its own margin inside its
+       viewBox, and 8px a side was enough to clamp max-inline-size and letterbox
+       the artwork down to ~77% in the narrow column, so the three diagrams
+       rendered at visibly different stroke weights. */
+    border: 1px solid var(--c-line);
+    border-radius: var(--r-1);
+    background:
+      radial-gradient(ellipse 68% 74% at 50% 50%, var(--c-signal-wash), transparent 72%),
+      var(--c-panel);
+    overflow: hidden;
+  }
+  .flow__viz svg {
+    display: block;
+    block-size: 100%;
+    inline-size: auto;
+    max-inline-size: 100%;
+    /* base.css sets `svg { fill: currentColor }`, and CSS beats the fill="none"
+       presentation attribute on the root — every unfilled shape came out solid
+       --c-ink. Reset here and let each shape opt in via its own attribute. */
+    fill: none;
+  }
+
+  .flow__head {
+    display: flex;
+    align-items: baseline;
+    gap: var(--sp-3);
+    padding-block-end: var(--sp-3);
+    border-block-end: 1px solid var(--c-line);
+  }
+  .flow__n { flex: none; }
+  .flow__k {
+    font-family: var(--font-mono);
+    font-size: var(--fs-2xs);
+    letter-spacing: var(--tr-label);
+    text-transform: uppercase;
+    color: var(--c-ink);
+    font-weight: 500;
+  }
+  .flow__beat--02 .flow__k { color: var(--c-signal-text); }
+
+  .flow__lead {
+    font-size: var(--fs-md);
+    line-height: var(--lh-snug);
+    letter-spacing: var(--tr-display);
+    color: var(--c-ink);
+    text-wrap: balance;
+  }
+  .flow__note {
+    font-size: var(--fs-sm);
+    line-height: var(--lh-relaxed);
+    color: var(--c-ink-2);
+  }
+
+  /* ---- The build sequence ----
+     Numbered and single-column: the order is the information. Title and detail
+     sit on one line once there is room, and stack under the number below that. */
+  .flow__steps {
+    display: grid;
+    gap: var(--sp-3);
+    list-style: none;
+    margin: var(--sp-1) 0 0;
+    padding: 0;
+  }
+  .flow__step {
+    display: grid;
+    grid-template-columns: 1.6rem minmax(0, 1fr);
+    column-gap: var(--sp-3);
+    row-gap: 0.1rem;
+    align-items: baseline;
+    min-width: 0;
+  }
+  .flow__step-n {
+    grid-column: 1;
+    grid-row: 1 / span 2;
+    font-family: var(--font-mono);
+    font-size: var(--fs-2xs);
+    letter-spacing: var(--tr-label);
+    color: var(--c-ink-3);
+    font-variant-numeric: tabular-nums;
+  }
+  .flow__step-t {
+    grid-column: 2;
+    grid-row: 1;
+    font-size: var(--fs-sm);
+    font-weight: 500;
+    color: var(--c-ink);
+    letter-spacing: var(--tr-display);
+  }
+  .flow__step-d {
+    grid-column: 2;
+    grid-row: 2;
+    font-size: var(--fs-xs);
+    line-height: var(--lh-normal);
+    color: var(--c-ink-2);
+  }
+  @media (min-width: 46em) {
+    .flow__step { grid-template-columns: 1.6rem minmax(9.75rem, auto) minmax(0, 1fr); }
+    .flow__step-n { grid-row: 1; }
+    .flow__step-d { grid-column: 3; grid-row: 1; }
+  }
+
+  /* The QC gate — the one step that is a check rather than a build. */
+  .flow__step--gate {
+    margin-block-start: var(--sp-2);
+    padding-block-start: var(--sp-3);
+    border-block-start: 1px solid var(--c-line-signal);
+  }
+  .flow__step--gate .flow__step-n,
+  .flow__step--gate .flow__step-t { color: var(--c-signal-text); }
+
+  /* Destination chips — flex-wrap rather than fixed tracks: this column is
+     narrow, so letting them pack naturally beats forcing a column count. */
+  .flow__chans {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--sp-2);
+    list-style: none;
+    margin: var(--sp-2) 0 0;
+    padding: 0;
+  }
+  .flow__chan {
+    padding: 0.3rem var(--sp-2h);
+    border: 1px solid var(--c-line-2);
+    border-radius: var(--r-1);
+    background: var(--c-panel-3);
+    font-family: var(--font-mono);
+    font-size: var(--fs-2xs);
+    letter-spacing: var(--tr-wide);
+    color: var(--c-ink-2);
+  }
+
+  /* ---- The loop after publish ---- */
+  .flow__after {
+    margin-block-start: var(--sp-2);
+    padding-block-start: var(--sp-3);
+    border-block-start: 1px solid var(--c-line-signal);
+  }
+  .flow__after-k { color: var(--c-signal-text); margin-block-end: var(--sp-3); }
+  .flow__after-list {
+    display: grid;
+    gap: var(--sp-2h);
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+  .flow__after-item {
+    display: grid;
+    grid-template-columns: 0.75rem minmax(0, 1fr);
+    gap: var(--sp-2);
+    align-items: start;
+    font-size: var(--fs-xs);
+    line-height: var(--lh-normal);
+    color: var(--c-ink-2);
+  }
+  .flow__after-tick {
+    color: var(--c-signal);
+    margin-block-start: 0.15rem;
+  }
+
+  .flow__foot {
+    margin-block-start: var(--sp-1);
+    font-size: var(--fs-xs);
+    line-height: var(--lh-relaxed);
+    color: var(--c-ink-2);
+  }
+
+  /* ---- Removals ---- */
+  .flow__without {
+    display: grid;
+    gap: var(--sp-4);
+    margin-block-start: var(--sp-6);
+    padding-block: var(--sp-5);
+    border-block: 1px solid var(--c-line);
+  }
+  @media (min-width: 56em) {
+    .flow__without { grid-template-columns: auto minmax(0, 1fr); align-items: center; gap: var(--sp-6); }
+  }
+  .flow__without-k { flex: none; }
+  .flow__without-list {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--sp-2);
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+  @media (min-width: 34em) { .flow__without-list { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+  @media (min-width: 75em) { .flow__without-list { grid-template-columns: repeat(6, minmax(0, 1fr)); } }
+  .flow__without-item {
+    padding: var(--sp-2) var(--sp-3);
+    border: 1px solid var(--c-line-2);
+    border-radius: var(--r-1);
+    background: var(--c-panel-2);
+    font-family: var(--font-mono);
+    font-size: var(--fs-2xs);
+    letter-spacing: var(--tr-wide);
+    color: var(--c-ink-2);
+    text-align: center;
+  }
+
+  /* ---- Always on ----
+     Closes the section with facts rather than a paragraph, using the same
+     hairline-divided cells as OUTCOMES so it reads as native to the page.
+     Lifted to --c-panel-2 for the same reason the cards were: .panel resolves
+     to --c-panel, which IS the .section--raised background, so this band had no
+     interior of its own and only its border showed. */
+  .flow__always {
+    margin-block-start: var(--sp-6);
+    background:
+      linear-gradient(180deg, rgb(255 255 255 / 2.2%) 0%, transparent 46%),
+      var(--c-panel-2);
+    border-color: var(--c-line-2);
+  }
+  .flow__always-k {
+    display: flex;
+    align-items: center;
+    gap: var(--sp-2);
+    padding: var(--sp-4) clamp(1.25rem, 0.9rem + 1.8vw, 2rem);
+  }
+
+  .flow__facts {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    border-block-start: 1px solid var(--c-line);
+  }
+  @media (min-width: 34em) { .flow__facts { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+  @media (min-width: 62em) { .flow__facts { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
+
+  .flow__fact {
+    display: grid;
+    gap: var(--sp-2);
+    align-content: start;
+    padding: var(--sp-4) clamp(1.25rem, 0.9rem + 1.8vw, 2rem);
+    border-block-end: 1px solid var(--c-line);
+  }
+  @media (min-width: 34em) {
+    .flow__fact:nth-child(odd) { border-inline-end: 1px solid var(--c-line); }
+  }
+  @media (min-width: 62em) {
+    .flow__fact { border-inline-end: 1px solid var(--c-line); }
+    .flow__fact:last-child { border-inline-end: 0; }
+  }
+  .flow__fact-v {
+    font-family: var(--font-mono);
+    font-size: var(--fs-lg);
+    line-height: 1;
+    letter-spacing: var(--tr-display);
+    color: var(--c-ink);
+    font-variant-numeric: tabular-nums;
+  }
+  .flow__fact-d {
+    font-size: var(--fs-sm);
+    line-height: var(--lh-snug);
+    color: var(--c-ink-2);
+    text-wrap: pretty;
+  }
+
+  /* Same centred pair as .out__foot / .cmp__foot / .get__foot: text and button
+     read as one unit in the middle rather than being pushed to opposite edges. */
+  .flow__gov {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    gap: var(--sp-4) var(--sp-5);
+    padding: clamp(1.125rem, 0.85rem + 1.1vw, 1.5rem) clamp(1.5rem, 1rem + 2.2vw, 2.5rem);
+  }
+  .flow__gov-t {
+    /* Lifted a step from --fs-xs: at 12px it read as a footnote beside a solid
+       button, and the pair looked mismatched rather than deliberate. */
+    font-size: var(--fs-sm);
+    line-height: var(--lh-relaxed);
+    color: var(--c-ink-2);
+    text-wrap: pretty;
+    max-width: 46rem;
+  }
+  /* set:html content carries no scoping attribute, so a plain `b` cannot match. */
+  .flow__gov-t :global(b) { color: var(--c-ink); font-weight: inherit; }
+  .flow__gov-cta { flex: none; }
+
+  /* ============================================================ OUTCOMES */
+  .out { padding-block: clamp(2.5rem, 1.6rem + 2.8vw, 3.75rem); }
+
+  .out__panel {
+    position: relative;
+    border: 1px solid var(--c-line-2);
+    border-radius: var(--r-2);
+    background:
+      radial-gradient(ellipse 90% 120% at 50% -10%, var(--c-signal-wash), transparent 62%),
+      linear-gradient(180deg, var(--c-sheen), transparent 42%),
+      var(--c-panel);
+    box-shadow: var(--sh-lift);
+    overflow: hidden;
+  }
+
+  /* ---- Header band ---- */
+  .out__head {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: start;
+    justify-content: space-between;
+    gap: var(--sp-4) var(--sp-6);
+    padding: clamp(1.25rem, 0.9rem + 1.5vw, 2rem) clamp(1.5rem, 1rem + 2.2vw, 2.5rem);
+    border-block-end: 1px solid var(--c-line);
+  }
+  .out__tension {
+    /* Bigger, not narrower. At 28px this filled barely a third of the band and
+       the rest read as a hole; at this size it lands on two lines and is
+       actually shorter than three small ones. Fixed measure, not `ch`, since
+       the body face is a system stack and `ch` scales the wrong way. */
+    font-size: var(--fs-section);
+    line-height: var(--lh-tight);
+    letter-spacing: var(--tr-display);
+    font-weight: 600;
+    max-width: 57rem;
+    text-wrap: balance;
+  }
+  .out__stamp {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--sp-2);
+    flex: none;
+    font-family: var(--font-mono);
+    font-size: var(--fs-2xs);
+    letter-spacing: var(--tr-label);
+    text-transform: uppercase;
+    color: var(--c-ink-3);
+    padding-block-start: 0.35em;
+  }
+
+  /* ---- Stats: one row, hairline-divided cells ---- */
+  .out__stats {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+  }
+  @media (min-width: 34em) { .out__stats { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+  @media (min-width: 62em) { .out__stats { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
+
+  .out__stat {
+    display: grid;
+    gap: var(--sp-2);
+    align-content: start;
+    /* Inline padding capped at 2.25rem: at 2.5rem a 1200px viewport left
+       193px for a 194px value, tipping the longest one onto a second line. */
+    padding: clamp(1.125rem, 0.85rem + 1.1vw, 1.5rem) clamp(1.25rem, 0.9rem + 1.8vw, 2.25rem);
+    border-block-end: 1px solid var(--c-line);
+  }
+  @media (min-width: 34em) {
+    .out__stat:nth-child(odd) { border-inline-end: 1px solid var(--c-line); }
+  }
+  @media (min-width: 62em) {
+    .out__stat { border-inline-end: 1px solid var(--c-line); }
+    .out__stat:last-child { border-inline-end: 0; }
+  }
+
+  .out__fig {
+    display: flex;
+    align-items: baseline;
+    flex-wrap: wrap;
+    gap: var(--sp-2);
+    font-family: var(--font-mono);
+    font-variant-numeric: tabular-nums;
+    line-height: 1;
+  }
+  .out__from {
+    font-size: var(--fs-xs);
+    /* --c-ink-3 (4.92:1); --c-ink-4 is 3.05:1 and fails AA at this size. */
+    color: var(--c-ink-3);
+    text-decoration: line-through;
+    text-decoration-color: var(--c-rose-line);
+  }
+  /* Declared after .out__from: same specificity, so order decides. The
+     channels stat expands rather than removes something, so it is not struck. */
+  .out__from--plain { text-decoration: none; }
+  .out__arrow { font-size: var(--fs-2xs); color: var(--c-ink-4); }
+  .out__to {
+    /* Capped at 1.6875rem: the channels cell needs 269px of the 264px it has
+       at the old max, which is what pushed its value onto a second line. */
+    font-size: clamp(1.375rem, 1.05rem + 1.2vw, 1.6875rem);
+    color: var(--c-signal);
+    letter-spacing: var(--tr-mega);
+  }
+  /* White, not purple, for emphasis inside the muted captions — the accent is
+     already carrying the numbers, so re-using it here would flatten both. */
+  /* :global because the <b> arrives via set:html and therefore never receives
+     Astro's scoping attribute — a plain `.out__cap b` selector cannot match it. */
+  .out__cap :global(b) {
+    color: var(--c-ink);
+    font-weight: inherit;
+  }
+  .out__cap {
+    font-size: var(--fs-sm);
+    color: var(--c-ink-2);
+    line-height: var(--lh-snug);
+    text-wrap: pretty;
+  }
+
+  /* ---- Timeline band ---- */
+  .out__run {
+    padding: clamp(1.25rem, 0.95rem + 1.3vw, 1.75rem) clamp(1.5rem, 1rem + 2.2vw, 2.5rem);
+    border-block-end: 1px solid var(--c-line);
+  }
+
+  /* ---- Conclusion band ---- */
+  .out__foot {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    /* Centred as a pair rather than pushed to opposite edges — the CTA reads as
+       the answer to the question when it sits next to it. */
+    justify-content: center;
+    text-align: center;
+    gap: var(--sp-4) var(--sp-5);
+    padding: clamp(1.125rem, 0.85rem + 1.1vw, 1.5rem) clamp(1.5rem, 1rem + 2.2vw, 2.5rem);
+    background: rgb(255 255 255 / 1.6%);
+  }
+  /* Sits between the figures and the hook: the evidence for the row above it,
+     set quieter than both so it reads as a footnote with a door in it. */
+  .out__proof {
+    margin: clamp(1.5rem, 1rem + 2vw, 2.25rem) auto 0;
+    padding-block-start: var(--sp-5);
+    border-block-start: 1px solid var(--c-line);
+    max-width: 52rem;
+    font-size: var(--fs-sm);
+    line-height: var(--lh-relaxed);
+    color: var(--c-ink-2);
+    text-align: center;
+    text-wrap: pretty;
+  }
+
+  .out__hook {
+    font-size: var(--fs-lg);
+    line-height: var(--lh-snug);
+    letter-spacing: var(--tr-tight);
+    font-weight: 500;
+    color: var(--c-ink);
+    text-wrap: balance;
+    max-width: none;
+  }
+  .out__cta { flex: none; }
+
+  /* ========================================================== COMPARISON */
+  /* Same size as the outcomes headline (--fs-2xl) — it always was; the
+     difference was the measure. Fixed rem, not `ch`, since `ch` scales with
+     the resolved system font and narrows exactly the faces that need room. */
+  .cmp__title {
+    margin-inline: auto;
+    font-size: var(--fs-section);
+    line-height: var(--lh-snug);
+    letter-spacing: var(--tr-display);
+    font-weight: 600;
+    /* Unconstrained so it holds one line on desktop — the 42rem cap forced a
+       break mid-sentence ("Three ways to automate / content."). It wraps
+       naturally below ~1000px, where balance evens the two lines. */
+    max-width: none;
+    text-align: center;
+    text-wrap: balance;
+  }
+  .cmp__lede {
+    margin: var(--sp-5) auto 0;
+    max-width: 52rem;
+    font-size: var(--fs-md);
+    line-height: var(--lh-relaxed);
+    color: var(--c-ink-2);
+    text-align: center;
+    text-wrap: pretty;
+  }
+
+  .cmp__table {
+    inline-size: 100%;
+    border-collapse: collapse;
+    margin-block-start: clamp(2rem, 1.2rem + 2.6vw, 3.25rem);
+    text-align: left;
+  }
+
+  /* ---- Column heads ---- */
+  .cmp__col {
+    padding: var(--sp-3) var(--sp-4) var(--sp-4);
+    font-weight: 500;
+    /* Top, not bottom: bottom-aligning makes the column names sit at different
+       heights the moment one descriptor wraps to a different line count. */
+    vertical-align: top;
+    border-block-end: 1px solid var(--c-line-2);
+    inline-size: 26%;
+  }
+  .cmp__col-name {
+    display: flex;
+    align-items: center;
+    gap: var(--sp-2);
+    font-family: var(--font-mono);
+    font-size: var(--fs-2xs);
+    letter-spacing: var(--tr-label);
+    text-transform: uppercase;
+    color: var(--c-ink-3);
+  }
+  .cmp__col--us .cmp__col-name { color: var(--c-signal); }
+  /* Names the category concretely — most buyers are not sure which of these
+     they are currently using. */
+  .cmp__col-desc {
+    display: block;
+    margin-block-start: var(--sp-2);
+    font-size: var(--fs-xs);
+    line-height: var(--lh-snug);
+    letter-spacing: var(--tr-normal);
+    text-transform: none;
+    color: var(--c-ink-3);
+    max-width: 14.5rem;
+  }
+
+  /* ---- Row heads ---- */
+  /* The label column gets its own tint and a leading accent tick so the row
+     names read as headers you can scan, rather than a third column of copy. */
+  .cmp__k {
+    position: relative;
+    padding: var(--sp-4) var(--sp-4) var(--sp-4) var(--sp-5);
+    font-weight: 500;
+    vertical-align: middle;
+    background: rgb(255 255 255 / 2.2%);
+    border-block-end: 1px solid var(--c-line);
+    inline-size: 22%;
+  }
+  .cmp__k::before {
+    content: '';
+    position: absolute;
+    inset-block: var(--sp-4);
+    inset-inline-start: var(--sp-3);
+    inline-size: 2px;
+    border-radius: var(--r-pill);
+    background: var(--c-line-signal);
+  }
+  .cmp__k-name {
+    display: block;
+    font-family: var(--font-mono);
+    font-size: var(--fs-2xs);
+    letter-spacing: var(--tr-label);
+    text-transform: uppercase;
+    color: var(--c-ink);
+  }
+  .cmp__k-note {
+    display: block;
+    margin-block-start: var(--sp-2);
+    font-size: var(--fs-xs);
+    line-height: var(--lh-snug);
+    color: var(--c-ink-3);
+    max-width: 14.5rem;
+  }
+
+  /* ---- Cells ---- */
+  .cmp__v {
+    padding: var(--sp-4);
+    font-size: var(--fs-sm);
+    /* --c-ink-2, not --c-ink-4: these cells are the content of their column,
+       not decoration. Hierarchy still reads — 6.9:1 here against 14.7:1 for
+       the "us" cells — and both clear AA. */
+    color: var(--c-ink-2);
+    /* Centred, not top: rows carrying a label note are taller than their
+       values, which left the values stranded at the top of the row. */
+    vertical-align: middle;
+    border-block-end: 1px solid var(--c-line);
+    line-height: var(--lh-snug);
+  }
+  .cmp__v--us {
+    color: var(--c-ink);
+    background: var(--c-signal-wash);
+    box-shadow: inset 1px 0 0 var(--c-line-signal), inset -1px 0 0 var(--c-line-signal);
+  }
+  .cmp__table tbody tr:last-child .cmp__v--us {
+    box-shadow: inset 1px 0 0 var(--c-line-signal), inset -1px 0 0 var(--c-line-signal), inset 0 -1px 0 var(--c-line-signal);
+  }
+  /* Rows we lose: the column band drops away and the cell reads exactly like
+     the other two. No wash, no tick, no accent — that is the entire point. */
+  .cmp__v--tie {
+    color: var(--c-ink-2);
+    background: transparent;
+    box-shadow: inset 1px 0 0 var(--c-line), inset -1px 0 0 var(--c-line);
+  }
+  .cmp__tick {
+    color: var(--c-signal);
+    display: inline-block;
+    vertical-align: -0.1em;
+    margin-inline-end: var(--sp-2);
+  }
+  .cmp__dash {
+    color: var(--c-ink-3);
+    margin-inline-end: var(--sp-2);
+  }
+
+  /* ---- Stacked cards on mobile — never a horizontal scroll ---- */
+  @media (max-width: 60em) {
+    .cmp__table, .cmp__table tbody, .cmp__table tr, .cmp__table td, .cmp__table th { display: block; }
+    .cmp__table thead { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
+    .cmp__table tr {
+      border: 1px solid var(--c-line);
+      border-radius: var(--r-2);
+      background: var(--c-panel);
+      margin-block-start: var(--sp-4);
+      overflow: hidden;
+    }
+    .cmp__table tr.is-loss { border-style: dashed; }
+    .cmp__k {
+      inline-size: auto;
+      padding-inline-start: var(--sp-4);
+      background: var(--c-panel-2);
+      border-block-end: 1px solid var(--c-line);
+    }
+    .cmp__k::before { display: none; }
+    .cmp__k-name { color: var(--c-ink); }
+    /* Qualified with the element: `.cmp__table td` above is (0,1,1) and beats a
+       bare `.cmp__v` (0,1,0), which would leave these as blocks. */
+    .cmp__table td.cmp__v {
+      display: grid;
+      grid-template-columns: minmax(0, 9rem) minmax(0, 1fr);
+      gap: var(--sp-2) var(--sp-4);
+      align-items: center;
+      border-block-end: 1px solid var(--c-line);
+    }
+    .cmp__table td.cmp__v:last-child { border-block-end: 0; }
+    .cmp__table td.cmp__v::before {
+      content: attr(data-col);
+      font-family: var(--font-mono);
+      font-size: var(--fs-2xs);
+      letter-spacing: var(--tr-label);
+      text-transform: uppercase;
+      color: var(--c-ink-4);
+      line-height: var(--lh-snug);
+    }
+    .cmp__v--us { box-shadow: none; }
+    .cmp__v--us::before { color: var(--c-signal); }
+    .cmp__v--tie::before { color: var(--c-ink-4); }
+    .cmp__tick, .cmp__dash { display: none; }
+  }
+
+  /* ---- Foot ---- */
+  /* Mirrors the outcomes footer: same size, same centred pairing, so the two
+     sections close the same way. */
+  .cmp__foot {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    gap: var(--sp-4) var(--sp-5);
+    margin-block-start: var(--sp-7);
+  }
+  .cmp__hook {
+    font-size: var(--fs-lg);
+    line-height: var(--lh-snug);
+    letter-spacing: var(--tr-tight);
+    font-weight: 500;
+    color: var(--c-ink);
+    text-wrap: balance;
+  }
+  .cmp__cta { flex: none; }
+
+  /* =========================================================== TWO WAYS IN */
+  .ways {
+    display: grid;
+    gap: var(--sp-4);
+    margin-block-start: clamp(2rem, 1.2rem + 2.6vw, 3.25rem);
+    grid-template-columns: minmax(0, 1fr);
+  }
+  @media (min-width: 56em) { .ways { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+  .ways__card { display: flex; flex-direction: column; gap: var(--sp-4); }
+  .ways__kicker { color: var(--c-signal-text); }
+  .ways__title { font-weight: 600; }
+  .ways__name {
+    font-size: var(--fs-xl);
+    letter-spacing: var(--tr-display);
+    font-weight: 600;
+    line-height: var(--lh-snug);
+  }
+  .ways__body { color: var(--c-ink-2); line-height: var(--lh-relaxed); font-size: var(--fs-sm); }
+  .ways__cta { margin-block-start: auto; align-self: flex-start; }
+  .ways__note {
+    margin-block-start: var(--sp-6);
+    font-family: var(--font-mono);
+    /* One step up from --fs-2xs: it now reads as the section's closing line
+       rather than a footnote, and 11px bold mono is hard going. */
+    font-size: var(--fs-xs);
+    font-weight: 600;
+    letter-spacing: var(--tr-wide);
+    color: var(--c-ink-2);
+    text-align: center;
+    text-wrap: pretty;
+  }
+
+  /* The accent on paper. .paper remaps --btn-bg to the near-black paper ink by
+     default; this section wants the brand colour instead. Scoped to .ways-sec
+     so other .paper blocks keep the inverted treatment.
+     White on #6b21c8 is 7.85:1, and the fill sits 6.92:1 against the page. */
+  .ways-sec .btn--primary {
+    --btn-bg: var(--c-signal-paper);
+    --btn-fg: #fff;
+    --btn-bd: var(--c-signal-paper);
+  }
+  .ways-sec .btn--primary:hover {
+    --btn-bg: #5a17ac;
+    --btn-bd: #5a17ac;
+    box-shadow: none;
+  }
+  /* Ghost picks up the accent too, so the pair reads as one family. */
+  .ways-sec .btn--ghost {
+    color: var(--c-signal-paper);
+    border-color: rgb(107 33 200 / 40%);
+  }
+  .ways-sec .btn--ghost:hover { border-color: var(--c-signal-paper); }
+
+  .ways-sec { border-block: 1px solid var(--c-line-2); }
+</style>

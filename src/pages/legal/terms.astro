@@ -1,0 +1,507 @@
+---
+import Base from '../../layouts/Base.astro';
+import { SITE } from '../../site.config.mjs';
+import { breadcrumbSchema } from '../../lib/schema.mjs';
+
+/** One source of truth for the stamp shown in the header and in §12. */
+const UPDATED = { iso: '2026-08-19', label: '19 August 2026' };
+
+/** Table of contents. Every id below has a matching <h2 id> in the prose. */
+const sections: { id: string; title: string }[] = [
+  { id: 'about', title: 'About these terms' },
+  { id: 'who-we-are', title: 'Who we are' },
+  { id: 'informational', title: 'The site is information, not an offer' },
+  { id: 'no-warranty', title: 'What we do not guarantee' },
+  { id: 'ip', title: 'Intellectual property' },
+  { id: 'acceptable-use', title: 'Acceptable use' },
+  { id: 'third-party-links', title: 'Links to other sites' },
+  { id: 'availability', title: 'Availability and changes to the site' },
+  { id: 'liability', title: 'Limitation of liability' },
+  { id: 'engagements', title: 'Engagement terms are separate' },
+  { id: 'payment', title: 'Fees and payment' },
+  { id: 'changes', title: 'Changes to these terms' },
+  { id: 'contact', title: 'Contact' },
+];
+
+/** Still worth a lawyer's eye, though nothing here is a blank any more. */
+const toComplete = [
+  'Whether to state a governing law and jurisdiction at all — there is deliberately no clause below',
+  'Whether the liability cap and the payment terms match the signed engagement agreement',
+  'Whether a consumer-facing variant is needed for the markets you sell into',
+];
+
+const mailto = `mailto:${SITE.email}`;
+const host = SITE.url.replace('https://', '');
+---
+
+<Base
+  title="Terms of use for this site and our services"
+  description={`Terms of use for the ${SITE.name} website: what the content on it is and is not, intellectual property, acceptable use, and limits of liability.`}
+  noindex={false}
+  schema={[breadcrumbSchema([{ name: 'Terms of use', href: '/legal/terms/' }])]}
+>
+  <!--
+    Indexable on purpose. The sitemap already excludes /legal/ (see
+    astro.config.mjs), so these pages stay out of the submitted URL set
+    without being blocked from crawlers that go looking for them.
+  -->
+  <article class="doc">
+    <!-- ================================================== HEADER -->
+    <header class="doc__head grid-bg">
+      <div class="wrap wrap--text">
+        <p class="eyebrow">Legal</p>
+        <h1 class="display-2 doc__title">Terms of use</h1>
+        <p class="lede doc__lede">
+          These terms cover this website and nothing else. If we build a system for you, or run
+          one for you, that work is governed by a separate agreement both sides sign — not by
+          anything published here.
+        </p>
+        <ul role="list" class="doc__stamp">
+          <li class="doc__stamp-item">
+            <span class="dot dot--done" aria-hidden="true"></span>
+            Last updated <time datetime={UPDATED.iso}>{UPDATED.label}</time>
+          </li>
+          <li class="doc__stamp-item">Applies to {host}</li>
+          <li class="doc__stamp-item">Version 1.0 · template</li>
+        </ul>
+      </div>
+    </header>
+
+    <div class="wrap wrap--text doc__body">
+      <!-- ================================================== COUNSEL CALLOUT -->
+      <aside class="notice panel panel--pad" aria-labelledby="notice-title">
+        <p class="meta notice__label">
+          <span class="dot dot--queued" aria-hidden="true"></span>Template · not yet reviewed
+        </p>
+        <h2 id="notice-title" class="heading-sm notice__title">
+          Have your own counsel read this before it goes live
+        </h2>
+        <p class="body-sm notice__text">
+          These are website terms of use, drafted to match how this site actually behaves. They
+          are not legal advice, they have not been reviewed by a lawyer, and several clauses
+          only work once the operating company’s details and jurisdiction are filled in.
+          Complete the items below and have a qualified adviser check the result before
+          publishing.
+        </p>
+        <ul role="list" class="notice__list">
+          {toComplete.map((item) => (
+            <li class="notice__item">
+              <span class="dot dot--idle" aria-hidden="true"></span>{item}
+            </li>
+          ))}
+        </ul>
+      </aside>
+
+      <!-- ================================================== CONTENTS -->
+      <nav class="toc" aria-labelledby="toc-title">
+        <h2 id="toc-title" class="meta toc__title">Contents</h2>
+        <ol role="list" class="toc__list">
+          {sections.map((s, i) => (
+            <li>
+              <a href={`#${s.id}`} class="toc__link">
+                <span class="index toc__n">{String(i + 1).padStart(2, '0')}</span>
+                <span>{s.title}</span>
+              </a>
+            </li>
+          ))}
+        </ol>
+      </nav>
+
+      <!-- ================================================== TERMS -->
+      <div class="prose doc__prose">
+        <h2 id="about">About these terms</h2>
+        <p>
+          These terms apply to your use of the website at <code>{host}</code>, including every
+          page, diagram and downloadable file published on it. By using the site you accept
+          them. If you do not accept them, stop using the site.
+        </p>
+        <p>
+          They govern the website only. They are not a services agreement, they do not describe
+          what we would owe you on a project, and nothing on this site commits either of us to
+          anything. See <a href="#engagements">engagement terms are separate</a>.
+        </p>
+
+        <h2 id="who-we-are">Who we are</h2>
+        <p>
+          {SITE.name} builds custom AI content production and publishing systems, and runs
+          them as a managed service. In these terms, “we” and “us” mean {SITE.name},
+          registered as {SITE.legal.entity}, company number {SITE.legal.number}, registered
+          office {SITE.legal.address}. We also operate a branch in Perth, Australia. You can
+          reach us at <a href={mailto}>{SITE.email}</a>.
+        </p>
+        <p>
+          How we handle personal data from this site is set out separately in the
+          <a href="/legal/privacy/">privacy notice</a>, and what we store on your device is set
+          out in the <a href="/legal/cookies/">cookie policy</a>.
+        </p>
+
+        <h2 id="informational">The site is information, not an offer</h2>
+        <p>
+          Everything published here — the pipeline stages, the stage timings, the engagement
+          models, the comparisons with other ways of building the same thing — describes how we
+          work. It is published so you can decide whether a conversation is worth having.
+        </p>
+        <p>
+          It is not an offer capable of acceptance, and using the site or sending an enquiry
+          does not create a contract between us. Scope, deliverables, timelines, prices and
+          service levels exist only in a signed agreement. Anything on the site marked
+          illustrative — sample console output, example run timings, specimen record
+          layouts — is exactly that: an illustration of the shape of the thing, not a
+          performance figure you should plan against.
+        </p>
+
+        <h2 id="no-warranty">What we do not guarantee</h2>
+        <p>
+          We write this site carefully and correct it when we find it wrong. We do not warrant
+          that it is complete, current or accurate, and we do not warrant that it is suitable
+          for any decision you are about to make.
+        </p>
+        <p>
+          That applies with particular force to anything we publish about regulation. Our
+          description of the EU AI Act and of disclosure and provenance obligations is our
+          reading of the rules as they stood on the date at the top of this page. It is not
+          legal advice, your obligations depend on facts we do not know, and you should take
+          your own advice before relying on any of it. To the extent permitted by law, all
+          warranties, conditions and terms implied by statute or common law are excluded from
+          your use of the site.
+        </p>
+
+        <h2 id="ip">Intellectual property</h2>
+        <p>
+          The content of this site — the text, structure, design system, page source, diagrams,
+          illustrative console output, and the {SITE.name} name and marks —
+          belongs to us or to our licensors, and is protected by copyright and trade mark law.
+        </p>
+        <p>You may:</p>
+        <ul role="list">
+          <li>read the site, and print or save copies of pages for your own reference;</li>
+          <li>
+            quote short extracts in commentary or research, with attribution to {SITE.name} and
+            a link to the page you took them from.
+          </li>
+        </ul>
+        <p>You may not:</p>
+        <ul role="list">
+          <li>republish, resell or redistribute the content as your own, in whole or in part;</li>
+          <li>
+            use it to build, train, market or operate a competing service, including bulk
+            extraction for that purpose;
+          </li>
+          <li>
+            use our names, marks or client references in a way that suggests endorsement,
+            partnership or approval that does not exist;
+          </li>
+          <li>remove or obscure any copyright, provenance or attribution marking.</li>
+        </ul>
+        <p>
+          Nothing on this site grants you a licence to any of our software, system source or
+          production tooling. Where we build a system for a client, ownership of what we build
+          is dealt with in that client’s agreement, not here.
+        </p>
+
+        <h2 id="acceptable-use">Acceptable use</h2>
+        <p>Use the site lawfully and leave it working for the next person. Do not:</p>
+        <ul role="list">
+          <li>use it for anything unlawful, fraudulent or harmful;</li>
+          <li>
+            attempt to gain unauthorised access to the site, its hosting, or any system or
+            network connected to it;
+          </li>
+          <li>probe, scan or test its security without our written permission;</li>
+          <li>introduce malicious code, or attempt to interfere with its availability;</li>
+          <li>
+            scrape or crawl at a rate that degrades the site for other people, or in breach of
+            the machine-readable rules we publish;
+          </li>
+          <li>
+            use the enquiry form or our published addresses to send unsolicited marketing, bulk
+            messages or anything unlawful.
+          </li>
+        </ul>
+        <p>
+          We can withdraw access, block traffic or remove content without notice where we
+          reasonably believe this section has been breached, and we will report conduct to the
+          relevant authorities where the law requires it. If you find a security problem, we
+          would rather hear from you than from someone else: write to
+          <a href={mailto}>{SITE.email}</a> with the details and give us a reasonable period to
+          fix it before publishing.
+        </p>
+
+        <h2 id="third-party-links">Links to other sites</h2>
+        <p>
+          The site links to places we do not control, including social platforms and regulator
+          and standards bodies. We link because the destination is useful, not because we
+          endorse its content, its owner or its privacy practices. We are not responsible for
+          those sites, and once you leave this one you are on their terms, not ours. Check them
+          before you rely on anything you find there.
+        </p>
+
+        <h2 id="availability">Availability and changes to the site</h2>
+        <p>
+          The site is static pages plus one form endpoint, which makes it about as reliable as a website gets,
+          but we do not guarantee that it will be available, uninterrupted or error-free. We may
+          change, move or remove any page, restructure the site, or take it down entirely,
+          without notice and without any obligation to keep a given URL alive. We do not
+          undertake to keep the content current between updates.
+        </p>
+
+        <h2 id="liability">Limitation of liability</h2>
+        <p>
+          Nothing in these terms limits or excludes our liability for death or personal injury
+          caused by our negligence, for fraud or fraudulent misrepresentation, or for anything
+          else that cannot lawfully be limited or excluded.
+        </p>
+        <p>Subject to that, and to the extent permitted by law:</p>
+        <ul role="list">
+          <li>
+            we are not liable for any loss of profit, revenue, business, contracts, goodwill,
+            anticipated savings or data, or for any indirect or consequential loss, arising from
+            your use of this site or from reliance on anything published on it;
+          </li>
+          <li>
+            we are not liable for loss or damage caused by a virus or other harmful material
+            that reaches your systems through your use of the site, or through any site we link
+            to;
+          </li>
+          <li>
+            our total liability in connection with this site, whether in contract, tort
+            (including negligence) or otherwise, is limited to USD 100. Using this site costs
+            you nothing, and this cap is about the site alone — liability for work we are paid
+            to do is set in the agreement covering that work.
+          </li>
+        </ul>
+        <p>
+          This section covers the website. Liability for work we actually do for you is dealt
+          with in the agreement that governs that work. If you use this site as a consumer
+          rather than in the course of a business, your statutory rights are unaffected by
+          anything in this section.
+        </p>
+
+        <h2 id="engagements">Engagement terms are separate</h2>
+        <p>
+          Both ways of working with us — building the system and handing it over, or having it
+          run as a managed service by us — are governed by a separate written
+          agreement signed by both parties. That agreement, not this site, sets out scope and
+          deliverables, acceptance, who owns what we build, data processing terms and security
+          commitments, fees, term and termination, and the liability position for the work.
+        </p>
+        <p>
+          Where the signed agreement and this site disagree, the agreement wins. Nothing
+          published here varies it, adds to it, or creates a side commitment alongside it.
+        </p>
+
+        <h2 id="payment">Fees and payment</h2>
+        <p>
+          These are the commercial terms we work to. They are summarised here so they are not a
+          surprise on a call; the signed agreement is what actually binds, and where the two
+          differ, the agreement wins.
+        </p>
+
+        <h3>The managed service is paid monthly, in advance</h3>
+        <p>
+          The plan you choose is billed for the month ahead, not the month behind. Payment is
+          due in the first week of each month. The first month starts the work, and each
+          following month continues it — publishing runs while the month is paid, and pauses
+          when it is not.
+        </p>
+        <p>
+          You can move up or down a plan between months. A change takes effect from the month
+          it is paid for rather than part-way through one, because the allowance the plan buys
+          is monthly.
+        </p>
+
+        <h3>A build is paid in three parts</h3>
+        <p>A system built for you is quoted per scope and invoiced against it:</p>
+        <ul role="list">
+          <li><strong>50%</strong> before any work begins.</li>
+          <li><strong>25%</strong> before the final round of revisions is delivered.</li>
+          <li><strong>25%</strong> before the system goes live and is handed to you.</li>
+        </ul>
+        <p>
+          Nothing goes live until the fee is settled in full. Deployment, connection to your own
+          channels and accounts, and handover of the credentials you need to operate the system
+          all happen after the final payment, not before it. What transfers to you at that point
+          is the running system and everything needed to run it — the code behind it stays with
+          us, the way a studio keeps its working files, which is also what lets us keep fixing
+          it. If we ever stopped trading, every credential you need to keep it running is handed
+          straight to you.
+        </p>
+
+        <h3>Revisions and changes of scope</h3>
+        <p>
+          Each deliverable includes a set number of revision rounds, stated in the proposal and
+          typically two. Work beyond the agreed scope is quoted separately and only starts once
+          you have approved that quote in writing. We would rather requote than quietly absorb a
+          change and let the timeline slip without telling you.
+        </p>
+
+        <h3>Late payment</h3>
+        <p>
+          If a payment has not arrived by the seventh day after it is due, we may pause work
+          until it does. A late fee of 5% of the outstanding amount applies for each further
+          week it remains unpaid. If it goes unpaid for thirty days we may end the engagement.
+        </p>
+        <p>
+          Pausing is not the same as cancelling: your setup, your data and your channels stay as
+          they are, and work resumes when the account is current.
+        </p>
+
+        <h3>Refunds</h3>
+        <p>
+          Once work has started, the advance is not refundable, and a monthly fee is not
+          refundable once that month has begun and work has been done in it. We do not refund on
+          the basis of taste or preference where what we delivered matches the scope that was
+          agreed — if it does not match the scope, that is a different conversation and we will
+          put it right.
+        </p>
+
+        <h3>What the fee does not cover</h3>
+        <p>
+          Third-party running costs are yours and are billed to you by those providers rather
+          than by us: AI model usage, hosting, domains, the publishing and scheduling tools the
+          system posts through, email and newsletter sending, and any paid stock or licensed
+          media you ask us to use. We will tell you what these are likely to come to before you
+          commit to anything.
+        </p>
+
+        <h3>Delays</h3>
+        <p>
+          Some things only you can supply — access, approvals, brand material, the answers that
+          come out of the first call. Where a delay is caused by waiting on those, it moves the
+          timeline rather than reducing the fee, and it is not a breach on our side. We will say
+          so at the time rather than at the end.
+        </p>
+
+        <h2 id="changes">Changes to these terms</h2>
+        <p>
+          We may update these terms. The stamp at the top of the page is the version: this one
+          was last updated on <time datetime={UPDATED.iso}>{UPDATED.label}</time>. Continued use
+          of the site after an update means you accept the version then published, so it is
+          worth checking the date if you rely on anything here. Earlier versions are available
+          on request.
+        </p>
+
+        <h2 id="contact">Contact</h2>
+        <p>
+          Questions about these terms, requests for permission to use content beyond what
+          <a href="#ip">intellectual property</a> allows, and security reports all go to
+          <a href={mailto}>{SITE.email}</a>. A person reads it, normally within one business
+          day.
+        </p>
+        <p>
+          Postal address for formal correspondence: {SITE.legal.entity}, {SITE.legal.address}.
+        </p>
+      </div>
+    </div>
+  </article>
+</Base>
+
+<style>
+  /* ---- Document header ---- */
+  .doc__head {
+    position: relative;
+    padding-block: clamp(3rem, 2rem + 4vw, 5rem) clamp(2rem, 1.4rem + 2.4vw, 3rem);
+    border-block-end: 1px solid var(--c-line);
+  }
+  .doc__title { margin-block-start: var(--sp-2); }
+  .doc__lede { margin-block-start: var(--sp-5); font-size: var(--fs-md); }
+
+  .doc__stamp {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--sp-2) var(--sp-5);
+    margin-block-start: var(--sp-6);
+    padding-block-start: var(--sp-4);
+    border-block-start: 1px solid var(--c-line);
+  }
+  .doc__stamp-item {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--sp-2);
+    font-family: var(--font-mono);
+    font-size: var(--fs-2xs);
+    letter-spacing: var(--tr-wide);
+    text-transform: uppercase;
+    color: var(--c-ink-3);
+  }
+
+  /* ---- Body column ---- */
+  .doc__body { padding-block: clamp(2rem, 1.4rem + 2.4vw, 3rem) var(--sp-section); }
+
+  /* ---- Counsel callout ---- */
+  .notice {
+    display: flex;
+    flex-direction: column;
+    gap: var(--sp-3);
+    background: var(--c-amber-wash);
+    border-inline-start: 2px solid var(--c-amber);
+    box-shadow: none;
+  }
+  .notice__label {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--sp-2);
+    color: var(--c-amber);
+  }
+  .notice__title { margin-block-start: var(--sp-1); }
+  .notice__list {
+    display: grid;
+    gap: var(--sp-2);
+    margin-block-start: var(--sp-2);
+    padding-block-start: var(--sp-4);
+    border-block-start: 1px solid var(--c-line-2);
+  }
+  .notice__item {
+    display: flex;
+    align-items: flex-start;
+    gap: var(--sp-3);
+    font-family: var(--font-mono);
+    font-size: var(--fs-2xs);
+    letter-spacing: var(--tr-wide);
+    line-height: var(--lh-normal);
+    color: var(--c-ink-2);
+  }
+  .notice__item .dot { margin-block-start: var(--nudge-2); }
+
+  /* ---- Table of contents ---- */
+  .toc {
+    margin-block-start: var(--sp-7);
+    padding-block: var(--sp-5);
+    border-block: 1px solid var(--c-line);
+  }
+  .toc__title { color: var(--c-ink-3); }
+  .toc__list {
+    display: grid;
+    gap: var(--sp-2) var(--sp-5);
+    margin-block-start: var(--sp-4);
+  }
+  @media (min-width: 34em) {
+    .toc__list { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  }
+  .toc__link {
+    display: flex;
+    align-items: baseline;
+    gap: var(--sp-3);
+    font-size: var(--fs-sm);
+    line-height: var(--lh-snug);
+    color: var(--c-ink-2);
+    transition: color var(--dur-2) var(--ease-out);
+  }
+  .toc__link:hover {
+    color: var(--c-signal);
+    text-decoration: underline;
+    text-underline-offset: 0.22em;
+  }
+  .toc__n { flex: none; }
+  .toc__link:hover .toc__n { color: var(--c-signal); }
+
+  /* ---- Prose ---- */
+  .doc__prose { margin-block-start: var(--sp-2); }
+  /* role="list" restores semantics under display:grid; put the markers back. */
+  .doc__prose ul[role='list'] {
+    list-style: disc;
+    padding-inline-start: var(--sp-5);
+  }
+  .doc__prose li { line-height: var(--lh-relaxed); }
+  .doc__prose code { word-break: break-word; }
+</style>

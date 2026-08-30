@@ -1,0 +1,919 @@
+/* ==========================================================================
+   Primitives — the shared component vocabulary.
+   Every page composes from these. Do not invent parallel systems.
+   ========================================================================== */
+
+/* --------------------------------------------------------------------------
+   1. Layout containers
+   -------------------------------------------------------------------------- */
+.wrap {
+  width: 100%;
+  max-width: var(--container);
+  margin-inline: auto;
+  padding-inline: var(--gutter);
+}
+.wrap--wide { max-width: var(--container-wide); }
+.wrap--text { max-width: var(--container-text); }
+
+/* Any element that can be an anchor target has to clear the sticky header.
+   tokens.css says "every scroll-margin reads this token", but only .prose h2/h3
+   actually had one — every section-level and card-level anchor on the site
+   (#stages, #channels, #data, #rights, #posture, #agencies, #brands, #main) had
+   none. The .section targets survived on their 112px padding absorbing the 85px
+   header; the .aud cards behind #agencies/#brands have no padding, so the jump
+   put the card's top 85px underneath it.
+
+   :where() keeps this at zero specificity, so any element that wants a
+   different offset can still set one without a fight. */
+:where(main, main [id]) {
+  scroll-margin-block-start: calc(var(--header-h) + var(--sp-5));
+}
+
+.section { padding-block: var(--sp-section); }
+.section--sm { padding-block: var(--sp-section-sm); }
+/* Hairline that spans the full viewport but aligns visually with content */
+.section--ruled { border-block-start: 1px solid var(--c-line); }
+
+/* --------------------------------------------------------------------------
+   2. Decorative backdrops
+   -------------------------------------------------------------------------- */
+
+/* Blueprint grid — the signature texture of the console direction. */
+.grid-bg {
+  position: relative;
+  isolation: isolate;
+}
+.grid-bg::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background-image:
+    linear-gradient(to right, var(--grid-line) 1px, transparent 1px),
+    linear-gradient(to bottom, var(--grid-line) 1px, transparent 1px);
+  background-size: var(--grid-cell) var(--grid-cell);
+  mask-image: radial-gradient(ellipse 80% 60% at 50% 0%, #000 20%, transparent 78%);
+  pointer-events: none;
+}
+
+/* ---- Surface rhythm ------------------------------------------------------
+   A page of identical black bands reads as one flat sheet however good the
+   type is. Alternating a raised tone gives the eye somewhere to land and turns
+   section boundaries into structure rather than hairlines on a void. */
+.section--raised {
+  position: relative;
+  /* The raised surface is lighter than --c-void, so the lower two ink steps
+     lose contrast against it (--c-ink-4 drops to 2.57:1). Lift them here, the
+     same way .paper remaps the ramp for its background. */
+  --c-ink-3: #8f8a9c;
+  --c-ink-4: #6f6a7e;
+  background:
+    linear-gradient(180deg, rgb(255 255 255 / 2.4%) 0%, transparent 58%),
+    var(--c-panel);
+  border-block: 1px solid var(--c-line);
+}
+
+/* Centre-anchored lattice for mid-page sections. The base .grid-bg mask is
+   anchored to the top, which is right for a hero and wrong further down. */
+.grid-bg--center::before {
+  mask-image: radial-gradient(ellipse 72% 78% at 50% 50%, var(--mask-opaque) 8%, transparent 76%);
+}
+
+/* Soft signal bloom, used at most once per viewport. */
+.bloom {
+  position: absolute;
+  z-index: -1;
+  pointer-events: none;
+  border-radius: 50%;
+  filter: blur(80px);
+  opacity: 0.5;
+  background: radial-gradient(circle, var(--c-signal-glow) 0%, transparent 70%);
+}
+
+/* Diagonal hatch — marks "not built yet" / negative space. */
+.hatch {
+  background-image: repeating-linear-gradient(
+    -45deg,
+    var(--c-line) 0 1px,
+    transparent 1px 7px
+  );
+}
+
+/* --------------------------------------------------------------------------
+   3. Typography
+   -------------------------------------------------------------------------- */
+.display-1 {
+  font-size: var(--fs-5xl);
+  line-height: var(--lh-flush);
+  letter-spacing: var(--tr-mega);
+  font-weight: 500;
+}
+.display-2 {
+  font-size: var(--fs-4xl);
+  line-height: var(--lh-tight);
+  letter-spacing: var(--tr-display);
+  font-weight: 500;
+}
+.display-3 {
+  font-size: var(--fs-3xl);
+  line-height: var(--lh-tight);
+  letter-spacing: var(--tr-display);
+  font-weight: 500;
+}
+.heading-sm {
+  font-size: var(--fs-lg);
+  line-height: var(--lh-snug);
+  letter-spacing: var(--tr-tight);
+  font-weight: 500;
+}
+
+.lede {
+  font-size: var(--fs-lg);
+  line-height: var(--lh-relaxed);
+  letter-spacing: var(--tr-normal);
+  color: var(--c-ink-2);
+  max-width: 46rem;
+}
+/* ---- One hero scale, every page ----------------------------------------
+   Seven pages each declared their own hero title size and measure, ranging
+   from 3.5rem to 4.5rem and 42rem to 53rem, which read as different templates
+   stitched together. Declared here, and deliberately AFTER .display-1 and
+   .lede so the two pages that also carry those utility classes resolve to
+   this one scale.
+
+   Font size and vertical rhythm are fixed here for every page. `max-width` is
+   only a starting measure: a page with a much longer or shorter headline may
+   override the measure to control where its lines break, which changes the
+   line count without breaking the shared scale. */
+.hero__title {
+  margin-inline: auto;
+  font-size: clamp(2.125rem, 1.1rem + 4.55vw, 4.5rem);
+  line-height: 1.06;
+  letter-spacing: var(--tr-display);
+  font-weight: 500;
+  /* 54rem. Measured against every hero on the site rather than picked: at 46rem
+     the how-we-build and trust titles ran to three lines, and at 50rem the
+     longest title (who-its-for) could only reach two lines by holding its
+     highlighted phrase together with nowrap — which made that line wider than
+     the box, so it overflowed right and no longer centred with the line above.
+     At 58rem every title sets in one or two lines, correctly centred, with no
+     per-page exception. 58 rather than 54 because the longest highlighted
+     phrase on the site measures 904px and has to sit on one line. */
+  max-width: 58rem;
+  text-wrap: balance;
+}
+.hero__lede {
+  margin-inline: auto;
+  font-size: var(--fs-lg);
+  line-height: var(--lh-relaxed);
+  letter-spacing: var(--tr-normal);
+  color: var(--c-ink-2);
+  max-width: 50rem;
+  text-wrap: pretty;
+}
+
+.body-sm { font-size: var(--fs-sm); color: var(--c-ink-2); line-height: var(--lh-relaxed); }
+
+/* Signal-coloured emphasis inside a headline. Use once per headline, max. */
+.hl { color: var(--c-signal); }
+/* --------------------------------------------------------------------------
+   4. Mono metadata — the console's connective tissue
+   -------------------------------------------------------------------------- */
+.mono {
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+  letter-spacing: var(--tr-wide);
+  font-variant-ligatures: none;
+}
+.meta {
+  font-family: var(--font-mono);
+  font-size: var(--fs-2xs);
+  letter-spacing: var(--tr-label);
+  text-transform: uppercase;
+  color: var(--c-ink-3);
+  font-weight: 500;
+}
+.meta--signal { color: var(--c-signal-text); }
+
+/* ---- Section heading + lede ----
+   Global, not per page. These were declared separately in six page files and
+   two components, and because Astro scopes styles per file, any page or
+   component that did not carry its own copy silently rendered a bare <h2> —
+   left aligned and at the default size. That happened three times before this
+   moved here. One definition, reachable from everywhere. */
+.sec__title {
+  margin-inline: auto;
+  font-size: var(--fs-section);
+  line-height: var(--lh-snug);
+  letter-spacing: var(--tr-display);
+  font-weight: 600;
+  max-width: 44rem;
+  text-align: center;
+  text-wrap: balance;
+}
+.sec__lede {
+  margin: var(--sp-5) auto 0;
+  max-width: 50rem;
+  font-size: var(--fs-md);
+  line-height: var(--lh-relaxed);
+  color: var(--c-ink-2);
+  text-align: center;
+  text-wrap: pretty;
+}
+/* Section eyebrow: bullet · label · hairline to the right edge */
+.eyebrow {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+  font-family: var(--font-mono);
+  font-size: var(--fs-2xs);
+  letter-spacing: var(--tr-micro);
+  text-transform: uppercase;
+  color: var(--c-ink-3);
+  font-weight: 500;
+  margin-block-end: var(--sp-5);
+}
+.eyebrow::before {
+  content: '';
+  inline-size: 5px;
+  block-size: 5px;
+  flex: none;
+  background: var(--c-signal);
+  border-radius: 50%;
+  box-shadow: 0 0 10px var(--c-signal);
+}
+.eyebrow::after {
+  content: '';
+  flex: 1;
+  block-size: 1px;
+  background: linear-gradient(to right, var(--c-line-2), transparent);
+}
+.eyebrow--center { justify-content: center; }
+.eyebrow--center::after { display: none; }
+
+/* Index numerals: 01 / 02 / 03 */
+.index {
+  font-family: var(--font-mono);
+  font-size: var(--fs-2xs);
+  letter-spacing: var(--tr-label);
+  /* Reads as small text, so it takes ink-3 (the AA floor), not ink-4. */
+  color: var(--c-ink-3);
+  font-variant-numeric: tabular-nums;
+}
+
+/* --------------------------------------------------------------------------
+   5. Status vocabulary — reused from the product's own console
+   -------------------------------------------------------------------------- */
+.dot {
+  inline-size: 6px;
+  block-size: 6px;
+  border-radius: 50%;
+  flex: none;
+  background: var(--c-ink-4);
+}
+.dot--done { background: var(--c-signal); box-shadow: 0 0 8px var(--c-signal-glow); }
+.dot--live { background: var(--c-probe); box-shadow: 0 0 8px var(--c-probe); }
+.dot--queued { background: var(--c-amber); }
+.dot--idle { background: transparent; box-shadow: inset 0 0 0 1px var(--c-ink-4); }
+
+@media (prefers-reduced-motion: no-preference) {
+  .dot--live { animation: pulse var(--dur-pulse) var(--ease-in-out) infinite; }
+}
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.35; }
+}
+
+/* --------------------------------------------------------------------------
+   6. Badges & chips
+   -------------------------------------------------------------------------- */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-2);
+  padding: 0.375rem 0.625rem;
+  border: 1px solid var(--c-line-2);
+  border-radius: var(--r-pill);
+  background: var(--c-panel-2);
+  font-family: var(--font-mono);
+  font-size: var(--fs-2xs);
+  letter-spacing: var(--tr-label);
+  text-transform: uppercase;
+  color: var(--c-ink-2);
+  font-weight: 500;
+  white-space: nowrap;
+}
+.badge--signal {
+  border-color: var(--c-line-signal);
+  background: var(--c-signal-wash);
+  color: var(--c-signal);
+}
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-2);
+  padding: 0.3125rem 0.5625rem;
+  border: 1px solid var(--c-line);
+  border-radius: var(--r-1);
+  background: var(--c-panel-2);
+  font-family: var(--font-mono);
+  font-size: var(--fs-2xs);
+  letter-spacing: var(--tr-wide);
+  color: var(--c-ink-2);
+  white-space: nowrap;
+}
+
+.chip-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-2);
+}
+
+/* --------------------------------------------------------------------------
+   7. Buttons
+   -------------------------------------------------------------------------- */
+.btn {
+  --btn-bg: transparent;
+  --btn-fg: var(--c-ink);
+  --btn-bd: var(--c-line-2);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--sp-3);
+  padding: 0.8125rem 1.25rem;
+  border: 1px solid var(--btn-bd);
+  border-radius: var(--r-2);
+  background: var(--btn-bg);
+  color: var(--btn-fg);
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+  font-weight: 600;
+  letter-spacing: var(--tr-label);
+  text-transform: uppercase;
+  line-height: 1;
+  white-space: nowrap;
+  cursor: pointer;
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  transition:
+    color var(--dur-2) var(--ease-out),
+    border-color var(--dur-2) var(--ease-out),
+    background-color var(--dur-2) var(--ease-out),
+    transform var(--dur-1) var(--ease-out);
+}
+.btn:active { transform: translateY(1px); }
+
+/* Primary — the single signal-filled control on any given view. */
+.btn--primary {
+  --btn-bg: var(--c-signal);
+  --btn-fg: var(--c-signal-ink);
+  --btn-bd: var(--c-signal);
+  font-weight: 700;
+}
+.btn--primary:hover {
+  --btn-bg: var(--c-signal-2);
+  --btn-bd: var(--c-signal-2);
+  box-shadow: 0 0 32px -6px var(--c-signal-glow);
+}
+
+/* Secondary — hairline ghost. */
+.btn--ghost { --btn-bg: var(--c-panel-2); }
+.btn--ghost:hover {
+  --btn-bd: var(--c-line-strong);
+  --btn-bg: var(--c-panel-3);
+}
+.btn--lg { padding: 1rem 1.5rem; font-size: var(--fs-sm); }
+.btn--block { width: 100%; }
+
+/* ---------------------------------------------------------------- touch
+   Minimum touch target size.
+
+   Measured at 360px: the primary CTAs came out 40px tall, the testimonial
+   arrows 36px, and the footer links 13-17px — the last of which fails
+   WCAG 2.5.8 Target Size (Minimum, AA, 24x24) outright, not just the AAA 44px
+   guideline.
+
+   Scoped to `pointer: coarse` rather than a width breakpoint on purpose: what
+   makes a target hard to hit is a fingertip, not a narrow window. A 360px-wide
+   desktop browser keeps its compact spacing; a 1024px tablet gets the larger
+   targets it actually needs.
+
+   min-block-size grows the box without changing font-size or the visual weight
+   of the label, so nothing about the design shifts on desktop. */
+@media (pointer: coarse) {
+  .btn { min-block-size: 2.75rem; }
+
+  /* Standalone controls only. A blanket `a { min-block-size }` was the first
+     attempt and was wrong twice over: inline boxes ignore block-size entirely,
+     so it did nothing for the footer links it was meant to fix, and forcing
+     display on every anchor would have broken links set inside paragraphs.
+     Inline links in body copy are exempt under WCAG 2.5.8's inline exception. */
+  button,
+  summary,
+  [role='button'] {
+    min-block-size: 2.75rem;
+  }
+
+}
+
+/* Trailing arrow that nudges on hover */
+.btn__arrow {
+  transition: transform var(--dur-2) var(--ease-out);
+  flex: none;
+}
+.btn:hover .btn__arrow { transform: translateX(3px); }
+
+.btn-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-3);
+  align-items: center;
+}
+
+/* On a phone, stacked buttons of different label lengths read as ragged.
+   Give every button in a row the full measure so the stack is a clean column.
+   Non-button children (notes, links) are untouched. */
+@media (max-width: 30em) {
+  .btn-row > .btn { flex: 1 1 100%; }
+}
+
+/* Inline text link with arrow */
+.link-arrow {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-2);
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+  font-weight: 600;
+  letter-spacing: var(--tr-label);
+  text-transform: uppercase;
+  color: var(--c-signal);
+  transition: gap var(--dur-2) var(--ease-out);
+}
+.link-arrow:hover { gap: var(--sp-3); }
+
+/* Underlined prose link */
+.link {
+  color: var(--c-ink);
+  text-decoration: underline;
+  text-decoration-color: var(--c-line-strong);
+  text-underline-offset: 0.22em;
+  text-decoration-thickness: 1px;
+  transition: text-decoration-color var(--dur-2) var(--ease-out), color var(--dur-2) var(--ease-out);
+}
+.link:hover { color: var(--c-signal); text-decoration-color: var(--c-signal); }
+
+/* --------------------------------------------------------------------------
+   8. Panels — the console frame
+   -------------------------------------------------------------------------- */
+.panel {
+  position: relative;
+  background: var(--c-panel);
+  border: 1px solid var(--c-line);
+  border-radius: var(--r-2);
+  box-shadow: var(--sh-panel);
+}
+.panel--pad { padding: clamp(1.25rem, 0.9rem + 1.4vw, 2rem); }
+.panel--pad-lg { padding: clamp(1.5rem, 1rem + 2.2vw, 3rem); }
+
+/* Panel header bar: mono label left, meta right, hairline underneath */
+.panel__bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sp-4);
+  padding: 0.75rem clamp(0.875rem, 0.7rem + 0.7vw, 1.25rem);
+  border-block-end: 1px solid var(--c-line);
+  background: var(--c-panel-2);
+  border-radius: var(--r-2) var(--r-2) 0 0;
+  min-block-size: 2.75rem;
+}
+.panel__body { padding: clamp(1rem, 0.8rem + 1.2vw, 1.75rem); }
+
+/* Crop-mark corners — subtle, and the detail that sells the console read. */
+.ticked::before,
+.ticked::after {
+  content: '';
+  position: absolute;
+  inline-size: 9px;
+  block-size: 9px;
+  border-color: var(--c-line-strong);
+  border-style: solid;
+  pointer-events: none;
+}
+.ticked::before {
+  inset-block-start: -1px;
+  inset-inline-start: -1px;
+  border-width: 1px 0 0 1px;
+}
+.ticked::after {
+  inset-block-end: -1px;
+  inset-inline-end: -1px;
+  border-width: 0 1px 1px 0;
+}
+
+/* Interactive card that lifts on hover */
+.card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-4);
+  padding: clamp(1.25rem, 0.9rem + 1.4vw, 1.875rem);
+  background: var(--c-panel);
+  border: 1px solid var(--c-line);
+  border-radius: var(--r-2);
+  transition:
+    border-color var(--dur-2) var(--ease-out),
+    background-color var(--dur-2) var(--ease-out),
+    transform var(--dur-2) var(--ease-out);
+}
+a.card:hover,
+.card--hover:hover {
+  border-color: var(--c-line-strong);
+  background: var(--c-panel-2);
+  transform: translateY(-2px);
+}
+.card__title {
+  font-size: var(--fs-md);
+  font-weight: 500;
+  letter-spacing: var(--tr-tight);
+  line-height: var(--lh-snug);
+}
+.card__text {
+  font-size: var(--fs-sm);
+  color: var(--c-ink-2);
+  line-height: var(--lh-relaxed);
+}
+/* --------------------------------------------------------------------------
+   11. Inverted "paper" block — high-contrast counterpoint, use sparingly
+   -------------------------------------------------------------------------- */
+.paper {
+  background: var(--c-paper);
+  color: var(--c-paper-ink);
+  --c-ink: var(--c-paper-ink);
+  --c-ink-2: var(--c-paper-ink-2);
+  /* Small text on paper sits as low as --c-panel-4 (#cdd1c7), so the ramp is
+     pinned to that worst case: ink-3 clears 4.5:1 there (4.52), ink-4 clears
+     3:1 (3.25) and stays decorative/UI only. */
+  --c-ink-3: #525a61;
+  --c-ink-4: #687076;
+  --c-line: rgb(11 13 16 / 12%);
+  --c-line-2: rgb(11 13 16 / 18%);
+  --c-line-strong: rgb(11 13 16 / 32%);
+  --c-panel: #e9ebe5;
+  --c-panel-2: #e2e5dd;
+  --c-panel-3: #d9dcd3;
+  --c-panel-4: #cdd1c7;
+  --grid-line: rgb(11 13 16 / 5%);
+  --sh-panel: none;
+  color-scheme: light;
+}
+.paper .btn--primary { --btn-bg: var(--c-paper-ink); --btn-fg: var(--c-paper); --btn-bd: var(--c-paper-ink); }
+.paper .btn--primary:hover { --btn-bg: #23282e; --btn-bd: #23282e; box-shadow: none; }
+.paper { --c-signal-text: var(--c-signal-paper); --c-rose: var(--c-rose-paper); }
+.paper .hl { color: var(--c-signal-paper); }
+.paper .eyebrow::before { background: var(--c-signal-paper); box-shadow: none; }
+.paper .link-arrow { color: var(--c-signal-paper); }
+
+/* --------------------------------------------------------------------------
+   13. Prose — long-form article body
+   -------------------------------------------------------------------------- */
+.prose {
+  /* The evidence blocks below size themselves against this column, not against
+     the viewport. On an article page the body is ~704px inside a 1440px window,
+     so a viewport breakpoint put four metrics across a column with room for
+     two, and "9.1 min" broke over two lines at 36px. */
+  container-type: inline-size;
+  container-name: prose;
+  font-size: var(--fs-md);
+  line-height: var(--lh-relaxed);
+  color: var(--c-ink-2);
+}
+.prose > * + * { margin-block-start: var(--sp-5); }
+.prose h2 {
+  font-size: var(--fs-2xl);
+  color: var(--c-ink);
+  margin-block-start: var(--sp-8);
+  letter-spacing: var(--tr-display);
+  scroll-margin-top: calc(var(--header-h) + var(--sp-5));
+}
+.prose h3 {
+  font-size: var(--fs-lg);
+  color: var(--c-ink);
+  margin-block-start: var(--sp-7);
+  letter-spacing: var(--tr-tight);
+  scroll-margin-top: calc(var(--header-h) + var(--sp-5));
+}
+.prose ul, .prose ol { padding-inline-start: var(--sp-5); display: grid; gap: var(--sp-3); }
+.prose li::marker { color: var(--c-signal); }
+.prose a { color: var(--c-ink); text-decoration: underline; text-decoration-color: var(--c-signal); text-underline-offset: 0.22em; }
+.prose a:hover { color: var(--c-signal); }
+.prose strong { color: var(--c-ink); font-weight: 600; }
+.prose blockquote {
+  border-inline-start: 2px solid var(--c-signal);
+  padding-inline-start: var(--sp-5);
+  color: var(--c-ink);
+  font-size: var(--fs-lg);
+  line-height: var(--lh-snug);
+  letter-spacing: var(--tr-tight);
+}
+.prose code {
+  font-family: var(--font-mono);
+  font-size: 0.875em;
+  background: var(--c-panel-2);
+  border: 1px solid var(--c-line);
+  border-radius: var(--r-1);
+  padding: 0.1em 0.35em;
+  color: var(--c-signal);
+}
+.prose pre {
+  background: var(--c-panel);
+  border: 1px solid var(--c-line);
+  border-radius: var(--r-2);
+  padding: var(--sp-5);
+  overflow-x: auto;
+  font-size: var(--fs-sm);
+}
+.prose pre code { background: none; border: 0; padding: 0; color: var(--c-ink-2); }
+.prose hr { margin-block: var(--sp-7); }
+
+/* --------------------------------------------------------------------------
+   14. Evidence figures — data blocks inside an article body
+
+   The insight entries carry an account's real production figures, and a claim
+   is only as good as the working shown under it. These are the presentation
+   pieces that working needs: tables, bar rows, a metric strip and a caveat
+   list. They live here rather than in a component because Astro's scoped
+   styles never reach markdown output, and the entries are markdown.
+   -------------------------------------------------------------------------- */
+
+/* ---- Tables ----
+   A table is the honest presentation for this material — a chart can flatter a
+   number by choosing an axis, a table cannot. Every one scrolls inside its own
+   box so the article body never scrolls sideways. */
+.prose table {
+  inline-size: 100%;
+  border-collapse: collapse;
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+  font-variant-numeric: tabular-nums;
+  /* Below this the columns collapse into an unreadable stack, so the wrapper
+     scrolls instead. Set on the table, not the wrapper, so it is the table
+     that refuses to shrink. */
+  min-inline-size: 34rem;
+}
+/* Astro wraps nothing around a markdown table, so the scroll box is declared
+   in the entry as <div class="tbl">…</div>. */
+.tbl {
+  overflow-x: auto;
+  border: 1px solid var(--c-line);
+  border-radius: var(--r-2);
+  background: var(--c-panel);
+  -webkit-overflow-scrolling: touch;
+}
+.tbl:focus-visible { outline: 2px solid var(--c-signal); outline-offset: 2px; }
+.prose .tbl > table { min-inline-size: 34rem; }
+/* Some tables hold sentences rather than figures. Nowrap is right for a column
+   of numbers and wrong for a column of clauses, which is 300px wide and then
+   drags the whole table into a sideways scroll on a desktop. */
+.prose .tbl--wrap > table { min-inline-size: 26rem; }
+.prose .tbl--wrap th,
+.prose .tbl--wrap td { white-space: normal; }
+.prose th,
+.prose td {
+  padding: var(--sp-3);
+  text-align: right;
+  border-block-end: 1px solid var(--c-line);
+  white-space: nowrap;
+}
+.prose th:first-child,
+.prose td:first-child {
+  text-align: left;
+  white-space: normal;
+  min-inline-size: 9.5rem;
+  color: var(--c-ink-2);
+}
+.prose thead th {
+  position: sticky;
+  inset-block-start: 0;
+  z-index: 1;
+  background: var(--c-panel-2);
+  font-size: var(--fs-2xs);
+  font-weight: 500;
+  letter-spacing: var(--tr-label);
+  text-transform: uppercase;
+  color: var(--c-ink-3);
+  border-block-end: 1px solid var(--c-line-2);
+}
+.prose tbody td { color: var(--c-ink); }
+.prose tbody tr:last-child td { border-block-end: 0; }
+/* The two sides of every comparison on this site: what the people did, and
+   what the system does. Warm for the first, signal for the second. */
+.prose td em { font-style: normal; color: var(--c-amber); }
+.prose td strong { color: var(--c-signal-text); font-weight: 500; }
+
+/* ---- Bar rows ----
+   Length is proportional to the value and the value is printed beside it, so
+   the bar cannot say anything the number does not. */
+.fig {
+  margin-block-start: var(--sp-6);
+  border: 1px solid var(--c-line);
+  border-radius: var(--r-2);
+  background: var(--c-panel);
+  padding: var(--sp-5);
+}
+.fig__head {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: var(--sp-2) var(--sp-5);
+  padding-block-end: var(--sp-4);
+  margin-block-end: var(--sp-5);
+  border-block-end: 1px solid var(--c-line);
+}
+.fig__title {
+  font-size: var(--fs-sm);
+  font-weight: 500;
+  letter-spacing: var(--tr-normal);
+  color: var(--c-ink);
+}
+.fig__scale {
+  font-family: var(--font-mono);
+  font-size: var(--fs-2xs);
+  letter-spacing: var(--tr-label);
+  text-transform: uppercase;
+  color: var(--c-ink-3);
+}
+.fig__note {
+  margin-block-start: var(--sp-5);
+  padding-block-start: var(--sp-4);
+  border-block-start: 1px solid var(--c-line);
+  font-size: var(--fs-sm);
+  line-height: var(--lh-relaxed);
+  color: var(--c-ink-3);
+}
+
+.bars { display: grid; gap: var(--sp-4); }
+.bars__row {
+  display: grid;
+  grid-template-columns: 3rem minmax(0, 1fr) max-content;
+  align-items: center;
+  gap: var(--sp-3);
+}
+.bars__k {
+  font-family: var(--font-mono);
+  font-size: var(--fs-2xs);
+  letter-spacing: var(--tr-label);
+  text-transform: uppercase;
+  color: var(--c-ink-3);
+}
+.bars__track {
+  block-size: 1.5rem;
+  background: var(--c-panel-3);
+  border-radius: var(--r-1);
+  overflow: hidden;
+  display: flex;
+}
+.bars__seg { block-size: 100%; background: var(--c-signal); }
+/* The old way, in the warm tone the whole site uses for the human operation. */
+.bars__seg--was { background: var(--c-amber); }
+.bars__seg--waste { background: var(--c-rose); }
+.bars__v {
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+  font-variant-numeric: tabular-nums;
+  color: var(--c-ink);
+  white-space: nowrap;
+}
+
+/* ---- Metric strip ---- */
+.mstrip {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 1px;
+  margin-block-start: var(--sp-6);
+  border: 1px solid var(--c-line);
+  border-radius: var(--r-2);
+  background: var(--c-line);
+  overflow: hidden;
+  list-style: none;
+  padding: 0;
+}
+/* Widths are the column's, not the window's. A cell needs ~14rem before a
+   36px figure sits on one line, and the --3 and --4 variants only widen when
+   the column can actually pay for it — otherwise they stay two across, which
+   is the arrangement that never leaves an orphan on a four-item strip. */
+@container prose (min-width: 28rem) {
+  .mstrip { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@container prose (min-width: 42rem) {
+  .mstrip--3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+}
+@container prose (min-width: 56rem) {
+  .mstrip--4 { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+}
+.mstrip__item { background: var(--c-panel); padding: var(--sp-5); }
+.mstrip__k {
+  font-family: var(--font-mono);
+  font-size: var(--fs-2xs);
+  letter-spacing: var(--tr-label);
+  text-transform: uppercase;
+  color: var(--c-ink-3);
+}
+.mstrip__was {
+  display: block;
+  margin-block-start: var(--sp-4);
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+  color: var(--c-amber);
+  font-variant-numeric: tabular-nums;
+}
+.mstrip__now {
+  display: block;
+  margin-block-start: var(--nudge-2);
+  font-size: var(--fs-2xl);
+  font-weight: 600;
+  line-height: 1;
+  letter-spacing: var(--tr-display);
+  color: var(--c-signal-text);
+  font-variant-numeric: tabular-nums;
+}
+.mstrip__x {
+  display: block;
+  margin-block-start: var(--sp-4);
+  padding-block-start: var(--sp-3);
+  border-block-start: 1px solid var(--c-line);
+  font-family: var(--font-mono);
+  font-size: var(--fs-2xs);
+  letter-spacing: var(--tr-wide);
+  color: var(--c-ink-2);
+}
+
+/* ---- Caveat list ----
+   Numbered, bordered, and deliberately not styled to be skipped. */
+.caveats {
+  counter-reset: caveat;
+  list-style: none;
+  padding: 0;
+  display: grid;
+  gap: 0;
+  margin-block-start: var(--sp-6);
+}
+.prose .caveats { padding-inline-start: 0; gap: 0; }
+.caveats > li {
+  counter-increment: caveat;
+  position: relative;
+  padding: var(--sp-5) 0 var(--sp-5) var(--sp-7);
+  border-block-end: 1px solid var(--c-line);
+  font-size: var(--fs-sm);
+  line-height: var(--lh-relaxed);
+}
+.caveats > li:last-child { border-block-end: 0; }
+.caveats > li::before {
+  content: counter(caveat, decimal-leading-zero);
+  position: absolute;
+  inset-block-start: calc(var(--sp-5) + 0.2em);
+  inset-inline-start: 0;
+  font-family: var(--font-mono);
+  font-size: var(--fs-2xs);
+  letter-spacing: var(--tr-wide);
+  color: var(--c-amber);
+}
+
+/* ---- Provenance tag ----
+   Marks a figure as read off an instrument or worked out from one. */
+.tag {
+  display: inline-block;
+  font-family: var(--font-mono);
+  font-size: 0.75em;
+  letter-spacing: var(--tr-label);
+  text-transform: uppercase;
+  padding: 0.15em 0.5em;
+  border: 1px solid currentColor;
+  border-radius: var(--r-1);
+  white-space: nowrap;
+}
+.tag--measured { color: var(--c-signal-text); }
+.tag--derived { color: var(--c-amber); }
+
+/* --------------------------------------------------------------------------
+   15. Source link — the attribution under a third-party figure
+
+   Underlined on hover only. A stat block that carries four permanently
+   underlined attributions reads as a link farm; the figure is the content and
+   the source is the receipt. Only figures whose source page was fetched and
+   the claim confirmed on it get one at all.
+   -------------------------------------------------------------------------- */
+.src-link {
+  color: inherit;
+  text-decoration: underline;
+  text-decoration-color: transparent;
+  text-underline-offset: 0.22em;
+  transition: color var(--dur-2) var(--ease-out),
+    text-decoration-color var(--dur-2) var(--ease-out);
+}
+.src-link:hover {
+  color: var(--c-signal-text);
+  text-decoration-color: var(--c-signal);
+}

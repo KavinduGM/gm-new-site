@@ -1,0 +1,63 @@
+# Optional. Dokploy can build this repo as an "Application" straight from the
+# Dockerfile, which is the simpler path and needs nothing here. This file exists
+# so the runtime configuration is version-controlled rather than living only in
+# the Dokploy UI, and so `docker compose up` reproduces production locally.
+#
+#   cp .env.example .env     # then fill in the two Resend values
+#   docker compose up --build
+#
+# TLS is NOT handled here. Traefik terminates it in front and forwards plain
+# HTTP; server.mjs must never redirect to HTTPS or hold certificates.
+
+services:
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: groovymark-site:latest
+    restart: unless-stopped
+
+    environment:
+      NODE_ENV: production
+      HOST: 0.0.0.0
+      PORT: "3000"
+      # Read at runtime by server.mjs. Never build args: build args are visible
+      # in `docker history`, and Dokploy's Environment tab is not available
+      # during the build anyway.
+      RESEND_API_KEY: ${RESEND_API_KEY:?set RESEND_API_KEY in .env or the Dokploy Environment tab}
+      RESEND_FROM: ${RESEND_FROM:?set RESEND_FROM, e.g. GroovyMark <hello@groovymark.com>}
+      # Optional: overrides SITE.leadsEmail when set.
+      LEADS_TO: ${LEADS_TO:-}
+
+    # Published only for local use. On Dokploy, leave Advanced -> Ports empty
+    # and let Traefik reach the container on 3000 via the Domain settings, or
+    # this can interfere with routing.
+    ports:
+      - "127.0.0.1:3000:3000"
+
+    # Alpine has no curl, so the check uses the runtime that is definitely
+    # present. A healthcheck whose binary is missing reports unhealthy forever.
+    healthcheck:
+      test:
+        - CMD
+        - node
+        - -e
+        - "fetch('http://127.0.0.1:'+(process.env.PORT||3000)+'/health').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"
+      interval: 30s
+      timeout: 5s
+      start_period: 20s
+      retries: 3
+
+    # The app writes nothing to disk; everything it serves was built into the
+    # image. Read-only rules out a whole class of container compromise.
+    read_only: true
+    tmpfs:
+      - /tmp
+    security_opt:
+      - no-new-privileges:true
+
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"

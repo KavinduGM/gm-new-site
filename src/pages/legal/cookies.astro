@@ -1,0 +1,472 @@
+---
+import Base from '../../layouts/Base.astro';
+import { SITE } from '../../site.config.mjs';
+import { breadcrumbSchema } from '../../lib/schema.mjs';
+
+/** One source of truth for the stamp shown in the header and in §8. */
+const UPDATED = { iso: '2026-08-29', label: '29 August 2026' };
+
+const sections: { id: string; title: string }[] = [
+  { id: 'short', title: 'The short version' },
+  { id: 'what-we-store', title: 'What we store, exactly' },
+  { id: 'no-cookies', title: 'Why there are no cookies' },
+  { id: 'categories', title: 'The four categories' },
+  { id: 'your-choice', title: 'Changing or withdrawing your choice' },
+  { id: 'who-sees-it', title: 'Where the record goes' },
+  { id: 'browser', title: 'Controls in your browser' },
+  { id: 'changes', title: 'Changes to this policy' },
+  { id: 'contact', title: 'Contact' },
+];
+
+/**
+ * The complete list. Verified against the built site: these three entries are
+ * the only client-side storage anywhere on the origin, and there are no
+ * cookies at all. If anything is added, it goes in this table on the same
+ * commit — the table is the claim, not the prose around it.
+ */
+
+const ANALYTICS = [
+  {
+    name: 'liq_vid',
+    kind: 'Local storage',
+    purpose:
+      'A reference for this browser, so ten visits from you are counted as one person rather than ten.',
+    life: 'Until you clear it',
+  },
+  {
+    name: 'liq_sid',
+    kind: 'Session storage',
+    purpose: 'Groups the pages you look at in one sitting into a single visit.',
+    life: 'Until you close the tab',
+  },
+  {
+    name: 'liq_sts',
+    kind: 'Session storage',
+    purpose: 'When that visit started, so we can tell a glance from a proper read.',
+    life: 'Until you close the tab',
+  },
+  {
+    name: 'liq_utm',
+    kind: 'Session storage',
+    purpose: 'The campaign tags on the link you arrived through, so we know which one sent you.',
+    life: 'Until you close the tab',
+  },
+];
+
+const STORED = [
+  {
+    name: 'crm_cookie_consent_done',
+    kind: 'Local storage',
+    purpose: 'Records that you have answered, so the panel stops appearing.',
+    life: 'Until you clear it or withdraw',
+  },
+  {
+    name: 'crm_cookie_consent_choices',
+    kind: 'Local storage',
+    purpose: 'Holds which categories you allowed, so the choice can be honoured and shown back to you.',
+    life: 'Until you clear it or withdraw',
+  },
+  {
+    name: 'crm_cookie_consent_id',
+    kind: 'Local storage',
+    purpose:
+      'The reference for your consent record, so a later change updates that record instead of creating a second one, and so you can ask us to delete it.',
+    life: 'Until you clear it or withdraw',
+  },
+];
+
+const CATEGORIES = [
+  {
+    name: 'Strictly necessary',
+    state: 'In use',
+    on: true,
+    text:
+      'The three entries above. They exist because you were asked a question and we have to honour the answer and be able to show that we asked. This category cannot be switched off, and under the ePrivacy rules it does not require consent.',
+  },
+  {
+    name: 'Analytics',
+    state: 'In use',
+    on: true,
+    text:
+      'Our own measurement, described in full above. It runs on every visit while the site is new and we are using the numbers to decide what to build and where to spend. This panel does not offer a switch for it today, because a switch we ignored would be worse than none.',
+  },
+  {
+    name: 'Functional',
+    state: 'Nothing behind it',
+    on: false,
+    text:
+      'Would remember preferences such as a chosen view or a dismissed message between visits. Nothing on this site does that today.',
+  },
+  {
+    name: 'Marketing',
+    state: 'Nothing behind it',
+    on: false,
+    text:
+      'Would build an advertising or retargeting profile. We do not do this, we do not run advertising pixels, and we do not sell or share data with advertisers.',
+  },
+];
+
+const privacyMail = 'mailto:privacy@groovymark.com';
+---
+
+<Base
+  title="Cookie policy: what this site stores"
+  description={`Exactly what ${SITE.name} keeps in your browser: three consent entries and four from our own analytics. No cookies, no ad networks, nothing sold or shared.`}
+  noindex={false}
+  schema={[breadcrumbSchema([{ name: 'Cookie policy', href: '/legal/cookies/' }])]}
+>
+  <article class="doc">
+    <header class="doc__head grid-bg">
+      <div class="wrap wrap--text">
+        <p class="eyebrow">Legal</p>
+        <h1 class="display-2 doc__title">Cookie policy</h1>
+        <p class="lede doc__lede">
+          This site sets no cookies. It keeps three entries in your browser's local storage,
+          all of them there to record and honour the cookie choice you were asked to make.
+          That is the whole list, and this page shows it in full.
+        </p>
+        <ul role="list" class="doc__stamp">
+          <li class="doc__stamp-item">
+            <span class="dot dot--done" aria-hidden="true"></span>
+            Last updated <time datetime={UPDATED.iso}>{UPDATED.label}</time>
+          </li>
+          <li class="doc__stamp-item">Applies to {SITE.url.replace('https://', '')}</li>
+          <li class="doc__stamp-item">Version 1.0 · template</li>
+        </ul>
+      </div>
+    </header>
+
+    <div class="wrap wrap--text doc__body">
+      <aside class="notice panel panel--pad" aria-labelledby="notice-title">
+        <p class="meta notice__label">
+          <span class="dot dot--queued" aria-hidden="true"></span>Template · not yet reviewed
+        </p>
+        <h2 id="notice-title" class="heading-sm notice__title">
+          Have your own counsel read this before it goes live
+        </h2>
+        <p class="body-sm notice__text">
+          The table below was checked against the built site rather than written from a
+          template, so it is accurate as at the date above. It is still not legal advice and
+          has not been reviewed by a lawyer. If anything is added to the site that stores data
+          on a visitor's device, this page has to change on the same day.
+        </p>
+      </aside>
+
+      <nav class="toc" aria-labelledby="toc-title">
+        <h2 id="toc-title" class="meta toc__title">Contents</h2>
+        <ol role="list" class="toc__list">
+          {sections.map((s, i) => (
+            <li>
+              <a href={`#${s.id}`} class="toc__link">
+                <span class="index toc__n">{String(i + 1).padStart(2, '0')}</span>
+                <span>{s.title}</span>
+              </a>
+            </li>
+          ))}
+        </ol>
+      </nav>
+
+      <div class="prose doc__prose">
+        <h2 id="short">The short version</h2>
+        <p>
+          There are no analytics cookies, no advertising cookies and no third-party trackers on
+          this site. Nothing follows you to another website. The consent panel exists because
+          we ask before storing anything at all, and because your answer has to be recorded
+          somewhere for it to mean anything.
+        </p>
+        <p>
+          If you refuse everything, the site works exactly as it does if you accept everything.
+          Refusing costs you nothing, which is the test of whether a consent request is honest.
+        </p>
+
+        <h2 id="what-we-store">What we store, exactly</h2>
+        <p>
+          Three entries, all first-party, all written by the consent panel and by nothing else.
+        </p>
+        <div class="tbl tbl--wrap">
+          <table>
+            <thead>
+              <tr>
+                <th scope="col">Name</th>
+                <th scope="col">Type</th>
+                <th scope="col">What it is for</th>
+                <th scope="col">How long</th>
+              </tr>
+            </thead>
+            <tbody>
+              {STORED.map((r) => (
+                <tr>
+                  <th scope="row"><code>{r.name}</code></th>
+                  <td>{r.kind}</td>
+                  <td>{r.purpose}</td>
+                  <td>{r.life}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+        <p>
+          Local storage has no expiry date of its own, which is why the last column says what it
+          says: these entries stay until you clear them, or until you withdraw your choice using
+          the link in the footer, which clears them.
+        </p>
+
+        <h3>Our own analytics</h3>
+        <p>
+          We would rather say this plainly than let you find it in the page source: this site is
+          measured. Almost every site is, and pretending otherwise is not a position we want to
+          defend. What we will say is whose it is and what it is for.
+        </p>
+        <p>
+          The tracker is ours. We built it, and it runs on our own system at
+          <code>crm.groovymark.com</code> — not on Google Analytics and not on an advertising
+          network. Nobody else receives the data,
+          it is not sold, and it is not handed to a data broker. It records the pages you look at,
+          the site you came from, your screen size and the campaign tags on the link you followed.
+          It does not record your name or your email address, and it is not joined to any enquiry
+          you send us.
+        </p>
+        <p>
+          We use it for two things: working out which pages and which campaigns are worth the
+          money, and finding the parts of the site that are not doing their job. It is not used to
+          follow you across other websites, and it does not build an advertising profile of you.
+        </p>
+        <div class="tbl tbl--wrap">
+          <table>
+            <thead>
+              <tr>
+                <th scope="col">Name</th>
+                <th scope="col">Type</th>
+                <th scope="col">What it is for</th>
+                <th scope="col">How long</th>
+              </tr>
+            </thead>
+            <tbody>
+              {ANALYTICS.map((r) => (
+                <tr>
+                  <th scope="row"><code>{r.name}</code></th>
+                  <td>{r.kind}</td>
+                  <td>{r.purpose}</td>
+                  <td>{r.life}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+
+        <h2 id="no-cookies">Why there are no cookies</h2>
+        <p>
+          The site is static pages plus one form endpoint. There is no login, no session, no basket and no
+          server-side state to tie a cookie to, so a cookie would have nothing to carry. Local
+          storage does the one job that is needed — remembering your answer on your own device —
+          without being sent to a server on every request the way a cookie is.
+        </p>
+        <p>
+          The law here does not turn on the word “cookie”. The ePrivacy rules cover storing
+          information on your device or reading information already stored there, whatever the
+          mechanism, so local storage is treated exactly the same way and this page exists for
+          the same reason a cookie policy would.
+        </p>
+
+        <h2 id="categories">The four categories</h2>
+        <p>
+          The consent panel offers four categories because that is what our consent records
+          track. We would rather show you all four and tell you plainly that three of them are
+          empty than quietly hide them and add things later without asking.
+        </p>
+        <ul role="list">
+          {CATEGORIES.map((c) => (
+            <li>
+              <strong>{c.name} — {c.state}.</strong> {c.text}
+            </li>
+          ))}
+        </ul>
+        <p>
+          If we ever put something behind analytics, functional or marketing, your stored answer
+          for that category is what decides whether it runs, and we will update this page before
+          it goes live rather than after.
+        </p>
+
+        <h2 id="your-choice">Changing or withdrawing your choice</h2>
+        <p>
+          Withdrawing has to be as easy as consenting, so there is one control and it does both.
+          <strong>Cookie settings</strong> in the footer of every page reopens the panel with
+          your current choice loaded, and you can change it as often as you like.
+        </p>
+        <p>
+          To go further and have the record itself erased, use the same panel or write to
+          <a href={privacyMail}>privacy@groovymark.com</a>. Erasure clears the entries that record
+          your choice and deletes the consent record we hold. The reference is kept only if we
+          cannot reach our own system to delete that record, so the erasure can be retried. You will be asked again on your
+          next visit, because from our side there is no longer any record that you were asked.
+        </p>
+
+        <h2 id="who-sees-it">Where the record goes</h2>
+        <p>
+          Your choice is saved on your device first, so it is honoured even if nothing else
+          works. A copy is then sent to our own system at
+          <code>crm.groovymark.com</code>, which we run ourselves — it is not a third-party
+          consent vendor, and the record is not shared with anyone.
+        </p>
+        <p>
+          That copy is what lets us show, if we are ever asked to, that consent was requested and
+          what was chosen. Alongside your choice it records the date, your browser, your
+          operating system and whether you were on a phone, tablet or desktop. It does not record
+          your name or your email address, and it is not joined to any enquiry you send us
+          through the contact form.
+        </p>
+        <p>
+          The lawful basis for keeping that record is our legitimate interest in being able to
+          demonstrate compliance, and it is covered in full by the
+          <a href="/legal/privacy/">privacy notice</a>.
+        </p>
+
+        <h2 id="browser">Controls in your browser</h2>
+        <p>
+          You do not have to take our word for any of this. Open your browser's developer tools,
+          look under Application or Storage, and you will see the three entries above and nothing
+          else. Clearing site data for this domain removes them, and the panel will ask again on
+          your next visit.
+        </p>
+        <p>
+          Browser settings that block cookies and site data will also block these entries. The
+          site is built to work without them: the only consequence is that the consent panel
+          cannot remember your answer, so it appears each time.
+        </p>
+
+        <h2 id="changes">Changes to this policy</h2>
+        <p>
+          This page changes when what we store changes, on the same day it changes. The stamp at
+          the top is the version: this one was last updated on
+          <time datetime={UPDATED.iso}>{UPDATED.label}</time>.
+        </p>
+        <p>
+          If we add anything that stores data on your device, your existing consent does not
+          carry over to it. We will ask again for the category it falls under.
+        </p>
+
+        <h2 id="contact">Contact</h2>
+        <p>
+          Questions about this policy, or a request to delete your consent record, go to
+          <a href={privacyMail}>privacy@groovymark.com</a>. A person reads it, normally within one
+          business day.
+        </p>
+        <p>
+          For anything wider than cookies — what we collect through the enquiry form, how long we
+          keep it, and your rights over it — see the
+          <a href="/legal/privacy/">privacy notice</a>.
+        </p>
+      </div>
+    </div>
+  </article>
+</Base>
+
+<style>
+  /* ---- Document header ---- */
+  .doc__head {
+    position: relative;
+    padding-block: clamp(3rem, 2rem + 4vw, 5rem) clamp(2rem, 1.4rem + 2.4vw, 3rem);
+    border-block-end: 1px solid var(--c-line);
+  }
+  .doc__title { margin-block-start: var(--sp-2); }
+  .doc__lede { margin-block-start: var(--sp-5); font-size: var(--fs-md); }
+
+  .doc__stamp {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--sp-2) var(--sp-5);
+    margin-block-start: var(--sp-6);
+    padding-block-start: var(--sp-4);
+    border-block-start: 1px solid var(--c-line);
+  }
+  .doc__stamp-item {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--sp-2);
+    font-family: var(--font-mono);
+    font-size: var(--fs-2xs);
+    letter-spacing: var(--tr-wide);
+    text-transform: uppercase;
+    color: var(--c-ink-3);
+  }
+
+  /* ---- Body column ---- */
+  .doc__body { padding-block: clamp(2rem, 1.4rem + 2.4vw, 3rem) var(--sp-section); }
+
+  /* ---- Counsel callout ---- */
+  .notice {
+    display: flex;
+    flex-direction: column;
+    gap: var(--sp-3);
+    background: var(--c-amber-wash);
+    border-inline-start: 2px solid var(--c-amber);
+    box-shadow: none;
+  }
+  .notice__label {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--sp-2);
+    color: var(--c-amber);
+  }
+  .notice__title { margin-block-start: var(--sp-1); }
+  .notice__list {
+    display: grid;
+    gap: var(--sp-2);
+    margin-block-start: var(--sp-2);
+    padding-block-start: var(--sp-4);
+    border-block-start: 1px solid var(--c-line-2);
+  }
+  .notice__item {
+    display: flex;
+    align-items: flex-start;
+    gap: var(--sp-3);
+    font-family: var(--font-mono);
+    font-size: var(--fs-2xs);
+    letter-spacing: var(--tr-wide);
+    line-height: var(--lh-normal);
+    color: var(--c-ink-2);
+  }
+  .notice__item .dot { margin-block-start: var(--nudge-2); }
+
+  /* ---- Table of contents ---- */
+  .toc {
+    margin-block-start: var(--sp-7);
+    padding-block: var(--sp-5);
+    border-block: 1px solid var(--c-line);
+  }
+  .toc__title { color: var(--c-ink-3); }
+  .toc__list {
+    display: grid;
+    gap: var(--sp-2) var(--sp-5);
+    margin-block-start: var(--sp-4);
+  }
+  @media (min-width: 34em) {
+    .toc__list { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  }
+  .toc__link {
+    display: flex;
+    align-items: baseline;
+    gap: var(--sp-3);
+    font-size: var(--fs-sm);
+    line-height: var(--lh-snug);
+    color: var(--c-ink-2);
+    transition: color var(--dur-2) var(--ease-out);
+  }
+  .toc__link:hover {
+    color: var(--c-signal);
+    text-decoration: underline;
+    text-underline-offset: 0.22em;
+  }
+  .toc__n { flex: none; }
+  .toc__link:hover .toc__n { color: var(--c-signal); }
+
+  /* ---- Prose ---- */
+  .doc__prose { margin-block-start: var(--sp-2); }
+  /* role="list" restores semantics under display:grid; put the markers back. */
+  .doc__prose ul[role='list'] {
+    list-style: disc;
+    padding-inline-start: var(--sp-5);
+  }
+  .doc__prose li { line-height: var(--lh-relaxed); }
+  .doc__prose code { word-break: break-word; }
+</style>

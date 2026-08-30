@@ -1,0 +1,122 @@
+---
+/**
+ * The closing call to action. Every page ends here, so it lives in one file
+ * rather than being copied per page — the Footer's own CTA stays suppressed
+ * via `hideFooterCta` so there is never a second ask stacked under this one.
+ *
+ * `title` accepts [bracketed] words, which render in the accent colour.
+ */
+interface Props {
+  title?: string;
+  body?: string;
+  cta?: { label: string; href: string };
+}
+const {
+  title = 'Tell us about your [content operation].',
+  body =
+    'A short call to work out the route. Build your own system from scratch, or ' +
+    'start on GroovyMark’s and prove the workflow on real output first. We’ll ' +
+    'help you decide which one fits before anything gets built.',
+  cta = { label: 'Book a build call', href: '/contact/' },
+} = Astro.props;
+
+const parts = title.split(/\[([^\]]+)\]/).map((t, i) => ({ t, hl: i % 2 === 1 }));
+---
+
+<section class="section close" aria-labelledby="close-title">
+  <span class="bloom close__bloom" aria-hidden="true"></span>
+  <span class="close__aura close__aura--a" aria-hidden="true"></span>
+  <span class="close__aura close__aura--b" aria-hidden="true"></span>
+  <div class="wrap wrap--wide close__inner">
+    <h2 id="close-title" class="close__title">
+      {parts.map((p) => (p.hl ? <span class="hl">{p.t}</span> : p.t))}
+    </h2>
+    <p class="close__sub">{body}</p>
+    <a href={cta.href} class="btn btn--primary btn--lg">
+      {cta.label}
+      <svg class="btn__arrow" width="12" height="12" viewBox="0 0 12 12" aria-hidden="true"><path d="M1 6h9M6.5 2 10.5 6l-4 4" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="square"/></svg>
+    </a>
+  </div>
+</section>
+
+<style>
+  .close {
+    position: relative;
+    overflow: clip;
+    /* Accent hairline plus a wash rising to meet the button. Separates this
+       from whatever precedes it without turning the finale into another card. */
+    border-block-start: 1px solid var(--c-line-signal);
+    background:
+      radial-gradient(ellipse 84% 62% at 50% 108%, var(--c-signal-wash) 0%, transparent 72%),
+      var(--c-void);
+  }
+  .close__bloom {
+    inline-size: min(46rem, 92vw);
+    block-size: 24rem;
+    inset-block-end: -14rem;
+    inset-inline-start: 50%;
+    translate: -50% 0;
+  }
+  /* 54rem, not 46: .wrap contributes ~83px of inline padding, so a tighter cap
+     leaves the title short of the ~702px it needs at the top of the --fs-3xl
+     clamp, which wraps it onto a second line. .close__sub keeps its own 33rem
+     measure, so only the title widens. */
+  .close__inner { text-align: center; display: flex; flex-direction: column; align-items: center; max-width: 54rem; }
+  .close__title {
+    font-size: var(--fs-3xl);
+    line-height: var(--lh-tight);
+    letter-spacing: var(--tr-display);
+    font-weight: 600;
+    text-wrap: balance;
+  }
+  .close__sub {
+    margin-block-start: var(--sp-5);
+    font-size: var(--fs-md);
+    color: var(--c-ink-2);
+    line-height: var(--lh-relaxed);
+    max-width: 33rem;
+    text-wrap: pretty;
+  }
+  .close__inner .btn { margin-block-start: var(--sp-6); }
+
+  /* ---- Living background ----
+     Two soft radial fields that drift behind the copy. Deliberately NOT
+     filter: blur() — a radial gradient is already smooth, so this skips the
+     blur pass entirely and only ever moves transform and opacity, which the
+     compositor handles without repainting. No images, no JS, no bytes.
+     They carry a visible resting opacity, so the depth survives when motion
+     is switched off. */
+  .close__aura {
+    position: absolute;
+    z-index: -1;
+    pointer-events: none;
+    border-radius: 50%;
+    background: radial-gradient(circle, var(--c-signal-glow) 0%, transparent 68%);
+    opacity: 0.35;
+  }
+  .close__aura--a {
+    inline-size: min(34rem, 80vw);
+    aspect-ratio: 1;
+    inset-block-start: -8rem;
+    inset-inline-start: 6%;
+  }
+  .close__aura--b {
+    inline-size: min(28rem, 70vw);
+    aspect-ratio: 1;
+    inset-block-end: -9rem;
+    inset-inline-end: 4%;
+  }
+  @media (prefers-reduced-motion: no-preference) {
+    /* Long, offset periods so the two never sync into an obvious pulse. */
+    .close__aura--a { animation: close-drift-a 29s var(--ease-in-out) infinite; }
+    .close__aura--b { animation: close-drift-b 37s var(--ease-in-out) infinite; }
+  }
+  @keyframes close-drift-a {
+    0%, 100% { transform: translate3d(0, 0, 0) scale(1); opacity: 0.28; }
+    50%      { transform: translate3d(4%, 5%, 0) scale(1.14); opacity: 0.46; }
+  }
+  @keyframes close-drift-b {
+    0%, 100% { transform: translate3d(0, 0, 0) scale(1.08); opacity: 0.24; }
+    50%      { transform: translate3d(-5%, -4%, 0) scale(0.94); opacity: 0.4; }
+  }
+</style>

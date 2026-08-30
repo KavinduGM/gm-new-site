@@ -1,0 +1,16 @@
+node_modules
+dist
+.git
+.gitignore
+.env
+.env.*
+!.env.example
+*.log
+.DS_Store
+.astro
+.vscode
+.claude
+brand-source
+scripts/redact-case-shots.py
+scripts/optimise-images.py
+scripts/build-brand-assets.py

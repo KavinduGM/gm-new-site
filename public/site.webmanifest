@@ -1,0 +1,30 @@
+{
+  "name": "GroovyMark",
+  "short_name": "GroovyMark",
+  "description": "Custom AI content production and publishing systems, built for you to own or run for you as a managed service. One content plan in — script, voiceover, motion graphics, video, thumbnails and social posts out, published on schedule.",
+  "lang": "en",
+  "id": "/",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "background_color": "#08070c",
+  "theme_color": "#08070c",
+  "icons": [
+    {
+      "src": "/icon.svg",
+      "type": "image/svg+xml",
+      "sizes": "any"
+    },
+    {
+      "src": "/icon-192.png",
+      "type": "image/png",
+      "sizes": "192x192"
+    },
+    {
+      "src": "/icon-512.png",
+      "type": "image/png",
+      "sizes": "512x512"
+    }
+  ]
+}

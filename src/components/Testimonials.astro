@@ -1,0 +1,398 @@
+---
+import { TESTIMONIALS } from '../data/testimonials.mjs';
+
+/**
+ * Testimonial carousel.
+ *
+ * Built on a native scroll-snap track rather than a JS-driven slider, so
+ * swiping and trackpad scrolling work before any script runs. JavaScript only
+ * adds the auto-advance and the arrow buttons on top of that, which means the
+ * section degrades to a perfectly usable manual carousel if the script fails.
+ *
+ * WCAG 2.2.2: content that moves automatically for longer than five seconds
+ * needs a way to stop it, so there is a real pause control, and the timer also
+ * pauses on hover, on focus within, and while the tab is hidden.
+ */
+const total = TESTIMONIALS.length;
+
+/* Inline SVG rather than emoji flags: 🇺🇸 renders as the letters "US" on
+   Windows, which is a large share of a US/UK desktop audience.
+
+   Monochrome, to match the client logo wall, which is keyed to a single tone —
+   these were the only full-colour marks on the site. Flags are normally read by
+   colour, so distinguishing them here rests on structure instead: the UK fills
+   the whole field with the cross, while AU and NZ carry it in the canton, and
+   AU alone has the large Commonwealth star below it. The country name sits
+   beside every flag regardless, so nothing depends on telling them apart. */
+const FLAGS = {
+  USA: `<rect width="20" height="14" fill="var(--flag-field)"/><g fill="var(--flag-mark)"><rect y="1.6" width="20" height="1.1"/><rect y="4.4" width="20" height="1.1"/><rect y="7.2" width="20" height="1.1"/><rect y="10" width="20" height="1.1"/></g><rect width="8.6" height="7.6" fill="var(--flag-canton)"/><g fill="var(--flag-mark)"><circle cx="2" cy="2" r=".5"/><circle cx="4.3" cy="2" r=".5"/><circle cx="6.6" cy="2" r=".5"/><circle cx="3.1" cy="3.8" r=".5"/><circle cx="5.4" cy="3.8" r=".5"/><circle cx="2" cy="5.6" r=".5"/><circle cx="4.3" cy="5.6" r=".5"/><circle cx="6.6" cy="5.6" r=".5"/></g>`,
+  UK: `<rect width="20" height="14" fill="var(--flag-field)"/><path d="M0 0l20 14M20 0L0 14" stroke="var(--flag-mark)" stroke-width="1.5" opacity=".62"/><path d="M10 0v14M0 7h20" stroke="var(--flag-field)" stroke-width="3.4"/><path d="M10 0v14M0 7h20" stroke="var(--flag-mark)" stroke-width="2"/>`,
+  Australia: `<rect width="20" height="14" fill="var(--flag-field)"/><rect width="10" height="7" fill="var(--flag-canton)"/><path d="M0 0l10 7M10 0L0 7" stroke="var(--flag-mark)" stroke-width=".8" opacity=".6"/><path d="M5 0v7M0 3.5h10" stroke="var(--flag-canton)" stroke-width="1.9"/><path d="M5 0v7M0 3.5h10" stroke="var(--flag-mark)" stroke-width="1.1"/><g fill="var(--flag-mark)"><circle cx="5" cy="10.6" r="1.35"/><circle cx="15.4" cy="3.2" r=".62"/><circle cx="17.6" cy="6.6" r=".62"/><circle cx="14.4" cy="8.6" r=".62"/><circle cx="16.2" cy="11.2" r=".62"/></g>`,
+  'New Zealand': `<rect width="20" height="14" fill="var(--flag-field)"/><rect width="10" height="7" fill="var(--flag-canton)"/><path d="M0 0l10 7M10 0L0 7" stroke="var(--flag-mark)" stroke-width=".8" opacity=".6"/><path d="M5 0v7M0 3.5h10" stroke="var(--flag-canton)" stroke-width="1.9"/><path d="M5 0v7M0 3.5h10" stroke="var(--flag-mark)" stroke-width="1.1"/><g fill="var(--flag-mark)"><circle cx="16.4" cy="3.6" r=".72"/><circle cx="13.9" cy="6.8" r=".72"/><circle cx="17.7" cy="8.4" r=".72"/><circle cx="15.4" cy="11.3" r=".72"/></g>`,
+};
+---
+
+<section class="tst section section--raised" aria-labelledby="tst-title" data-tst>
+  <div class="wrap wrap--wide">
+    <p class="eyebrow eyebrow--center">In their words</p>
+    <h2 id="tst-title" class="sec__title tst__title">
+      Eleven teams who <span class="hl">stopped doing it by hand</span>.
+    </h2>
+
+    <div class="tst__frame">
+      <ul role="list" class="tst__track" data-tst-track tabindex="0" aria-label="Client testimonials, scrollable">
+        {TESTIMONIALS.map((t, i) => (
+          <li class="tst__slide">
+            <figure class="tst__card panel ticked">
+              <svg class="tst__mark" width="26" height="20" viewBox="0 0 26 20" aria-hidden="true">
+                <path d="M0 20V11.6C0 5.2 3.6 1 10 0l1 2.6C7.2 3.9 5.4 6 5.4 8.6H10V20H0zm15 0v-8.4C15 5.2 18.6 1 25 0l1 2.6c-3.8 1.3-5.6 3.4-5.6 6h4.6V20H15z" fill="currentColor"/>
+              </svg>
+              <blockquote class="tst__quote"><p>{t.quote}</p></blockquote>
+              <figcaption class="tst__who">
+                <span class="tst__name">{t.name}</span>
+                <span class="tst__role">{t.role}, {t.org}</span>
+                <span class="tst__geo">
+                  <svg class="tst__flag" width="17" height="12" viewBox="0 0 20 14" aria-hidden="true" set:html={FLAGS[t.country]} />
+                  {t.country}
+                </span>
+              </figcaption>
+              <span class="sr-only">Testimonial {i + 1} of {total}</span>
+            </figure>
+          </li>
+        ))}
+      </ul>
+    </div>
+
+    <!-- Controls are added by script; hidden until then so a no-JS visitor is
+         not offered buttons that cannot work. The track stays swipeable. -->
+    <div class="tst__bar" data-tst-bar hidden>
+      <div class="tst__prog" aria-hidden="true"><span class="tst__prog-fill" data-tst-prog></span></div>
+      <p class="meta tst__count" aria-hidden="true">
+        <span data-tst-now>01</span> / {String(total).padStart(2, '0')}
+      </p>
+      <div class="tst__btns">
+        <button type="button" class="tst__btn" data-tst-toggle aria-label="Pause automatic sliding">
+          <svg class="tst__ico tst__ico--pause" width="12" height="12" viewBox="0 0 12 12" aria-hidden="true"><path d="M3.5 2v8M8.5 2v8" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+          <svg class="tst__ico tst__ico--play" width="12" height="12" viewBox="0 0 12 12" aria-hidden="true"><path d="M3.5 2l6 4-6 4z" fill="currentColor"/></svg>
+        </button>
+        <button type="button" class="tst__btn" data-tst-prev aria-label="Previous testimonial">
+          <svg width="12" height="12" viewBox="0 0 12 12" aria-hidden="true"><path d="M11 6H2M5.5 2 1.5 6l4 4" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="square"/></svg>
+        </button>
+        <button type="button" class="tst__btn" data-tst-next aria-label="Next testimonial">
+          <svg width="12" height="12" viewBox="0 0 12 12" aria-hidden="true"><path d="M1 6h9M6.5 2 10.5 6l-4 4" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="square"/></svg>
+        </button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<style>
+  /* .sec__title is declared in index.astro, whose Astro scope id differs from
+     this component's, so that rule never matched this heading: it was rendering
+     at the bare <h2> size, left aligned. Restated here to match the house
+     heading exactly. */
+  .tst__title {
+    margin-inline: auto;
+    font-size: var(--fs-section);
+    line-height: var(--lh-snug);
+    letter-spacing: var(--tr-display);
+    font-weight: 600;
+    max-width: 46rem;
+    text-align: center;
+    text-wrap: balance;
+  }
+
+  /* Full-bleed edges so a partially visible next card hints that the row
+     scrolls, without the track itself causing page overflow. */
+  .tst__frame { margin-block-start: clamp(2rem, 1.4rem + 2vw, 3rem); }
+
+  /* Flex, not grid: `grid-auto-columns: 1fr` in a scroll container splits the
+     width across all eleven columns instead of giving each one a fraction of
+     the viewport, which collapsed every card to ~1/22 width. A flex-basis
+     percentage resolves against the container, which is what a carousel wants. */
+  .tst__track {
+    display: flex;
+    gap: var(--sp-4);
+    list-style: none;
+    margin: 0;
+    padding: 0 0 var(--sp-3);
+    overflow-x: auto;
+    overscroll-behavior-inline: contain;
+    scroll-snap-type: x mandatory;
+    scrollbar-width: none;
+    /* Deliberately not `scroll-behavior: smooth`, and no behavior:'smooth' in
+       scrollTo either. Both silently no-op in some engines, which left the
+       arrows dead. The script tweens scrollLeft over rAF instead, so the
+       easing is ours and works everywhere. */
+    scroll-behavior: auto;
+  }
+  .tst__track::-webkit-scrollbar { display: none; }
+  .tst__track:focus-visible { outline: 2px solid var(--c-signal); outline-offset: 4px; border-radius: var(--r-2); }
+
+  /* 88% on small screens leaves the next card just visible, which is the clearest
+     signal that the row scrolls. */
+  .tst__slide {
+    flex: 0 0 88%;
+    scroll-snap-align: start;
+    display: flex;
+    min-width: 0;
+  }
+  @media (min-width: 48em) { .tst__slide { flex-basis: calc(50% - var(--sp-4) / 2); } }
+  @media (min-width: 75em) { .tst__slide { flex-basis: calc(33.333% - var(--sp-4) * 2 / 3); } }
+
+  .tst__card {
+    display: flex;
+    flex-direction: column;
+    gap: var(--sp-3);
+    inline-size: 100%;
+    padding: clamp(1.25rem, 0.9rem + 1.4vw, 1.75rem);
+    margin: 0;
+    /* .panel resolves to --c-panel, which is the .section--raised background —
+       lift a step so the cards read as objects rather than empty outlines. */
+    background:
+      linear-gradient(180deg, rgb(255 255 255 / 2.2%) 0%, transparent 46%),
+      var(--c-panel-2);
+    border-color: var(--c-line-2);
+  }
+  .tst__mark { color: var(--c-signal); opacity: 0.55; flex: none; }
+
+  .tst__quote { margin: 0; }
+  .tst__quote p {
+    font-size: var(--fs-sm);
+    line-height: var(--lh-relaxed);
+    color: var(--c-ink);
+    text-wrap: pretty;
+  }
+
+  .tst__who {
+    display: grid;
+    gap: 0.1rem;
+    /* Pinned to the bottom so attributions align across cards of unequal
+       quote length. */
+    margin-block-start: auto;
+    padding-block-start: var(--sp-3);
+    border-block-start: 1px solid var(--c-line);
+  }
+  .tst__name { font-size: var(--fs-sm); font-weight: 600; color: var(--c-ink); letter-spacing: var(--tr-display); }
+  .tst__role { font-size: var(--fs-xs); color: var(--c-ink-2); }
+  .tst__geo {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--sp-2);
+    font-family: var(--font-mono);
+    font-size: var(--fs-2xs);
+    letter-spacing: var(--tr-label);
+    text-transform: uppercase;
+    color: var(--c-signal-text);
+    margin-block-start: 0.3rem;
+    justify-self: start;
+  }
+  .tst__flag {
+    --flag-field: rgb(255 255 255 / 9%);
+    --flag-canton: rgb(255 255 255 / 17%);
+    --flag-mark: rgb(255 255 255 / 82%);
+    flex: none;
+    display: block;
+    border-radius: 1px;
+    box-shadow: 0 0 0 1px rgb(255 255 255 / 12%);
+  }
+
+  /* ---- Controls ---- */
+  .tst__bar {
+    display: flex;
+    align-items: center;
+    gap: var(--sp-4);
+    margin-block-start: var(--sp-5);
+  }
+  .tst__bar[hidden] { display: none; }
+
+  .tst__prog {
+    flex: 1 1 auto;
+    block-size: 2px;
+    background: var(--c-line);
+    border-radius: 2px;
+    overflow: hidden;
+  }
+  .tst__prog-fill {
+    display: block;
+    block-size: 100%;
+    inline-size: 0;
+    background: var(--c-signal);
+    transition: inline-size var(--dur-3) var(--ease-out);
+  }
+  .tst__count { flex: none; color: var(--c-ink-2); font-variant-numeric: tabular-nums; }
+
+  .tst__btns { display: flex; gap: var(--sp-2); flex: none; }
+  .tst__btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    inline-size: 2.25rem;
+    block-size: 2.25rem;
+    padding: 0;
+    background: var(--c-panel-2);
+    border: 1px solid var(--c-line-2);
+    border-radius: var(--r-1);
+    color: var(--c-ink-2);
+    cursor: pointer;
+    transition: color var(--dur-2) var(--ease-out), border-color var(--dur-2) var(--ease-out);
+  }
+  .tst__btn:hover:not(:disabled) { color: var(--c-ink); border-color: var(--c-line-strong); }
+  .tst__btn:focus-visible { outline: 2px solid var(--c-signal); outline-offset: 2px; }
+  .tst__btn:disabled { opacity: 0.4; cursor: default; }
+
+  /* Only one of the two glyphs shows, driven by the button's pressed state. */
+  .tst__ico--play { display: none; }
+  .tst__btn[aria-pressed='true'] .tst__ico--pause { display: none; }
+  .tst__btn[aria-pressed='true'] .tst__ico--play { display: inline-block; }
+</style>
+
+<script>
+  /* Not is:inline: bundling minifies this 5.5 KB of source out of the shipped
+   HTML and defers it. `bar.hidden = false` therefore runs after parse rather
+   than during it, which is the correct progressive-enhancement order anyway —
+   the progress control should not appear until the script driving it is live. */
+  (() => {
+    const root = document.querySelector('[data-tst]');
+    if (!root) return;
+    const track = root.querySelector('[data-tst-track]');
+    const bar = root.querySelector('[data-tst-bar]');
+    const prev = root.querySelector('[data-tst-prev]');
+    const next = root.querySelector('[data-tst-next]');
+    const toggle = root.querySelector('[data-tst-toggle]');
+    const nowEl = root.querySelector('[data-tst-now]');
+    const prog = root.querySelector('[data-tst-prog]');
+    const slides = Array.from(track.children);
+    if (!slides.length) return;
+
+    const DELAY = 8000;
+    const reduce = window.matchMedia('(prefers-reduced-motion: reduce)');
+    let timer = null;
+    let paused = false;
+
+    bar.hidden = false;
+
+    const offsetOf = (el) => el.offsetLeft - track.offsetLeft;
+    /* Last index that can sit flush left before the track hits its scroll end;
+       beyond it the browser clamps and the counter would stick. */
+    const lastIndex = () => {
+      const max = track.scrollWidth - track.clientWidth;
+      for (let i = 0; i < slides.length; i++) if (offsetOf(slides[i]) >= max - 1) return i;
+      return slides.length - 1;
+    };
+    const current = () => {
+      let best = 0;
+      let bd = Infinity;
+      slides.forEach((s, i) => {
+        const d = Math.abs(offsetOf(s) - track.scrollLeft);
+        if (d < bd) { bd = d; best = i; }
+      });
+      return best;
+    };
+    /* Own tween rather than native smooth scrolling, which no-ops in some
+       engines. Snapping is suspended for the duration, otherwise the container
+       can snap back mid-animation and fight the tween. */
+    let raf2 = 0;
+    let guard = 0;
+    const ease = (t) => (t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2);
+    const glide = (to) => {
+      cancelAnimationFrame(raf2);
+      clearTimeout(guard);
+      const from = track.scrollLeft;
+      const dist = to - from;
+      if (Math.abs(dist) < 1) return;
+      /* Snapping off for the duration, or the container can snap back mid-tween
+         and fight it. Restored by settle(), which always runs. */
+      track.style.scrollSnapType = 'none';
+      const t0 = performance.now();
+      const settle = () => {
+        cancelAnimationFrame(raf2);
+        clearTimeout(guard);
+        raf2 = 0;
+        guard = 0;
+        track.scrollLeft = to;
+        track.style.scrollSnapType = '';
+        sync();
+      };
+      const step = (ts) => {
+        const p = Math.min(1, (ts - t0) / 420);
+        track.scrollLeft = from + dist * ease(p);
+        if (p < 1) raf2 = requestAnimationFrame(step);
+        else settle();
+      };
+      raf2 = requestAnimationFrame(step);
+      /* Frames are not guaranteed: background tabs and throttled renderers can
+         deliver none at all. Land on the target regardless rather than leaving
+         the track stranded mid-slide with snapping disabled. */
+      guard = setTimeout(settle, 600);
+    };
+    const goTo = (i, smooth) => {
+      const max = lastIndex();
+      const target = i < 0 ? max : i > max ? 0 : i;
+      const left = offsetOf(slides[target]);
+      if (smooth && !reduce.matches) {
+        glide(left);
+      } else {
+        cancelAnimationFrame(raf2);
+        raf2 = 0;
+        track.style.scrollSnapType = '';
+        track.scrollLeft = left;
+        sync();
+      }
+    };
+
+    const sync = () => {
+      const i = current();
+      nowEl.textContent = String(i + 1).padStart(2, '0');
+      const max = lastIndex() || 1;
+      prog.style.inlineSize = ((i / max) * 100).toFixed(1) + '%';
+    };
+
+    const stop = () => { if (timer) { clearInterval(timer); timer = null; } };
+    const start = () => {
+      stop();
+      if (paused || reduce.matches) return;
+      timer = setInterval(() => goTo(current() + 1, true), DELAY);
+    };
+
+    const setPaused = (v) => {
+      paused = v;
+      toggle.setAttribute('aria-pressed', String(v));
+      toggle.setAttribute('aria-label', v ? 'Play automatic sliding' : 'Pause automatic sliding');
+      if (v) stop(); else start();
+    };
+
+    prev.addEventListener('click', () => { goTo(current() - 1, true); start(); });
+    next.addEventListener('click', () => { goTo(current() + 1, true); start(); });
+    toggle.addEventListener('click', () => setPaused(!paused));
+
+    /* Hover and focus only suspend the timer; they must not flip the pause
+       control, or the button would stop reflecting what the user chose. */
+    const suspend = () => stop();
+    const resume = () => { if (!paused) start(); };
+    /* Bound to the track and the controls, not the whole section. The section is
+       ~700px tall, so a cursor resting anywhere over it used to hold the timer
+       off indefinitely, which is why it looked like it "sometimes" stopped. */
+    const hotspots = [track, bar];
+    hotspots.forEach((el) => {
+      el.addEventListener('pointerenter', suspend);
+      el.addEventListener('pointerleave', resume);
+    });
+    root.addEventListener('focusin', suspend);
+    root.addEventListener('focusout', (e) => { if (!root.contains(e.relatedTarget)) resume(); });
+    document.addEventListener('visibilitychange', () => (document.hidden ? stop() : resume()));
+
+    let tick = 0;
+    track.addEventListener('scroll', () => {
+      clearTimeout(tick);
+      tick = setTimeout(sync, 90);
+    }, { passive: true });
+
+    window.addEventListener('resize', sync, { passive: true });
+    reduce.addEventListener('change', () => { stop(); start(); });
+
+    setPaused(reduce.matches);
+    sync();
+    root.dataset.tstReady = '1';
+  })();
+</script>

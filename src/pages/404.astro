@@ -1,0 +1,211 @@
+---
+import Base from '../layouts/Base.astro';
+import { SITE, NAV } from '../site.config.mjs';
+
+/** One line of orientation per published route.
+ *
+ *  Keys MUST carry the trailing slash, because NAV hrefs do. They did not, so
+ *  every lookup missed and six of the seven routes rendered as a bare label —
+ *  the graceful fallback this comment used to promise was firing on every
+ *  entry instead of none. /how-we-build/ had no entry at all. */
+const BLURBS: Record<string, string> = {
+  '/system/': 'The six pipeline stages, from one content plan to a published asset.',
+  '/how-we-build/': 'What happens between the first call and handover, stage by stage.',
+  '/who-its-for/': 'Agencies, e-commerce brands, media teams and course producers.',
+  '/trust/': 'The four integrations, what leaves your machine, and how rights are handled.',
+  '/engagements/': 'Built and handed over, or run for you as a managed service.',
+  '/insights/': 'Notes on AI content production, data posture and the rules in force.',
+  '/contact/': 'A 30-minute build call, or a written enquiry answered by a person.',
+};
+
+const routes = [
+  ...NAV.map((item) => ({ ...item, blurb: BLURBS[item.href] ?? '' })),
+  {
+    label: 'Contact',
+    href: '/contact/',
+    meta: String(NAV.length + 1).padStart(2, '0'),
+    blurb: BLURBS['/contact/'],
+  },
+];
+
+/** Plain, checkable reasons — not an apology. */
+const checks = [
+  'The address may have a typo, or a trailing fragment from a copy and paste.',
+  'The page may have been renamed. The route map above is the current set.',
+  'The link that sent you here may be out of date, and if it was one of ours we want to know.',
+];
+---
+
+<Base
+  title="Page not found"
+  description={`The page you asked for is not on this site. Here is the full route map for ${SITE.name}: the system, who it is for, trust, engagements and contact.`}
+  noindex={true}
+>
+  <!-- ================================================== ERROR STATE -->
+  <section class="e404 grid-bg" aria-labelledby="e404-title">
+    <span class="bloom e404__bloom" aria-hidden="true"></span>
+    <div class="wrap wrap--wide">
+      <p class="mono e404__status">
+        <span class="dot e404__dot" aria-hidden="true"></span>404 · route not found
+      </p>
+      <h1 id="e404-title" class="hero__title e404__title">
+        This route is not in the <span class="hl">build</span>.
+      </h1>
+      <p class="hero__lede e404__lede">
+        The server answered, the site is fine, and nothing is broken at your end. The path you
+        asked for simply does not resolve to a page here. Everything this site publishes is
+        listed below, so the thing you were looking for is probably one line away.
+      </p>
+      <div class="btn-row e404__actions">
+        <a href="/" class="btn btn--primary btn--lg">
+          Back to the home page
+          <svg class="btn__arrow" width="12" height="12" viewBox="0 0 12 12" aria-hidden="true"><path d="M1 6h9M6.5 2 10.5 6l-4 4" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="square"/></svg>
+        </a>
+        <a href="/contact/" class="btn btn--ghost btn--lg">Book a build call</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================================================== ROUTE MAP -->
+  <section class="section section--ruled" aria-labelledby="routes-title">
+    <div class="wrap wrap--wide">
+      <nav class="panel routes ticked" aria-label="Published routes">
+        <div class="panel__bar">
+          <h2 id="routes-title" class="meta meta--signal">Route map</h2>
+          <p class="meta routes__count">{routes.length} published paths</p>
+        </div>
+        <ul role="list" class="routes__list">
+          {routes.map((r) => (
+            <li>
+              <a href={r.href} class="route">
+                <span class="index route__n">{r.meta}</span>
+                <span class="route__main">
+                  <span class="route__label">{r.label}</span>
+                  {r.blurb && <span class="route__blurb">{r.blurb}</span>}
+                </span>
+                <span class="mono route__path">{r.href}</span>
+                <svg class="route__arrow" width="12" height="12" viewBox="0 0 12 12" aria-hidden="true"><path d="M1 6h9M6.5 2 10.5 6l-4 4" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="square"/></svg>
+              </a>
+            </li>
+          ))}
+        </ul>
+      </nav>
+
+      <!-- ---------- Why you might be here ---------- -->
+      <div class="checks">
+        <p class="meta checks__label">Things to check</p>
+        <ul role="list" class="checks__list">
+          {checks.map((c) => (
+            <li class="checks__item">
+              <span class="dot dot--idle" aria-hidden="true"></span>{c}
+            </li>
+          ))}
+        </ul>
+        <p class="body-sm checks__note">
+          Broken link on one of our pages? Send us the address you came from at
+          <a href={`mailto:${SITE.email}`} class="link">{SITE.email}</a> and we will fix it.
+        </p>
+      </div>
+    </div>
+  </section>
+</Base>
+
+<style>
+  /* ---- Error state ---- */
+  .e404 {
+    position: relative;
+    padding-block: clamp(3.5rem, 2.2rem + 5vw, 6.5rem) clamp(2.5rem, 1.6rem + 3vw, 4rem);
+    overflow: clip;
+  }
+  .e404__bloom {
+    inline-size: min(38rem, 90vw);
+    block-size: 22rem;
+    inset-block-start: -9rem;
+    inset-inline-start: 8%;
+  }
+  .e404__status {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--sp-3);
+    text-transform: uppercase;
+    letter-spacing: var(--tr-label);
+    color: var(--c-rose);
+    font-weight: 500;
+  }
+  .e404__dot { background: var(--c-rose); box-shadow: 0 0 8px var(--c-rose-wash); }
+  /* This hero is left-aligned, so the shared margin-inline:auto would indent
+     the title and lede past the eyebrow. Pinned back to the wrap edge. */
+  .hero__title,
+  .hero__lede { margin-inline: 0; }
+  .e404__title { margin-block-start: var(--sp-5); }
+  .e404__lede { margin-block-start: var(--sp-5); }
+  .e404__actions { margin-block-start: var(--sp-6); }
+
+  /* ---- Route map ---- */
+  .routes__count { text-transform: none; letter-spacing: var(--tr-wide); color: var(--c-ink-3); }
+  .routes__list > li + li { border-block-start: 1px solid var(--c-line); }
+  .routes__list > li:last-child .route { border-radius: 0 0 var(--r-2) var(--r-2); }
+
+  .route {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--sp-2) var(--sp-4);
+    padding: var(--sp-4) clamp(0.875rem, 0.7rem + 0.7vw, 1.25rem);
+    transition: background-color var(--dur-2) var(--ease-out);
+  }
+  .route:hover { background: var(--c-panel-2); }
+
+  .route__n { flex: none; transition: color var(--dur-2) var(--ease-out); }
+  .route:hover .route__n { color: var(--c-signal); }
+
+  .route__main {
+    flex: 1 1 15rem;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: var(--sp-1);
+  }
+  .route__label {
+    font-size: var(--fs-md);
+    font-weight: 500;
+    letter-spacing: var(--tr-tight);
+    line-height: var(--lh-snug);
+  }
+  .route:hover .route__label { text-decoration: underline; text-underline-offset: 0.22em; }
+  .route__blurb { font-size: var(--fs-sm); color: var(--c-ink-2); line-height: var(--lh-snug); }
+
+  .route__path { flex: none; color: var(--c-ink-3); }
+  .route__arrow {
+    flex: none;
+    color: var(--c-ink-4);
+    transition: color var(--dur-2) var(--ease-out), transform var(--dur-2) var(--ease-out);
+  }
+  .route:hover .route__arrow { color: var(--c-signal); transform: translateX(3px); }
+
+  /* ---- Things to check ---- */
+  .checks {
+    margin-block-start: var(--sp-6);
+    padding-block: var(--sp-5);
+    border-block: 1px solid var(--c-line);
+  }
+  .checks__label { color: var(--c-ink-3); }
+  .checks__list {
+    display: grid;
+    gap: var(--sp-3);
+    margin-block-start: var(--sp-4);
+  }
+  @media (min-width: 62em) {
+    .checks__list { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--sp-5); }
+  }
+  .checks__item {
+    display: flex;
+    align-items: flex-start;
+    gap: var(--sp-3);
+    font-size: var(--fs-sm);
+    color: var(--c-ink-2);
+    line-height: var(--lh-relaxed);
+  }
+  .checks__item .dot { margin-block-start: var(--nudge-2); }
+  .checks__note { margin-block-start: var(--sp-5); }
+</style>

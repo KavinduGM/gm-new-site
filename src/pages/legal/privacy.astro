@@ -1,0 +1,550 @@
+---
+import Base from '../../layouts/Base.astro';
+import { SITE } from '../../site.config.mjs';
+import { breadcrumbSchema } from '../../lib/schema.mjs';
+
+/** One source of truth for the stamp shown in the header and in §12. */
+const UPDATED = { iso: '2026-08-19', label: '19 August 2026' };
+
+/** Table of contents. Every id below has a matching <h2 id> in the prose. */
+const sections: { id: string; title: string }[] = [
+  { id: 'who-we-are', title: 'Who we are' },
+  { id: 'scope', title: 'What this notice covers' },
+  { id: 'what-we-collect', title: 'What we collect' },
+  { id: 'what-we-do-not-do', title: 'What we do not do' },
+  { id: 'lawful-basis', title: 'Why we process it, and on what basis' },
+  { id: 'retention', title: 'How long we keep it' },
+  { id: 'processors', title: 'Who else touches it' },
+  { id: 'transfers', title: 'International transfers' },
+  { id: 'your-rights', title: 'Your rights' },
+  { id: 'cookies', title: 'Cookies' },
+  { id: 'security', title: 'Security' },
+  { id: 'changes', title: 'Changes to this notice' },
+  { id: 'contact', title: 'Contact and complaints' },
+];
+
+/** Blanks the operating company has to fill before this page is real. */
+const toComplete = [
+  'Confirmed retention periods, including how long the host keeps server logs',
+  'The executed transfer terms with Resend, and the region the Hostinger VPS runs in',
+  'Whether an EU and UK representative is required under Article 27, and who it is',
+  'How Sri Lanka’s PDPA and Australia’s Privacy Act sit alongside this notice',
+];
+
+const mailto = `mailto:${SITE.email}`;
+/* Rights requests go to the dedicated address, general enquiries to the shared
+   one. Mixing them means a one-month statutory clock starts in a sales inbox. */
+const privacyMail = `mailto:${SITE.privacyEmail}`;
+---
+
+<Base
+  title="Privacy notice: what this site collects"
+  description={`How ${SITE.name} handles data from this site: enquiries, server logs and our own analytics. What is kept, for how long, and your rights over it. Nothing sold.`}
+  noindex={false}
+  schema={[breadcrumbSchema([{ name: 'Privacy notice', href: '/legal/privacy/' }])]}
+>
+  <!--
+    Indexable on purpose — a privacy notice people can find is more use than a
+    hidden one. The sitemap already excludes /legal/ (see astro.config.mjs), so
+    it stays out of the submitted URL set without being blocked from crawlers.
+  -->
+  <article class="doc">
+    <!-- ================================================== HEADER -->
+    <header class="doc__head grid-bg">
+      <div class="wrap wrap--text">
+        <p class="eyebrow">Legal</p>
+        <h1 class="display-2 doc__title">Privacy notice</h1>
+        <p class="lede doc__lede">
+          This site collects two things: what you type into the enquiry form, and the ordinary
+          server logs that come with serving a web page, and our own analytics measures how the
+          site is used. There is no advertising pixel and no mailing list behind it.
+        </p>
+        <ul role="list" class="doc__stamp">
+          <li class="doc__stamp-item">
+            <span class="dot dot--done" aria-hidden="true"></span>
+            Last updated <time datetime={UPDATED.iso}>{UPDATED.label}</time>
+          </li>
+          <li class="doc__stamp-item">Applies to {SITE.url.replace('https://', '')}</li>
+          <li class="doc__stamp-item">Version 1.0 · template</li>
+        </ul>
+      </div>
+    </header>
+
+    <div class="wrap wrap--text doc__body">
+      <!-- ================================================== COUNSEL CALLOUT -->
+      <aside class="notice panel panel--pad" aria-labelledby="notice-title">
+        <p class="meta notice__label">
+          <span class="dot dot--queued" aria-hidden="true"></span>Template · not yet reviewed
+        </p>
+        <h2 id="notice-title" class="heading-sm notice__title">
+          Have your own counsel read this before it goes live
+        </h2>
+        <p class="body-sm notice__text">
+          What follows describes how the site is actually built — static pages, one form
+          endpoint, no third-party trackers — so it is a truthful starting point rather than
+          boilerplate. It is not legal advice, it has not been reviewed by a lawyer, and it is
+          missing details only the operating company can supply. Complete the items below and
+          have a qualified adviser check the result before publishing.
+        </p>
+        <ul role="list" class="notice__list">
+          {toComplete.map((item) => (
+            <li class="notice__item">
+              <span class="dot dot--idle" aria-hidden="true"></span>{item}
+            </li>
+          ))}
+        </ul>
+      </aside>
+
+      <!-- ================================================== CONTENTS -->
+      <nav class="toc" aria-labelledby="toc-title">
+        <h2 id="toc-title" class="meta toc__title">Contents</h2>
+        <ol role="list" class="toc__list">
+          {sections.map((s, i) => (
+            <li>
+              <a href={`#${s.id}`} class="toc__link">
+                <span class="index toc__n">{String(i + 1).padStart(2, '0')}</span>
+                <span>{s.title}</span>
+              </a>
+            </li>
+          ))}
+        </ol>
+      </nav>
+
+      <!-- ================================================== POLICY -->
+      <div class="prose doc__prose">
+        <h2 id="who-we-are">Who we are</h2>
+        <p>
+          {SITE.name} builds custom AI content production and publishing systems, and runs
+          them as a managed service. In this notice, “we” and “us” mean {SITE.name}, which is
+          the controller of any personal data collected through this website.
+        </p>
+        <p>
+          We are established in Colombo, Sri Lanka, with a branch in Perth, Australia. Because
+          we offer services to people in the United Kingdom and the EEA, this notice is written
+          to the standard the UK and EU GDPR set, and we apply that standard to everyone who
+          contacts us rather than only to those two regions.
+        </p>
+        <p>
+          Registered details: {SITE.legal.entity}, company number {SITE.legal.number},
+          {SITE.legal.address}. Privacy and data rights requests go to
+          <a href={privacyMail}>{SITE.privacyEmail}</a>.
+        </p>
+
+        <h2 id="scope">What this notice covers</h2>
+        <p>
+          This notice covers the website at <code>{SITE.url.replace('https://', '')}</code> and
+          the enquiries sent through it. It does not cover client project work. If we go on to
+          build or run a system for you, the data your team puts into that system is governed
+          by the signed engagement agreement and the data processing terms attached to it,
+          where we act as your processor rather than as a controller.
+        </p>
+
+        <h2 id="what-we-collect">What we collect</h2>
+        <p>Four things, and nothing beyond them.</p>
+        <ul role="list">
+          <li>
+            <strong>Enquiry form submissions.</strong> Your name, work email and company, which
+            are required; your role and website, which are optional; the channels, volume,
+            timeline and engagement options you select; and whatever you write in the brief
+            field. We also record that you ticked the consent box, and when.
+          </li>
+          <li>
+            <strong>Email you send us directly.</strong> If you write to
+            <a href={mailto}>{SITE.email}</a> instead of using the form, we hold that message
+            and whatever it contains on the same terms as a form submission.
+          </li>
+          <li>
+            <strong>Server logs.</strong> Our hosting provider records the ordinary request
+            data needed to serve and defend a website: IP address, user agent, the URL
+            requested, the response code and a timestamp. We use it to keep the site up and to
+            investigate abuse. We do not join it to enquiry data, and we do not build profiles
+            from it.
+          </li>
+          <li>
+            <strong>Your cookie choice.</strong> Which categories you allowed, the date, and
+            your browser, operating system and device type. It carries no name and no email
+            address, and it is not joined to any enquiry you send us. It exists so we can show
+            that consent was asked for and what was chosen — see <a href="#cookies">cookies</a>.
+          </li>
+        </ul>
+        <p>
+          There are no accounts on this site, so there is nothing to sign up for and no
+          password for us to hold. We do not ask for special category data, and you should not
+          send any in the brief field.
+        </p>
+
+        <h2 id="what-we-do-not-do">What we do not do</h2>
+        <p>
+          This list is as much a part of the notice as the rest of it. These are build
+          decisions, not intentions.
+        </p>
+        <ul role="list">
+          <li>
+            <strong>No third-party analytics.</strong> There is no Google Analytics, no
+            product analytics SDK, no session recording and no heatmap tool on this site. Our own
+            analytics measures how the site is used — it runs on our own system, the data stays
+            with us, and it is not used to follow you anywhere else. Full detail, including every
+            entry it writes, is in the <a href="/legal/cookies/">cookie policy</a>.
+          </li>
+          <li>
+            <strong>No advertising trackers.</strong> No conversion pixels, no remarketing
+            audiences, no cross-site identifiers, no fingerprinting. The only device
+            details we hold are the browser, operating system and device type recorded
+            against your cookie choice, which are not combined into an identifier and are
+            not used to recognise you anywhere else.
+          </li>
+          <li>
+            <strong>No selling or sharing.</strong> We do not sell personal data, we do not
+            trade it, and we do not pass it to advertising networks, data brokers or partners
+            for their own purposes.
+          </li>
+          <li>
+            <strong>No mailing list you did not ask for.</strong> Sending an enquiry subscribes
+            you to nothing. There is no drip sequence and no newsletter behind the form. If we
+            ever run one, you will have to ask for it.
+          </li>
+          <li>
+            <strong>No automated decision-making.</strong> Nothing about your enquiry is
+            scored, ranked or decided by a machine. A person reads it and replies.
+          </li>
+        </ul>
+
+        <h2 id="lawful-basis">Why we process it, and on what basis</h2>
+        <ul role="list">
+          <li>
+            <strong>Answering your enquiry — legitimate interests.</strong> Under Article 6(1)(f)
+            of the UK and EU GDPR. Our interest is running a business and replying to people who
+            deliberately contacted it; yours is getting an answer. We have weighed the two and
+            consider the processing to be what you would reasonably expect when you press send.
+          </li>
+          <li>
+            <strong>Contacting you about it — consent.</strong> Under Article 6(1)(a). The tick
+            box on the form is the consent, and it is specific to the enquiry it accompanies.
+            You can withdraw it at any time by replying to us or writing to
+            <a href={privacyMail}>{SITE.privacyEmail}</a>. Withdrawal does not affect anything we did before
+            you withdrew it.
+          </li>
+          <li>
+            <strong>Keeping the site available and secure — legitimate interests.</strong>
+            Server logs exist so that outages and abuse can be investigated. The interest is
+            operating a service that stays up and is not used to attack other people.
+          </li>
+          <li>
+            <strong>Storing your cookie choice — consent.</strong> Under Article 6(1)(a), and
+            under the ePrivacy rules that govern storing anything on your device. The strictly
+            necessary entries are exempt from that consent requirement because they do nothing
+            except carry out the choice you made.
+          </li>
+          <li>
+            <strong>Keeping proof of that choice — legitimate interests.</strong> Under Article
+            6(1)(f). Article 7(1) requires us to be able to demonstrate that consent was given,
+            which we cannot do without keeping a record of it.
+          </li>
+          <li>
+            <strong>Records we are required to keep — legal obligation.</strong> Under Article
+            6(1)(c). This applies only if an enquiry becomes an engagement, where tax and
+            contract records have to be retained for the period the law sets.
+          </li>
+        </ul>
+
+        <h2 id="retention">How long we keep it</h2>
+        <ul role="list">
+          <li>
+            <strong>Enquiries that do not lead to work:</strong> kept for 12 months from the
+            last message between us, then deleted. Long enough that we recognise you if you come
+            back next quarter, short enough that the inbox does not become an archive.
+          </li>
+          <li>
+            <strong>Enquiries that become engagements:</strong> the correspondence moves under
+            the retention terms of the signed agreement, which are set out there rather than
+            here.
+          </li>
+          <li>
+            <strong>Server logs:</strong> retained for a short rolling window, no more than
+            30 days, and then overwritten.
+          </li>
+          <li>
+            <strong>Cookie consent records:</strong> kept while the choice stands, and deleted
+            when you withdraw it. Withdrawing through <strong>Cookie settings</strong> in the
+            footer erases the record immediately rather than marking it inactive.
+          </li>
+        </ul>
+        <p>
+          Ask us to delete your enquiry earlier and we will, unless we are required to keep it
+          — see <a href="#your-rights">your rights</a>.
+        </p>
+
+        <h2 id="processors">Who else touches it</h2>
+        <p>
+          Two outside providers, and the list is short on purpose. Every processor is another place
+          your data can be exposed from, so we add one only when it replaces something we
+          cannot sensibly do ourselves. The same principle runs through the product: one AI
+          vendor rather than data scattered across five SaaS tools.
+        </p>
+        <ul role="list">
+          <li>
+            <strong>Email delivery — Resend.</strong> Carries the enquiry to our inbox and
+            the confirmation to yours. It handles the message in transit and keeps a delivery
+            log of it; it is not where your enquiry is stored, and it is not used to market
+            anything to you.
+          </li>
+          <li>
+            <strong>Hosting and mail — Hostinger.</strong> Runs the server these pages are
+            served from, writes the server logs, and hosts the mailbox the enquiry lands in
+            and our reply is sent from.
+          </li>
+        </ul>
+        <p>
+          Each of them acts on our instructions under a written processing agreement. We may
+          also disclose data where the law requires it, or to establish or defend a legal claim.
+          That is the whole list — there are no “trusted partners” and nothing is sold or
+          shared for anyone else's marketing.
+        </p>
+        <p>
+          One more system holds data, but it is ours rather than a third party's: the customer
+          system at <code>crm.groovymark.com</code>, which we run and which stores the cookie
+          consent records described under <a href="#cookies">cookies</a>. We mention it here
+          because it is a second place your data can sit, and a list that leaves out our own
+          systems is not an honest list.
+        </p>
+
+        <h2 id="transfers">International transfers</h2>
+        <p>
+          We work with clients in the United States, the United Kingdom, Western Europe and the
+          Gulf, so correspondence crosses borders by nature. We are ourselves established in
+          Sri Lanka, which is not covered by a UK or EU adequacy decision.
+        </p>
+        <p>
+          That matters less than it sounds, because of who is sending what to whom. When you
+          fill in the form or write to us, you are giving your information to us directly. Data
+          protection law treats that as a direct disclosure by you rather than as a restricted
+          transfer between organisations, so the transfer rules in Chapter V do not attach to
+          it. We hold it to the UK and EU standard regardless — that is the whole point of this
+          notice.
+        </p>
+        <p>
+          Where the rules do attach is anything we pass on afterwards, and that is a short list.
+          <strong>Hostinger</strong>, which hosts the server and the mailbox, is established in
+          the European Union. <strong>Resend</strong>, which delivers the two emails, is
+          established in the United States.
+        </p>
+        <p>
+          Where a provider sits outside the UK and EEA and no adequacy decision covers it, the
+          basis we use is the European Commission’s standard contractual clauses together with
+          the UK International Data Transfer Addendum. Ask us and we will tell you which basis
+          applies to your enquiry and send you the relevant terms.
+        </p>
+
+        <h2 id="your-rights">Your rights</h2>
+        <p>
+          Under UK and EU data protection law you can ask us to do any of the following. Write
+          to <a href={privacyMail}>{SITE.privacyEmail}</a>.
+        </p>
+        <ul role="list">
+          <li><strong>Access</strong> — get a copy of the personal data we hold about you.</li>
+          <li><strong>Rectification</strong> — have anything inaccurate or incomplete corrected.</li>
+          <li><strong>Erasure</strong> — have it deleted where we have no continuing reason to hold it.</li>
+          <li><strong>Restriction</strong> — have us pause processing while a dispute about accuracy or legitimate interests is resolved.</li>
+          <li><strong>Objection</strong> — object to processing we base on legitimate interests, including the handling of your enquiry.</li>
+          <li><strong>Portability</strong> — receive the data you gave us in a structured, machine-readable form, or have it sent onward.</li>
+          <li><strong>Withdraw consent</strong> — at any time, where consent is what we relied on.</li>
+        </ul>
+        <p>
+          We do not charge for this and we will respond within one month. We may ask you to
+          confirm who you are first, which normally means replying from the address the enquiry
+          came from.
+        </p>
+        <p>
+          If you think we have got it wrong, tell us and we will look again. You also have the
+          right to complain to a supervisory authority: in the UK, the Information
+          Commissioner’s Office at <a href="https://ico.org.uk">ico.org.uk</a>; in the EU or
+          EEA, the authority in the country where you live or work.
+        </p>
+
+        <h2 id="cookies">Cookies</h2>
+        <p>
+          This site sets no cookies. Not analytics cookies, not advertising cookies, not
+          preference cookies. What it does keep is three entries in your browser's local
+          storage, and all three exist to record and honour the cookie choice you are asked
+          to make on your first visit.
+        </p>
+        <p>
+          Our own analytics runs on every visit while the site is new, and the consent panel does
+          not offer a switch for it today — a switch we ignored would be worse than none. It is
+          set out in full, entry by entry, in the <a href="/legal/cookies/">cookie policy</a>. The
+          functional and marketing categories have nothing behind them at all, and we show them
+          anyway because your answer is what decides whether anything is ever added under them.
+        </p>
+        <p>
+          Your choice is stored on your device and a copy is sent to our own system
+          at <code>crm.groovymark.com</code>, which we run ourselves rather than buying in from
+          a consent vendor. That copy records the date, your browser, operating system and
+          device type, and nothing that identifies you by name. We keep it because consent is
+          worth nothing if we cannot show it was asked for, which makes our legitimate interest
+          in demonstrating compliance the basis for holding it.
+        </p>
+        <p>
+          <strong>Cookie settings</strong> in the footer of every page reopens the panel with
+          your current choice loaded, so changing your mind or withdrawing entirely takes the
+          same single click as consenting did. Withdrawing clears the entries that record your
+          choice and deletes the record we hold. The reference is kept only if we cannot reach
+          our own system to delete that record, so the erasure can be retried. The full list of what is stored, with the purpose and lifetime of
+          each entry, is in the <a href="/legal/cookies/">cookie policy</a>.
+        </p>
+        <p>
+          Your browser will also cache pages, fonts and images the way it caches any website.
+          That is ordinary browser behaviour, it stays on your device, and it is not tracking.
+        </p>
+
+        <h2 id="security">Security</h2>
+        <p>
+          Every page on this site is built in advance and served as a file over HTTPS. The
+          single exception is the enquiry form, which runs on request so it can send the two
+          emails — and even that writes nothing to disk. There is no database anywhere behind
+          this site, which removes most of the attack surface a database-backed site carries.
+          Enquiry data lives in an inbox, not in an application, and access to that inbox is
+          limited to the people who answer enquiries
+          and protected by two-factor authentication. No system is beyond reach, so if we ever
+          have a breach that is likely to result in a risk to your rights, we will report it to
+          the relevant supervisory authority within 72 hours and tell you directly where the
+          risk is high.
+        </p>
+
+        <h2 id="changes">Changes to this notice</h2>
+        <p>
+          We update this notice when what we do changes, not on a schedule and not for the sake
+          of a fresh date. The stamp at the top of the page is the version: this one was last
+          updated on <time datetime={UPDATED.iso}>{UPDATED.label}</time>.
+        </p>
+        <p>
+          If a change is material — a new processor, a new purpose, a longer retention period —
+          we will say what changed at the top of the page, and where we hold your contact
+          details and the change affects you, we will tell you directly rather than expecting
+          you to notice. Earlier versions are available on request.
+        </p>
+
+        <h2 id="contact">Contact and complaints</h2>
+        <p>
+          Questions about this notice, or about anything we hold, go to
+          <a href={privacyMail}>{SITE.privacyEmail}</a>. A person reads it, normally within one business
+          day, and a rights request gets a substantive answer within one month.
+        </p>
+        <p>
+          Postal address for formal correspondence: {SITE.legal.entity}, {SITE.legal.address}. If our
+          answer does not satisfy you, you can take it to the supervisory authority named under
+          <a href="#your-rights">your rights</a>.
+        </p>
+      </div>
+    </div>
+  </article>
+</Base>
+
+<style>
+  /* ---- Document header ---- */
+  .doc__head {
+    position: relative;
+    padding-block: clamp(3rem, 2rem + 4vw, 5rem) clamp(2rem, 1.4rem + 2.4vw, 3rem);
+    border-block-end: 1px solid var(--c-line);
+  }
+  .doc__title { margin-block-start: var(--sp-2); }
+  .doc__lede { margin-block-start: var(--sp-5); font-size: var(--fs-md); }
+
+  .doc__stamp {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--sp-2) var(--sp-5);
+    margin-block-start: var(--sp-6);
+    padding-block-start: var(--sp-4);
+    border-block-start: 1px solid var(--c-line);
+  }
+  .doc__stamp-item {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--sp-2);
+    font-family: var(--font-mono);
+    font-size: var(--fs-2xs);
+    letter-spacing: var(--tr-wide);
+    text-transform: uppercase;
+    color: var(--c-ink-3);
+  }
+
+  /* ---- Body column ---- */
+  .doc__body { padding-block: clamp(2rem, 1.4rem + 2.4vw, 3rem) var(--sp-section); }
+
+  /* ---- Counsel callout ---- */
+  .notice {
+    display: flex;
+    flex-direction: column;
+    gap: var(--sp-3);
+    background: var(--c-amber-wash);
+    border-inline-start: 2px solid var(--c-amber);
+    box-shadow: none;
+  }
+  .notice__label {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--sp-2);
+    color: var(--c-amber);
+  }
+  .notice__title { margin-block-start: var(--sp-1); }
+  .notice__list {
+    display: grid;
+    gap: var(--sp-2);
+    margin-block-start: var(--sp-2);
+    padding-block-start: var(--sp-4);
+    border-block-start: 1px solid var(--c-line-2);
+  }
+  .notice__item {
+    display: flex;
+    align-items: flex-start;
+    gap: var(--sp-3);
+    font-family: var(--font-mono);
+    font-size: var(--fs-2xs);
+    letter-spacing: var(--tr-wide);
+    line-height: var(--lh-normal);
+    color: var(--c-ink-2);
+  }
+  .notice__item .dot { margin-block-start: var(--nudge-2); }
+
+  /* ---- Table of contents ---- */
+  .toc {
+    margin-block-start: var(--sp-7);
+    padding-block: var(--sp-5);
+    border-block: 1px solid var(--c-line);
+  }
+  .toc__title { color: var(--c-ink-3); }
+  .toc__list {
+    display: grid;
+    gap: var(--sp-2) var(--sp-5);
+    margin-block-start: var(--sp-4);
+  }
+  @media (min-width: 34em) {
+    .toc__list { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  }
+  .toc__link {
+    display: flex;
+    align-items: baseline;
+    gap: var(--sp-3);
+    font-size: var(--fs-sm);
+    line-height: var(--lh-snug);
+    color: var(--c-ink-2);
+    transition: color var(--dur-2) var(--ease-out);
+  }
+  .toc__link:hover {
+    color: var(--c-signal);
+    text-decoration: underline;
+    text-underline-offset: 0.22em;
+  }
+  .toc__n { flex: none; }
+  .toc__link:hover .toc__n { color: var(--c-signal); }
+
+  /* ---- Prose ---- */
+  .doc__prose { margin-block-start: var(--sp-2); }
+  /* role="list" restores semantics under display:grid; put the markers back. */
+  .doc__prose ul[role='list'] {
+    list-style: disc;
+    padding-inline-start: var(--sp-5);
+  }
+  .doc__prose li { line-height: var(--lh-relaxed); }
+  .doc__prose code { word-break: break-word; }
+</style>

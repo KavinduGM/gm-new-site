@@ -1,0 +1,287 @@
+---
+import { FOOTER_NAV, SITE } from '../site.config.mjs';
+import { BRAND } from '../lib/brand-icons.mjs';
+import Logo from './Logo.astro';
+
+interface Props {
+  /** Pages that close with their own CTA suppress this one, so the call to
+   *  action is never repeated back-to-back. */
+  hideCta?: boolean;
+}
+const { hideCta = false } = Astro.props;
+
+const year = new Date().getFullYear();
+
+---
+
+<footer class="ftr">
+  {/* Closing CTA */}
+  {!hideCta && (
+  <section class="ftr__cta" aria-labelledby="ftr-cta-title">
+    <div class="wrap wrap--wide">
+      <div class="ftr__cta-inner ticked">
+        <div class="ftr__cta-copy">
+          <p class="eyebrow">Next step</p>
+          <h2 id="ftr-cta-title" class="display-2">
+            Bring one content plan.<br />Leave with a system that ships it.
+          </h2>
+          <p class="lede">
+            A 30-minute build call: we map your current content workflow, show you where the
+            system takes over, and tell you plainly whether it's worth building for you.
+          </p>
+        </div>
+        <div class="ftr__cta-actions">
+          <a href="/contact/" class="btn btn--primary btn--lg">
+            Book a build call
+            <svg class="btn__arrow" width="12" height="12" viewBox="0 0 12 12" aria-hidden="true"><path d="M1 6h9M6.5 2 10.5 6l-4 4" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="square"/></svg>
+          </a>
+          <a href="/system/" class="btn btn--ghost btn--lg">See the pipeline</a>
+          <p class="meta ftr__cta-note">No deck. No retainer pitch. A scoping conversation.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+  )}
+
+  {/* Directory */}
+  <div class="wrap wrap--wide">
+    <div class="ftr__grid">
+      <div class="ftr__brand">
+        <a href="/" class="ftr__home" aria-label={`${SITE.name} — home`}><Logo /></a>
+        <p class="body-sm ftr__blurb">
+          Custom AI content production and publishing systems, built around how your team
+          already works — then handed over to your team, or run for you by us.
+        </p>
+        <ul role="list" class="ftr__social">
+          {/* Accounts with no link yet are skipped, not rendered dead. */}
+          {SITE.social.filter((s) => s.href).map((s) => (
+            <li>
+              <a
+                href={s.href}
+                class="ftr__social-link"
+                rel="noopener noreferrer"
+                target="_blank"
+                aria-label={`${s.label} (opens in a new tab)`}
+              >
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" set:html={BRAND[s.icon]} />
+              </a>
+            </li>
+          ))}
+        </ul>
+      </div>
+
+      {FOOTER_NAV.map((col) => (
+        <nav class="ftr__col" aria-label={col.title}>
+          <h2 class="meta ftr__col-title">{col.title}</h2>
+          <ul role="list" class="ftr__col-list">
+            {col.links.map((l) => (
+              <li><a href={l.href} class="ftr__link">{l.label}</a></li>
+            ))}
+          </ul>
+        </nav>
+      ))}
+    </div>
+
+
+    {/* Run manifest: the site signs off the way the product signs off content. */}
+    {/*
+      Compliance strip. The cookie line used to read "GDPR compliant cookies",
+      which was a claim we could not evidence and which contradicted the
+      privacy notice. It is now a control rather than a boast: it reopens the
+      consent panel, which is also how withdrawal is offered, so the claim and
+      the mechanism are the same thing.
+    */}
+    <ul role="list" class="ftr__manifest">
+      <li class="ftr__mf"><span class="dot dot--done" aria-hidden="true"></span>Data protected</li>
+      <li class="ftr__mf">Privacy protected</li>
+      <li class="ftr__mf">No data shared</li>
+      <li class="ftr__mf">EU AI Act followed</li>
+      <li class="ftr__mf">
+        <button class="ftr__mf-link ftr__cookie" type="button" data-cookie-settings>
+          Cookie settings
+        </button>
+      </li>
+      <li class="ftr__mf">
+        <a href="/legal/privacy/" class="ftr__mf-link">Privacy policy</a>
+      </li>
+    </ul>
+
+    <div class="ftr__bottom">
+      <p class="meta">© {year} {SITE.name}. All rights reserved.</p>
+      <ul role="list" class="ftr__legal">
+        <li><a href="/legal/privacy/" class="ftr__legal-link">Privacy</a></li>
+        <li><a href="/legal/terms/" class="ftr__legal-link">Terms</a></li>
+        <li><a href="/legal/cookies/" class="ftr__legal-link">Cookies</a></li>
+        <li><a href="/trust/" class="ftr__legal-link">Trust</a></li>
+      </ul>
+    </div>
+  </div>
+</footer>
+
+<style>
+  .ftr {
+    border-block-start: 1px solid var(--c-line);
+    background:
+      radial-gradient(ellipse 60% 100% at 50% 100%, var(--c-signal-veil), transparent 70%),
+      var(--c-void);
+    padding-block-end: var(--sp-6);
+  }
+
+  /* ---- CTA ---- */
+  .ftr__cta { padding-block: var(--sp-section); }
+  .ftr__cta-inner {
+    position: relative;
+    display: grid;
+    gap: clamp(2rem, 1rem + 4vw, 4rem);
+    padding: clamp(1.75rem, 1rem + 3.4vw, 3.5rem);
+    border: 1px solid var(--c-line-2);
+    border-radius: var(--r-2);
+    background:
+      linear-gradient(160deg, var(--c-signal-veil), transparent 45%),
+      var(--c-panel);
+  }
+  @media (min-width: 62em) {
+    .ftr__cta-inner { grid-template-columns: minmax(0, 1.35fr) minmax(0, 0.65fr); align-items: end; }
+  }
+  .ftr__cta-copy > * + * { margin-block-start: var(--sp-5); }
+  .ftr__cta-actions { display: flex; flex-direction: column; align-items: stretch; gap: var(--sp-3); }
+  @media (min-width: 62em) {
+    .ftr__cta-actions { inline-size: fit-content; max-inline-size: 26rem; }
+  }
+  /* Centred with the buttons above it. The two .btn labels were already centred
+     by the button component, so a left-aligned note underneath was the only
+     thing in this column not sitting on the same axis. */
+  .ftr__cta-note {
+    margin-block-start: var(--sp-2);
+    color: var(--c-ink-3);
+    text-transform: none;
+    letter-spacing: var(--tr-wide);
+    text-align: center;
+    text-wrap: balance;
+  }
+
+  /* ---- Directory ---- */
+  .ftr__grid {
+    display: grid;
+    gap: var(--sp-7) var(--sp-5);
+    padding-block: var(--sp-8) var(--sp-7);
+    border-block-start: 1px solid var(--c-line);
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  @media (min-width: 62em) {
+    .ftr__grid { grid-template-columns: minmax(0, 1.6fr) repeat(3, minmax(0, 1fr)); gap: var(--sp-6); }
+  }
+  .ftr__brand { grid-column: 1 / -1; display: flex; flex-direction: column; gap: var(--sp-4); align-items: flex-start; }
+  /* The header's brand link was given a 44px touch target; this one had no
+     class at all, so nothing reached it. It measured 30px on every page. */
+  .ftr__home { display: inline-flex; align-items: center; }
+  @media (pointer: coarse) { .ftr__home { min-block-size: 2.75rem; } }
+  @media (min-width: 62em) { .ftr__brand { grid-column: auto; padding-inline-end: var(--sp-6); } }
+  /* rem, never `ch`: the body face is a system stack, so a `ch` measure hands
+     the wider faces a narrower pixel measure — exactly backwards. */
+  .ftr__blurb { max-width: 18.5rem; }
+  .ftr__social { display: flex; flex-wrap: wrap; gap: var(--sp-2); margin: 0; padding: 0; list-style: none; }
+  /* Icons, not text: the link needs an explicit box. 2.25rem already clears
+     WCAG 2.5.8 Target Size (Minimum, AA) on every pointer type; the coarse
+     rule below takes it to the full 44px. */
+  .ftr__social-link {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    inline-size: 2.25rem;
+    block-size: 2.25rem;
+    color: var(--c-ink-3);
+    border: 1px solid transparent;
+    transition: color 140ms ease, border-color 140ms ease;
+  }
+  .ftr__social-link:hover { color: var(--c-signal-text); border-color: var(--c-line-2); }
+  /* Footer links measured 13-17px tall at 360px, failing WCAG 2.5.8 Target
+     Size (Minimum, AA) which needs 24x24. On touch they become real targets;
+     on a mouse they keep the compact footer rhythm. */
+  @media (pointer: coarse) {
+    .ftr__social-link { inline-size: 2.75rem; block-size: 2.75rem; }
+    .ftr__legal-link,
+    .ftr__link,
+    .ftr__mf-link {
+      display: inline-flex;
+      align-items: center;
+      min-block-size: 2.75rem;
+    }
+    /* The rows are gap-spaced, so growing each item would otherwise double the
+       footer's height. Pull the gap back by the height the items just gained. */
+    .ftr__social, .ftr__legal, .ftr__col-list { gap: var(--sp-2); }
+  }
+
+  .ftr__social-link {
+    font-family: var(--font-mono);
+    font-size: var(--fs-2xs);
+    letter-spacing: var(--tr-label);
+    text-transform: uppercase;
+    color: var(--c-ink-3);
+    transition: color var(--dur-2) var(--ease-out);
+  }
+  .ftr__social-link:hover { color: var(--c-signal); }
+
+  .ftr__col-title { margin-block-end: var(--sp-4); color: var(--c-ink-3); }
+  .ftr__col-list { display: grid; gap: var(--sp-3); list-style: none; margin: 0; padding: 0; }
+  .ftr__link {
+    font-size: var(--fs-sm);
+    color: var(--c-ink-2);
+    transition: color var(--dur-2) var(--ease-out);
+  }
+  .ftr__link:hover { color: var(--c-signal); }
+
+  /* ---- Manifest strip ---- */
+  .ftr__manifest {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--sp-3) var(--sp-5);
+    padding-block: var(--sp-4);
+    padding-inline: 0;
+    border-block: 1px solid var(--c-line);
+    font-family: var(--font-mono);
+    font-size: var(--fs-2xs);
+    letter-spacing: var(--tr-wide);
+    color: var(--c-ink-3);
+  }
+  .ftr__manifest { list-style: none; margin: 0; padding-inline: 0; }
+  .ftr__mf { display: inline-flex; align-items: center; gap: var(--sp-2); }
+  .ftr__mf-link {
+    color: inherit;
+    text-decoration: underline;
+    text-decoration-color: transparent;
+    text-underline-offset: 0.22em;
+    transition: color var(--dur-2) var(--ease-out),
+      text-decoration-color var(--dur-2) var(--ease-out);
+  }
+  .ftr__mf-link:hover { color: var(--c-signal-text); text-decoration-color: var(--c-signal); }
+  .ftr__cookie {
+    padding: 0;
+    font: inherit;
+    background: none;
+    border: 0;
+    cursor: pointer;
+  }
+
+  /* ---- Bottom ---- */
+  .ftr__bottom {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--sp-3) var(--sp-5);
+    align-items: center;
+    justify-content: space-between;
+    padding-block-start: var(--sp-5);
+    /* Clears the iOS home-indicator strip; 0px elsewhere. */
+    padding-block-end: max(var(--sp-6), env(safe-area-inset-bottom, 0px));
+  }
+  .ftr__legal { display: flex; flex-wrap: wrap; gap: var(--sp-5); list-style: none; margin: 0; padding: 0; }
+  .ftr__legal-link {
+    font-family: var(--font-mono);
+    font-size: var(--fs-2xs);
+    letter-spacing: var(--tr-label);
+    text-transform: uppercase;
+    color: var(--c-ink-3);
+    transition: color var(--dur-2) var(--ease-out);
+  }
+  .ftr__legal-link:hover { color: var(--c-signal); }
+</style>

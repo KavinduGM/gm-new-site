@@ -1,0 +1,449 @@
+---
+/* Counted, not typed. The review steps are the ones carrying a check or a
+   shield glyph; step 10 confirms AFTER publishing, so it is not one of them. */
+const CHECKS = WORKFLOW.filter((w) => w.icon === 'check' || w.icon === 'shield').length;
+const CHECK_WORDS = ['No', 'One', 'Two', 'Three', 'Four', 'Five', 'Six', 'Seven'];
+import { WORKFLOW, WORKFLOW_PHASES, WORKFLOW_EXTRAS } from '../data/content.mjs';
+
+/**
+ * The ten steps of a run, grouped into four phases.
+ *
+ * A single ten-item column ran roughly two thousand pixels and read as a wall.
+ * Grouping into phases lets each one render as a row of cards, which cuts the
+ * height to about a quarter and shows the shape of the process — hand it a
+ * file, it writes and builds, it packages, it ships and confirms — instead of
+ * ten undifferentiated items.
+ *
+ * The input phase holds one step, so its card spans the row: it is the thing
+ * you actually do, and a lone third-width card beside two gaps reads as a
+ * layout error rather than emphasis.
+ *
+ * Icons are line glyphs on a 20x20 grid, drawn to the same 1.4 stroke as the
+ * rest of the site's diagrams.
+ */
+const ICONS = {
+  doc: '<path d="M11 2H6a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V7z"/><path d="M11 2v5h5"/><path d="M7.5 11.5h5M7.5 14h3"/>',
+  brain: '<path d="M10 4.5a3 3 0 0 0-5.6 1.4A2.6 2.6 0 0 0 3.2 10a2.6 2.6 0 0 0 1.5 3.9A2.8 2.8 0 0 0 10 15.5z"/><path d="M10 4.5a3 3 0 0 1 5.6 1.4A2.6 2.6 0 0 1 16.8 10a2.6 2.6 0 0 1-1.5 3.9A2.8 2.8 0 0 1 10 15.5z"/><path d="M10 4.5v11"/>',
+  film: '<rect x="2.5" y="4.5" width="15" height="11" rx="1.6"/><path d="M8.4 8.2l4 1.8-4 1.8z"/>',
+  check: '<circle cx="10" cy="10" r="7"/><path d="M6.8 10.2l2.2 2.2 4.4-4.6"/>',
+  text: '<path d="M4 5.5h12M4 9h12M4 12.5h8M4 16h5"/>',
+  image: '<rect x="3" y="4.5" width="14" height="11" rx="1.6"/><circle cx="7.4" cy="8.6" r="1.3"/><path d="M3.6 13.6l3.6-3.1 3.2 2.6 2.6-2.2 3.4 2.9"/>',
+  send: '<path d="M17 3.5L9.2 11.3"/><path d="M17 3.5l-5 13-2.8-5.2L4 8.5z"/>',
+  shield: '<path d="M10 2.8l6 2.2v4.6c0 3.6-2.4 6.3-6 7.6-3.6-1.3-6-4-6-7.6V5z"/><path d="M7.4 10l1.9 1.9 3.5-3.7"/>',
+  calendar: '<rect x="3" y="4.5" width="14" height="12.5" rx="1.6"/><path d="M3 8.4h14M7 2.8v3.2M13 2.8v3.2"/><path d="M7.6 12.2l1.5 1.5 2.9-3"/>',
+  article: '<rect x="3" y="3" width="14" height="14" rx="1.6"/><path d="M6 6.4h8v3.4H6z"/><path d="M6 12.2h8M6 14.6h5"/>',
+  bell: '<path d="M10 3a4.6 4.6 0 0 0-4.6 4.6c0 3.6-1.4 4.7-1.4 4.7h12s-1.4-1.1-1.4-4.7A4.6 4.6 0 0 0 10 3z"/><path d="M8.6 15a1.6 1.6 0 0 0 2.8 0"/>',
+  lock: '<rect x="4" y="8.6" width="12" height="8.4" rx="1.6"/><path d="M6.8 8.6V6.4a3.2 3.2 0 0 1 6.4 0v2.2"/><path d="M10 12v2.2"/>',
+};
+
+interface Props { id?: string }
+const { id = 'stages' } = Astro.props;
+---
+
+<section class="section section--raised wf" id={id} aria-labelledby="wf-title">
+  <div class="wrap wrap--wide">
+    <p class="eyebrow eyebrow--center">Inside the system</p>
+    <h2 id="wf-title" class="wf__h">
+      What happens between your file and <span class="hl">your published feed</span>.
+    </h2>
+    <p class="wf__lede">
+      Ten steps, in this order, every time you upload. {CHECK_WORDS[CHECKS] ?? CHECKS} of them are review
+      gates, and each one runs several passes of its own before the work is allowed through.
+    </p>
+
+    {WORKFLOW_PHASES.map((ph) => {
+      const steps = WORKFLOW.filter((w) => w.phase === ph.id);
+      return (
+        <section class="wf__phase" aria-labelledby={`ph-${ph.id}`}>
+          <div class="wf__phase-bar">
+            <p class="meta meta--signal wf__phase-k">{ph.k}</p>
+            <h3 id={`ph-${ph.id}`} class="wf__phase-t">{ph.t}</h3>
+            <span class="wf__phase-rule" aria-hidden="true"></span>
+            <p class="wf__phase-n" aria-hidden="true">{steps.map((x) => x.n).join(' · ')}</p>
+          </div>
+
+          <ol role="list" class:list={['wf__grid', steps.length === 1 && 'wf__grid--solo']}>
+            {steps.map((w) => (
+              <li class="wf__cell">
+              <article class="wf__card2 ticked">
+                <div class="wf__card2-head">
+                  <span class="wf__marker" aria-hidden="true">
+                    <svg class="wf__icon" width="20" height="20" viewBox="0 0 20 20" fill="none"
+                      stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"
+                      set:html={ICONS[w.icon]} />
+                  </span>
+                  <span class="wf__n">Step {w.n}</span>
+                </div>
+                <h4 class="wf__name">{w.name}</h4>
+                <p class="wf__sum">{w.sum}</p>
+                <p class="wf__d">{w.d}</p>
+              </article>
+              </li>
+            ))}
+          </ol>
+        </section>
+      );
+    })}
+
+    <!-- Four things that run alongside rather than inside the sequence.
+
+         A real <section> with a real heading, not a <div> plus a styled <p>.
+         As a paragraph, "And alongside all of it" carried no structural weight,
+         so its four cards were H3s sitting as peers of the pipeline phases —
+         the outline read them as phases 5-8 of a sequence the page has just
+         said has four. The group label is the H3; the cards drop to H4. -->
+    <section class="wf__extras" aria-labelledby="wf-extras">
+      <h3 id="wf-extras" class="meta meta--signal wf__extras-k">
+        <span class="dot dot--done" aria-hidden="true"></span>And alongside all of it
+      </h3>
+      <ul role="list" class="wf__cards">
+        {WORKFLOW_EXTRAS.map((x) => (
+          <li class="wf__card ticked">
+            <span class="wf__card-ico" aria-hidden="true">
+              <svg width="20" height="20" viewBox="0 0 20 20" fill="none"
+                stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"
+                set:html={ICONS[x.icon]} />
+            </span>
+            <h4 class="wf__card-t">{x.t}</h4>
+            <p class="wf__card-d">{x.d}</p>
+            {x.more && (
+              <a href={x.more.href} class="link wf__card-more">
+                {x.more.label}
+                <svg width="10" height="10" viewBox="0 0 12 12" aria-hidden="true"><path d="M1 6h9M6.5 2 10.5 6l-4 4" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="square"/></svg>
+              </a>
+            )}
+          </li>
+        ))}
+      </ul>
+    </section>
+
+    <!-- Closes the pipeline section with somewhere to go. Measured on the built
+         page, /system ran 9,042px with a CTA at 6% and then nothing until 78% —
+         about seven screens of scrolling with no way to act. This sits at ~35%,
+         right after the reader has seen the whole run, and points sideways
+         rather than at the booking form: at this depth the honest next question
+         is whether it fits, not whether to buy. -->
+    <div class="wf__next">
+      <p class="wf__next-t">
+        That is the whole run. What changes between clients is the document that
+        goes in and the channels it comes out on.
+      </p>
+      <a href="/who-its-for/" class="btn btn--primary wf__next-cta">
+        See whether it fits your operation
+        <svg class="btn__arrow" width="12" height="12" viewBox="0 0 12 12" aria-hidden="true"><path d="M1 6h9M6.5 2 10.5 6l-4 4" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="square"/></svg>
+      </a>
+    </div>
+  </div>
+</section>
+
+<style>
+  /* Mirrors .flow__gov on the home page: one line of copy, one action, centred
+     under the section it closes. Stacks on narrow screens where side-by-side
+     would squeeze the button below a comfortable width. */
+  .wf__next {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+    gap: var(--sp-4) var(--sp-6);
+    margin-block-start: var(--sp-8);
+    padding-block-start: var(--sp-6);
+    border-block-start: 1px solid var(--c-line);
+    text-align: center;
+  }
+  .wf__next-t {
+    max-inline-size: 34rem;
+    margin: 0;
+    color: var(--c-ink-2);
+  }
+  .wf__next-cta { flex: none; }
+  @media (max-width: 40em) {
+    .wf__next { flex-direction: column; }
+    .wf__next-cta { inline-size: 100%; }
+  }
+
+  /* Optional per-card link. Sits below the copy and pushes to the card's
+     bottom so cards of unequal text length still align their links. */
+  .wf__card-more {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--sp-2);
+    margin-block-start: auto;
+    padding-block-start: var(--sp-3);
+    font-size: var(--fs-sm);
+  }
+  .wf__card-more svg { flex: none; }
+  /* Standalone link, not one inside a sentence, so it gets the same 44px touch
+     target as every other standalone control on the site. */
+  @media (pointer: coarse) { .wf__card-more { min-block-size: 2.75rem; } }
+
+  /* Astro scopes per file, so the page's .sec__title rule cannot reach this. */
+  .wf__h {
+    margin-inline: auto;
+    font-size: var(--fs-section);
+    line-height: var(--lh-snug);
+    letter-spacing: var(--tr-display);
+    font-weight: 600;
+    max-width: 46rem;
+    text-align: center;
+    text-wrap: balance;
+  }
+  .wf__lede {
+    margin: var(--sp-5) auto 0;
+    max-width: 44rem;
+    font-size: var(--fs-md);
+    line-height: var(--lh-relaxed);
+    color: var(--c-ink-2);
+    text-align: center;
+    text-wrap: pretty;
+  }
+
+  .wf__phase { position: relative; margin-block-start: clamp(2.5rem, 1.8rem + 2.4vw, 3.75rem); }
+  /* Carries the eye from the end of one phase into the head of the next, so the
+     four blocks read as one run rather than four lists. */
+  .wf__phase:not(:last-of-type)::after {
+    content: '';
+    position: absolute;
+    inset-block-start: 100%;
+    inset-inline-start: 50%;
+    inline-size: 1px;
+    block-size: clamp(2.5rem, 1.8rem + 2.4vw, 3.75rem);
+    transform: translateX(-50%);
+    background: linear-gradient(180deg, var(--c-signal), var(--c-line-signal) 70%, transparent);
+  }
+  .wf__phase:not(:last-of-type)::before {
+    content: '';
+    position: absolute;
+    inset-block-start: calc(100% + clamp(1.5rem, 1rem + 1.4vw, 2.25rem));
+    inset-inline-start: 50%;
+    inline-size: 0.4rem;
+    block-size: 0.4rem;
+    border-inline-end: 1px solid var(--c-signal);
+    border-block-end: 1px solid var(--c-signal);
+    transform: translate(-50%, -50%) rotate(45deg);
+    z-index: 1;
+  }
+
+  .wf__phase-bar {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    align-items: center;
+    gap: var(--sp-3) var(--sp-4);
+    margin-block-end: var(--sp-4);
+  }
+  .wf__phase-k { grid-column: 1; }
+  .wf__phase-t {
+    grid-column: 2;
+    font-size: var(--fs-md);
+    letter-spacing: var(--tr-display);
+    font-weight: 600;
+    color: var(--c-ink);
+    white-space: nowrap;
+  }
+  .wf__phase-rule {
+    grid-column: 3;
+    block-size: 1px;
+    background: var(--c-line);
+    display: none;
+  }
+  .wf__phase-n {
+    grid-column: 3;
+    font-family: var(--font-mono);
+    font-size: var(--fs-2xs);
+    letter-spacing: var(--tr-label);
+    color: var(--c-ink-3);
+    justify-self: end;
+  }
+  @media (max-width: 33.99em) {
+    .wf__phase-bar { grid-template-columns: minmax(0, 1fr) auto; }
+    .wf__phase-k { grid-column: 1; }
+    .wf__phase-t { grid-column: 1 / -1; grid-row: 2; white-space: normal; }
+    .wf__phase-n { grid-column: 2; grid-row: 1; }
+  }
+
+  .wf__grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--sp-4);
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+  /* Straight from one column to three. A two-column state puts a three-step
+     phase into 2 + 1, which leaves the connector between cards pointing at
+     nothing. One breakpoint keeps the flow unambiguous at every width. */
+  @media (min-width: 60em) { .wf__grid { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+  /* One-step phase: span the row rather than sit as a lone third. */
+  .wf__grid--solo { grid-template-columns: minmax(0, 1fr) !important; }
+
+  /* ---- Flow connectors ----
+     Drawn on the cell, not the card: .ticked already owns the card's ::before
+     and ::after for its corner marks. Vertical while stacked, horizontal once
+     the phase sits in one row, and aligned to the icon centre rather than the
+     card's middle so it lines up across cards of unequal height. */
+  .wf__cell { position: relative; display: flex; }
+  .wf__cell:not(:last-child)::after,
+  .wf__cell:not(:last-child)::before {
+    content: '';
+    position: absolute;
+    pointer-events: none;
+    z-index: 1;
+  }
+  /* stacked */
+  .wf__cell:not(:last-child)::after {
+    inset-block-start: 100%;
+    inset-inline-start: 50%;
+    inline-size: 1px;
+    block-size: var(--sp-4);
+    transform: translateX(-50%);
+    background: linear-gradient(180deg, var(--c-signal), var(--c-line-signal));
+  }
+  .wf__cell:not(:last-child)::before {
+    inset-block-start: calc(100% + var(--sp-4));
+    inset-inline-start: 50%;
+    inline-size: 0.35rem;
+    block-size: 0.35rem;
+    border-inline-end: 1px solid var(--c-signal);
+    border-block-end: 1px solid var(--c-signal);
+    transform: translate(-50%, -100%) rotate(45deg);
+  }
+  @media (min-width: 60em) {
+    /* across the row, level with the marker */
+    .wf__cell:not(:last-child)::after {
+      inset-block-start: calc(clamp(1.25rem, 0.9rem + 1.4vw, 1.75rem) + 1.125rem);
+      inset-inline-start: 100%;
+      inline-size: var(--sp-4);
+      block-size: 1px;
+      transform: translateY(-50%);
+      background: linear-gradient(90deg, var(--c-signal), var(--c-line-signal));
+    }
+    .wf__cell:not(:last-child)::before {
+      inset-block-start: calc(clamp(1.25rem, 0.9rem + 1.4vw, 1.75rem) + 1.125rem);
+      inset-inline-start: calc(100% + var(--sp-4));
+      border-inline-end: 1px solid var(--c-signal);
+      border-block-end: none;
+      border-block-start: 1px solid var(--c-signal);
+      transform: translate(-100%, -50%) rotate(45deg);
+    }
+  }
+
+  .wf__card2 {
+    inline-size: 100%;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    gap: var(--sp-2);
+    padding: clamp(1.25rem, 0.9rem + 1.4vw, 1.75rem);
+    border: 1px solid var(--c-line-2);
+    border-radius: var(--r-2);
+    background:
+      linear-gradient(180deg, rgb(255 255 255 / 2.2%) 0%, transparent 46%),
+      var(--c-panel-2);
+  }
+  .wf__card2-head {
+    display: flex;
+    align-items: center;
+    gap: var(--sp-3);
+    padding-block-end: var(--sp-3);
+    margin-block-end: var(--sp-1);
+    border-block-end: 1px solid var(--c-line);
+  }
+  .wf__marker {
+    display: grid;
+    place-items: center;
+    inline-size: 2.25rem;
+    block-size: 2.25rem;
+    border-radius: 50%;
+    border: 1px solid var(--c-line-signal);
+    background: var(--c-panel-3);
+    color: var(--c-signal);
+    flex: none;
+  }
+  .wf__icon { display: block; }
+
+  .wf__n {
+    font-family: var(--font-mono);
+    font-size: var(--fs-2xs);
+    letter-spacing: var(--tr-label);
+    text-transform: uppercase;
+    color: var(--c-ink-3);
+  }
+  .wf__name {
+    font-size: var(--fs-md);
+    line-height: var(--lh-snug);
+    letter-spacing: var(--tr-display);
+    font-weight: 600;
+    color: var(--c-ink);
+    text-wrap: balance;
+  }
+  .wf__sum {
+    font-size: var(--fs-sm);
+    line-height: var(--lh-relaxed);
+    color: var(--c-signal-text);
+  }
+  .wf__d {
+    margin-block-start: var(--sp-1);
+    font-size: var(--fs-sm);
+    line-height: var(--lh-relaxed);
+    color: var(--c-ink-2);
+    text-wrap: pretty;
+  }
+
+  /* ---- The four alongside ---- */
+  .wf__extras {
+    margin-block-start: clamp(2.5rem, 1.8rem + 2.6vw, 4rem);
+    padding-block-start: var(--sp-6);
+    border-block-start: 1px solid var(--c-line-signal);
+  }
+  .wf__extras-k {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--sp-2);
+    margin-block-end: var(--sp-5);
+  }
+  .wf__cards {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--sp-4);
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+  @media (min-width: 46em) { .wf__cards { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+  .wf__card {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    gap: var(--sp-3);
+    padding: clamp(1.25rem, 0.9rem + 1.4vw, 1.75rem);
+    border: 1px solid var(--c-line-signal);
+    border-radius: var(--r-2);
+    background:
+      radial-gradient(ellipse 90% 100% at 0% 0%, var(--c-signal-wash) 0%, transparent 62%),
+      var(--c-panel-2);
+  }
+  .wf__card-ico {
+    display: grid;
+    place-items: center;
+    inline-size: 2.25rem;
+    block-size: 2.25rem;
+    border-radius: var(--r-1);
+    border: 1px solid var(--c-line-2);
+    background: var(--c-panel-3);
+    color: var(--c-signal);
+  }
+  .wf__card-t {
+    font-size: var(--fs-md);
+    line-height: var(--lh-snug);
+    letter-spacing: var(--tr-display);
+    font-weight: 600;
+    color: var(--c-ink);
+    text-wrap: balance;
+  }
+  .wf__card-d {
+    font-size: var(--fs-sm);
+    line-height: var(--lh-relaxed);
+    color: var(--c-ink-2);
+    text-wrap: pretty;
+  }
+</style>

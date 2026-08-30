@@ -1,0 +1,65 @@
+---
+import { SITE } from '../site.config.mjs';
+
+/**
+ * The brand lockup.
+ *
+ * `label` on  → the full supplied lockup (mark + custom wordmark) as one image,
+ *               because the wordmark is a drawn typeface we do not have as a
+ *               font and would not survive being re-set in the site's own.
+ * `label` off → the mark alone, inline so its glyphs inherit the surrounding
+ *               ink and it stays crisp at favicon sizes.
+ *
+ * The mark geometry is traced from brand-source/oo-mark-source.png: the "oo" of
+ * the wordmark, each glyph a circle with its top-left quadrant squared off.
+ * Fitted against the artwork at 98.78% IoU, so the vector and the PNG agree.
+ * The raster icons come from the same trace — scripts/build-brand-assets.py.
+ */
+interface Props { class?: string; label?: boolean }
+const { class: cls = '', label = true } = Astro.props;
+
+/* Outer radius, counter radius and glyph pitch, in the mark's own 863x410 space. */
+const R = 205;
+const RI = 104;
+const PITCH = 453;
+
+/** One glyph: squared top-left, 270-degree arc round the rest, counter cut out. */
+const glyph = (ox: number) =>
+  `M${ox} 0H${ox + R}A${R} ${R} 0 1 1 ${ox} ${R}Z` +
+  `M${ox + R - RI} ${R - RI}H${ox + R}A${RI} ${RI} 0 1 1 ${ox + R - RI} ${R}Z`;
+---
+
+{label ? (
+  <img
+    class:list={['logo', 'logo--lockup', cls]}
+    src="/logo.png"
+    alt={SITE.name}
+    width="716"
+    height="121"
+    decoding="async"
+  />
+) : (
+  <svg
+    class:list={['logo', 'logo--mark', cls]}
+    viewBox="0 0 863 410"
+    role="img"
+    aria-label={SITE.name}
+  >
+    <path fill-rule="evenodd" fill="var(--c-signal)" d={glyph(0) + glyph(PITCH)} />
+  </svg>
+)}
+
+<style>
+  .logo { display: block; flex: none; color: var(--c-ink); }
+  /* Height-driven: the lockup keeps its own aspect ratio at whatever height
+     the header or footer gives it. */
+  .logo--lockup {
+    block-size: clamp(1.875rem, 1.6rem + 1.1vw, 2.5rem);
+    inline-size: auto;
+    max-inline-size: 100%;
+  }
+  .logo--mark {
+    block-size: clamp(1.25rem, 1.1rem + 0.5vw, 1.5rem);
+    inline-size: auto;
+  }
+</style>

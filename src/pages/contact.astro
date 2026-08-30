@@ -1,0 +1,1201 @@
+---
+import Base from '../layouts/Base.astro';
+import SectionHead from '../components/SectionHead.astro';
+import FaqSection from '../components/FaqSection.astro';
+import { SITE } from '../site.config.mjs';
+import { SEGMENTS, ENGAGEMENTS, CHANNELS, CONTACT_FAQ } from '../data/content.mjs';
+import { PACKAGES } from '../data/pricing.mjs';
+import { breadcrumbSchema, faqSchema } from '../lib/schema.mjs';
+
+/** Select + checkbox option sets. Segment, engagement and channel wording is
+ *  pulled from shared content so the form speaks the same language as the
+ *  rest of the site. */
+const segmentOptions = [...SEGMENTS.map((s) => s.name), 'Something else'];
+const engagementOptions = [...ENGAGEMENTS.map((e) => e.name), 'Not sure yet'];
+const channelOptions = [...CHANNELS.map((c) => c.name), 'Other'];
+
+/* Package names come from the price list itself. The plan CTAs on /pricing send
+   ?plan=<name>, and the script at the end of this file matches against exactly
+   this array — so a renamed package cannot leave the two out of step. */
+const packageOptions = PACKAGES.map((p) => p.name);
+
+const volumeOptions = [
+  'Under 10 pieces',
+  '10–40 pieces',
+  '40–150 pieces',
+  '150+ pieces',
+  'Not sure yet',
+];
+
+const timelineOptions = [
+  {
+    v: 'Publishing within a week',
+    hint:
+      'Only the managed route moves that fast — ' +
+      'GroovyMark onboards you onto the system it already runs, usually inside a week. ' +
+      'A build of your own takes up to 21 days.',
+  },
+  {
+    v: 'Publishing within a month',
+    hint: 'A build of your own fits — it runs up to 21 days from the first call.',
+  },
+  {
+    v: 'One to three months out',
+    hint:
+      'Either route works from here. We will use the call to work out which one ' +
+      'pays off at your volume.',
+  },
+  {
+    v: 'No date yet, working out if it fits',
+    hint: 'Fine. The call is a scoping conversation, not a close.',
+  },
+];
+
+const heroFacts = [
+  '30 minutes',
+  'Live demo, no charge',
+  'Reply within one business day',
+  'No deck, no retainer pitch',
+];
+
+const nextSteps = [
+  {
+    n: '01',
+    name: 'You send this',
+    body:
+      'The form above is the whole intake. There is no qualification call before the call, and no form-fill sequence that ends in a brochure.',
+  },
+  {
+    n: '02',
+    name: 'We come back having done the work',
+    body:
+      'You get an instant receipt with a reference number so you know it arrived. The reply that matters comes from a person: we go through what you sent, look at what you are publishing now, and come back with content ideas and the shape of a system for it — so the first call starts with something on the table.',
+  },
+  {
+    n: '03',
+    name: 'Book a time, and we go through it',
+    body:
+      'Thirty minutes on your workflow: where content moves today, where the system takes over, what it would cost and how long it would take. If it is worth building we agree the next step on that call.',
+  },
+];
+
+const reassurance = [
+  'No mailing list',
+  'No drip sequence',
+  'No data sold or shared',
+  'Used only to answer this enquiry',
+];
+
+const slugify = (value: string): string =>
+  value.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+
+/** True once a real scheduler is configured. While bookingUrl is still the
+ *  internal '/contact' path, the booking panel would link this page to itself. */
+const hasScheduler = /^https?:\/\//.test(SITE.bookingUrl);
+
+/** The WhatsApp route renders only once a real number is configured. An empty
+ *  or malformed number produces a wa.me link that opens a dead WhatsApp screen,
+ *  which is a worse outcome than the button not being there. Digits only. */
+const hasWhatsapp = /^\d{8,15}$/.test(String(SITE.whatsapp ?? ''));
+const whatsappUrl = hasWhatsapp
+  ? `https://wa.me/${SITE.whatsapp}?text=${encodeURIComponent(SITE.whatsappMessage ?? '')}`
+  : '';
+---
+
+<Base
+  title="Book a build call and a free demo"
+  description="Tell us what you are trying to ship. We reply within one business day with times for a 30-minute call and a free live demo on real material. No deck, no pitch."
+  schema={[
+    breadcrumbSchema([{ name: 'Contact', href: '/contact/' }]),
+    faqSchema(CONTACT_FAQ),
+  ]}
+  hideFooterCta
+>
+  <!-- ================================================== HERO -->
+  <section class="hero grid-bg" aria-labelledby="contact-title">
+    <span class="bloom hero__bloom" aria-hidden="true"></span>
+    <div class="wrap wrap--wide">
+      <p class="eyebrow eyebrow--center">Contact</p>
+      <h1 id="contact-title" class="display-1 hero__title">
+        Book a build call and a <span class="hl">free demo</span>.
+      </h1>
+      <p class="lede hero__lede">
+        Thirty minutes. We map your current content workflow end to end, run the system on
+        real material so you can watch it work, and tell you plainly whether this is worth
+        building for you. If it is not, we will say so on the call rather than send a proposal.
+      </p>
+      <ul role="list" class="hero__facts">
+        {heroFacts.map((f) => (
+          <li class="hero__fact">
+            <span class="dot dot--done" aria-hidden="true"></span>{f}
+          </li>
+        ))}
+      </ul>
+    </div>
+  </section>
+
+  <!-- ================================================== INTAKE FORM + CONTEXT -->
+  <section class="section section--ruled intake-sec" aria-labelledby="intake-title">
+    <div class="wrap wrap--wide">
+      <div class="intake-wrap">
+        <div class="intake">
+          <div class="panel ticked">
+            <div class="panel__bar">
+              <h2 id="intake-title" class="meta meta--signal">Enquiry intake</h2>
+              <p class="meta intake__req-note" aria-hidden="true">* Required</p>
+            </div>
+
+            <div class="panel__body">
+              <form class="form" method="POST" action="/api/contact" id="enquiry" data-wa={whatsappUrl || undefined}>
+                <!-- Honeypot: real submitters never see or tab into this. -->
+                <div class="sr-only">
+                  <label for="f-company-website">Company website (leave this field empty)</label>
+                  <input
+                    type="text"
+                    id="f-company-website"
+                    name="company_website"
+                    tabindex="-1"
+                    autocomplete="off"
+                  />
+                </div>
+
+                <!-- ---- Who you are ---- -->
+                <fieldset class="fset">
+                  <legend class="fset__legend">Who you are</legend>
+                  <div class="form__grid">
+                    <div class="field">
+                      <label class="field__label" for="f-name">
+                        Full name <span class="field__req" aria-hidden="true">*</span>
+                      </label>
+                      <input
+                        class="input"
+                        type="text"
+                        id="f-name"
+                        name="name"
+                        autocomplete="name"
+                        required
+                      />
+                    </div>
+
+                    <div class="field">
+                      <label class="field__label" for="f-email">
+                        Work email <span class="field__req" aria-hidden="true">*</span>
+                      </label>
+                      <input
+                        class="input"
+                        type="email"
+                        id="f-email"
+                        name="email"
+                        autocomplete="email"
+                        inputmode="email"
+                        spellcheck="false"
+                        required
+                      />
+                    </div>
+
+                    <div class="field">
+                      <label class="field__label" for="f-company">
+                        Company <span class="field__req" aria-hidden="true">*</span>
+                      </label>
+                      <input
+                        class="input"
+                        type="text"
+                        id="f-company"
+                        name="company"
+                        autocomplete="organization"
+                        required
+                      />
+                    </div>
+
+                    <div class="field">
+                      <label class="field__label" for="f-role">
+                        Role <span class="field__opt">optional</span>
+                      </label>
+                      <input
+                        class="input"
+                        type="text"
+                        id="f-role"
+                        name="role"
+                        autocomplete="organization-title"
+                      />
+                    </div>
+
+                    <div class="field">
+                      <label class="field__label" for="f-website">
+                        Website <span class="field__opt">optional</span>
+                      </label>
+                      <input
+                        class="input"
+                        type="url"
+                        id="f-website"
+                        name="website"
+                        autocomplete="url"
+                        inputmode="url"
+                        spellcheck="false"
+                        placeholder="https://"
+                        aria-describedby="f-website-hint"
+                      />
+                      <p class="field__hint" id="f-website-hint">
+                        Helps us look at your current output before the call.
+                      </p>
+                    </div>
+
+                    <div class="field">
+                      <label class="field__label" for="f-segment">
+                        Which describes you best <span class="field__req" aria-hidden="true">*</span>
+                      </label>
+                      <div class="select">
+                        <select class="input" id="f-segment" name="segment" required>
+                          <option value="" disabled selected>Choose one</option>
+                          {segmentOptions.map((o) => <option value={o}>{o}</option>)}
+                        </select>
+                        <svg class="select__chev" width="11" height="11" viewBox="0 0 12 12" aria-hidden="true"><path d="M2.5 4.5 6 8l3.5-3.5" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="square"/></svg>
+                      </div>
+                    </div>
+                  </div>
+                </fieldset>
+
+                <!-- ---- What you run ---- -->
+                <fieldset class="fset">
+                  <legend class="fset__legend">Channels you publish on</legend>
+                  <p class="field__hint fset__hint">Select every channel you post to today.</p>
+                  <div class="opts">
+                    {channelOptions.map((c) => (
+                      <label class="opt" for={`f-ch-${slugify(c)}`}>
+                        <input
+                          class="opt__box"
+                          type="checkbox"
+                          id={`f-ch-${slugify(c)}`}
+                          name="channels"
+                          value={c}
+                        />
+                        <span>{c}</span>
+                      </label>
+                    ))}
+                  </div>
+                </fieldset>
+
+                <div class="form__grid">
+                  <div class="field">
+                    <label class="field__label" for="f-volume">
+                      Rough output per month <span class="field__opt">optional</span>
+                    </label>
+                    <div class="select">
+                      <select class="input" id="f-volume" name="volume">
+                        <option value="">Choose one</option>
+                        {volumeOptions.map((o) => <option value={o}>{o}</option>)}
+                      </select>
+                      <svg class="select__chev" width="11" height="11" viewBox="0 0 12 12" aria-hidden="true"><path d="M2.5 4.5 6 8l3.5-3.5" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="square"/></svg>
+                    </div>
+                  </div>
+
+                  <div class="field">
+                    <label class="field__label" for="f-timeline">
+                      Timeline <span class="field__opt">optional</span>
+                    </label>
+                    <div class="select">
+                      <select
+                        class="input"
+                        id="f-timeline"
+                        name="timeline"
+                        aria-describedby="timeline-hint"
+                      >
+                        <option value="">Choose one</option>
+                        {timelineOptions.map((o) => (
+                          <option value={o.v} data-hint={o.hint}>{o.v}</option>
+                        ))}
+                      </select>
+                      <svg class="select__chev" width="11" height="11" viewBox="0 0 12 12" aria-hidden="true"><path d="M2.5 4.5 6 8l3.5-3.5" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="square"/></svg>
+                    </div>
+                    <!--
+                      Filled by the script at the foot of this page. Empty and
+                      hidden until a choice is made, so nothing shifts on load;
+                      with JavaScript off the select still works and submits,
+                      it just does not answer back.
+                    -->
+                    <p class="field__hint tl-hint" id="timeline-hint" aria-live="polite" hidden></p>
+                  </div>
+                </div>
+
+                <!-- ---- Pricing details (optional; reveals the package list) ---- -->
+                <fieldset class="fset ask">
+                  <legend class="fset__legend">Pricing</legend>
+                  <div class="opts opts--stack">
+                    <label class="opt" for="f-ask-pricing">
+                      <input
+                        class="opt__box"
+                        type="checkbox"
+                        id="f-ask-pricing"
+                        name="wants_pricing"
+                        value="Yes"
+                      />
+                      <span>I want pricing details for a managed plan</span>
+                    </label>
+                  </div>
+
+                  {/* Revealed by the checkbox in CSS, not script, so it works with
+                      JavaScript off — the same approach the comparison on the home page
+                      uses. The script only clears the choice when the box is unticked. */}
+                  <div class="ask__pkgs">
+                    <p class="field__hint ask__hint">Which plan are you asking about?</p>
+                    <div class="opts opts--stack">
+                      {packageOptions.map((o) => (
+                        <label class="opt" for={`f-pkg-${slugify(o)}`}>
+                          <input
+                            class="opt__box"
+                            type="radio"
+                            id={`f-pkg-${slugify(o)}`}
+                            name="package"
+                            value={o}
+                          />
+                          <span>{o}</span>
+                        </label>
+                      ))}
+                    </div>
+                  </div>
+                </fieldset>
+
+                <!-- ---- Engagement ---- -->
+                <fieldset class="fset">
+                  <legend class="fset__legend">Preferred engagement</legend>
+                  <p class="field__hint fset__hint">
+                    Two models only. Undecided is a normal answer at this stage.
+                  </p>
+                  <div class="opts opts--stack">
+                    {engagementOptions.map((e) => (
+                      <label class="opt" for={`f-eng-${slugify(e)}`}>
+                        <input
+                          class="opt__box"
+                          type="radio"
+                          id={`f-eng-${slugify(e)}`}
+                          name="engagement"
+                          value={e}
+                        />
+                        <span>{e}</span>
+                      </label>
+                    ))}
+                  </div>
+                </fieldset>
+
+                <!-- ---- The brief ---- -->
+                <div class="field">
+                  <label class="field__label" for="f-brief">
+                    What are you trying to ship? <span class="field__req" aria-hidden="true">*</span>
+                  </label>
+                  <textarea
+                    class="input input--area"
+                    id="f-brief"
+                    name="brief"
+                    rows="6"
+                    required
+                    aria-describedby="f-brief-hint"
+                  ></textarea>
+                  <p class="field__hint" id="f-brief-hint">
+                    What the content is, where it goes, and what is holding it up today. Two or
+                    three sentences is plenty.
+                  </p>
+                </div>
+
+                <!-- ---- Consent ---- -->
+                <div class="consent">
+                  <input
+                    class="consent__box"
+                    type="checkbox"
+                    id="f-consent"
+                    name="consent"
+                    value="yes"
+                    required
+                  />
+                  <div class="consent__text">
+                    <label class="consent__label" for="f-consent">
+                      Contact me about this enquiry.
+                      <span class="field__req" aria-hidden="true">*</span>
+                    </label>
+                    <p class="field__hint">
+                      Your details are used to answer it and nothing else. See the
+                      <a href="/legal/privacy/" class="link">privacy notice</a>.
+                    </p>
+                  </div>
+                </div>
+
+                <!--
+                  Posts to /api/contact, which sends the lead notification and
+                  the auto-reply through Resend and returns a submission
+                  reference. Works with JavaScript off: the endpoint answers a
+                  plain form post with a 303 to /contact/sent/. The script at
+                  the foot of this file upgrades that to an inline result.
+                -->
+                <div class="form__status" id="form-status" role="status" aria-live="polite" hidden></div>
+
+                <div class="form__submit">
+                  <button type="submit" class="btn btn--primary btn--lg" id="enquiry-send">
+                    Send enquiry
+                    <svg class="btn__arrow" width="12" height="12" viewBox="0 0 12 12" aria-hidden="true"><path d="M1 6h9M6.5 2 10.5 6l-4 4" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="square"/></svg>
+                  </button>
+                  <p class="meta form__submit-note">A person replies within one business day</p>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================================================== FASTER ROUTES -->
+  <section class="section section--sm section--ruled" aria-labelledby="reach-title">
+    <div class="wrap wrap--wide">
+      <h2 id="reach-title" class="reach__title">Would rather not fill in a form?</h2>
+      <p class="reach__lede">
+        Every one of these reaches the same people. Nothing here routes to a chatbot or a
+        qualification queue.
+      </p>
+
+      <ul role="list" class="reach">
+        <li class="reach__card reach__card--lead ticked">
+          <p class="meta reach__k"><span class="dot dot--live" aria-hidden="true"></span>Fastest</p>
+          <h3 class="reach__t">Chat with us on WhatsApp</h3>
+          <p class="reach__d">
+            A person on the build team, not an auto-responder. Best if you want a quick answer
+            on whether this fits before committing to a call.
+          </p>
+          {hasWhatsapp ? (
+            <a
+              href={whatsappUrl}
+              class="btn btn--primary reach__btn"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              Open WhatsApp<span class="sr-only"> (opens in a new tab)</span>
+              <svg class="btn__arrow" width="12" height="12" viewBox="0 0 12 12" aria-hidden="true"><path d="M2.5 9.5 9.5 2.5M4 2.5h5.5V8" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="square"/></svg>
+            </a>
+          ) : (
+            <!--
+              NOT FOR PRODUCTION. Deliberately loud so it cannot reach a live
+              site unnoticed: set `whatsapp` in src/site.config.mjs (digits only,
+              international format) and this becomes the real button. A wa.me
+              link built from an empty number opens a dead WhatsApp screen.
+            -->
+            <p class="reach__todo" role="note">Add your WhatsApp number to publish this</p>
+          )}
+        </li>
+
+        <li class="reach__card ticked">
+          <p class="meta reach__k"><span class="dot dot--done" aria-hidden="true"></span>Direct</p>
+          <h3 class="reach__t">Send a plain email</h3>
+          <p class="reach__d">
+            Tell us what you are trying to ship and we will pick it up from there. Replied to
+            by a person within one business day.
+          </p>
+          <a href={`mailto:${SITE.email}`} class="link reach__mail">{SITE.email}</a>
+        </li>
+
+        {hasScheduler && (
+          <li class="reach__card ticked">
+            <p class="meta reach__k"><span class="dot dot--queued" aria-hidden="true"></span>Scheduler</p>
+            <h3 class="reach__t">Pick a time yourself</h3>
+            <p class="reach__d">
+              Same call, same 30 minutes, same agenda. Take a slot from the calendar and skip
+              the back and forth.
+            </p>
+            <a
+              href={SITE.bookingUrl}
+              class="btn btn--ghost reach__btn"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              Open the calendar<span class="sr-only"> (opens in a new tab)</span>
+              <svg class="btn__arrow" width="12" height="12" viewBox="0 0 12 12" aria-hidden="true"><path d="M1 6h9M6.5 2 10.5 6l-4 4" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="square"/></svg>
+            </a>
+          </li>
+        )}
+
+      </ul>
+    </div>
+  </section>
+
+  <!-- ================================================== WHAT HAPPENS NEXT -->
+  <section class="section section--ruled" aria-labelledby="next-title">
+    <div class="wrap wrap--wide">
+      <SectionHead
+        eyebrow="What happens next"
+        id="next-title"
+        title={'Three steps, and none of them is a <span class="hl">discovery&nbsp;funnel</span>.'}
+        small
+        lede={`You will speak to <a href="/about/" class="link">the people who would build the system</a>, not to a sales team that hands you over afterwards.`}
+      />
+
+      <ol class="steps" role="list">
+        {nextSteps.map((s) => (
+          <li class="step panel panel--pad ticked">
+            <span class="index step__n">{s.n}</span>
+            <h3 class="card__title step__name">{s.name}</h3>
+            <p class="card__text">{s.body}</p>
+          </li>
+        ))}
+      </ol>
+
+      <div class="assure">
+        <p class="meta assure__label">Data posture</p>
+        <ul role="list" class="assure__list">
+          {reassurance.map((r) => (
+            <li class="assure__item"><span class="dot dot--done" aria-hidden="true"></span>{r}</li>
+          ))}
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================================================== FAQ -->
+  <FaqSection
+    items={CONTACT_FAQ}
+    eyebrow="Before you send it"
+    title="What to expect from [the call]."
+  />
+</Base>
+
+<style>
+  /* The package list stays out of the document until the box is ticked —
+     display:none rather than [hidden] so it is gone from the accessibility tree
+     too, because "which plan" is not a question yet. :has() drives it in CSS
+     rather than script, so it still works with JavaScript off; the form already
+     relies on :has() for the checked state of every .opt. */
+  .ask__pkgs { display: none; }
+  .ask:has(#f-ask-pricing:checked) .ask__pkgs { display: block; }
+  .ask__hint { margin-block: var(--sp-4) var(--sp-3); }
+
+  /* ---- Hero ---- */
+  .hero {
+    position: relative;
+    padding-block: clamp(3rem, 2rem + 4vw, 5.5rem) clamp(2.5rem, 1.6rem + 3vw, 4rem);
+    overflow: clip;
+    text-align: center;
+  }
+  .hero__bloom {
+    inline-size: min(40rem, 90vw);
+    block-size: 24rem;
+    inset-block-start: -10rem;
+    inset-inline-start: 50%;
+    translate: -50% 0;
+  }
+  /* Centred, so the shared margin-inline:auto and house measures do the work
+     and this hero only sets the rhythm between the blocks. */
+  .hero__title { margin-block-start: var(--sp-2); }
+  .hero__lede { margin-block-start: var(--sp-5); }
+  .hero__facts {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: var(--sp-3) var(--sp-6);
+    margin-block-start: var(--sp-6);
+    padding-block-start: var(--sp-5);
+    border-block-start: 1px solid var(--c-line);
+    list-style: none;
+    padding-inline: 0;
+  }
+  .hero__fact {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--sp-2h);
+    font-family: var(--font-mono);
+    font-size: var(--fs-2xs);
+    letter-spacing: var(--tr-wide);
+    text-transform: uppercase;
+    color: var(--c-ink-3);
+  }
+
+  /* ---- Intake: one centred column ----
+     The contact panel used to sit beside the form and cost it ~40% of the row.
+     Moved below, the form gets the full measure, which lets more pairs of
+     fields sit side by side and takes real height out of the page. 60rem is
+     the point where two inputs still read as a pair rather than as two
+     unrelated boxes with a gulf between them. */
+  .intake-wrap { margin-inline: auto; max-width: 60rem; }
+  .intake { min-width: 0; }
+  .intake__req-note { text-transform: none; letter-spacing: var(--tr-wide); color: var(--c-ink-3); }
+
+  /* ---- Form ---- */
+  .form { display: grid; gap: var(--sp-6); }
+
+  .form__grid {
+    display: grid;
+    gap: var(--sp-4) var(--sp-5);
+    grid-template-columns: minmax(0, 1fr);
+  }
+  @media (min-width: 34em) {
+    .form__grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  }
+
+  .fset { border: 0; padding: 0; margin: 0; min-inline-size: 0; }
+  .fset__legend {
+    padding: 0;
+    margin-block-end: var(--sp-3);
+    font-family: var(--font-mono);
+    font-size: var(--fs-2xs);
+    letter-spacing: var(--tr-label);
+    text-transform: uppercase;
+    color: var(--c-ink-3);
+  }
+  .fset__hint { margin-block-end: var(--sp-4); }
+
+  .field { display: flex; flex-direction: column; gap: var(--sp-2); min-width: 0; }
+  .field--full { grid-column: 1 / -1; }
+  .field__label {
+    display: flex;
+    align-items: baseline;
+    gap: var(--sp-2);
+    font-family: var(--font-mono);
+    font-size: var(--fs-2xs);
+    letter-spacing: var(--tr-label);
+    text-transform: uppercase;
+    color: var(--c-ink-2);
+  }
+  .field__req { color: var(--c-signal); }
+  .field__opt { color: var(--c-ink-3); }
+  .field__hint {
+    font-family: var(--font-mono);
+    font-size: var(--fs-2xs);
+    letter-spacing: var(--tr-wide);
+    line-height: var(--lh-normal);
+    color: var(--c-ink-3);
+  }
+
+  .input {
+    inline-size: 100%;
+    padding: var(--sp-2h) var(--sp-3);
+    background: var(--c-panel-2);
+    border: 1px solid var(--c-line-2);
+    border-radius: var(--r-1);
+    color: var(--c-ink);
+    font-size: var(--fs-sm);
+    line-height: var(--lh-normal);
+    transition:
+      border-color var(--dur-2) var(--ease-out),
+      background-color var(--dur-2) var(--ease-out),
+      box-shadow var(--dur-2) var(--ease-out);
+  }
+  .input::placeholder { color: var(--c-ink-3); }
+  .input:hover { border-color: var(--c-line-strong); }
+  .input:focus-visible {
+    outline: none;
+    border-color: var(--c-signal);
+    background: var(--c-panel-3);
+    box-shadow: 0 0 0 1px var(--c-signal), 0 0 28px -10px var(--c-signal-glow);
+  }
+  .input--area { resize: vertical; min-block-size: 9rem; font-family: var(--font-sans); }
+
+  .select { position: relative; display: block; min-width: 0; }
+  .select .input {
+    appearance: none;
+    padding-inline-end: var(--sp-6);
+    cursor: pointer;
+    text-overflow: ellipsis;
+  }
+  .select option { background: var(--c-panel-2); color: var(--c-ink); }
+  .select__chev {
+    position: absolute;
+    inset-block-start: 50%;
+    inset-inline-end: var(--sp-4);
+    translate: 0 -50%;
+    color: var(--c-ink-3);
+    pointer-events: none;
+  }
+
+  /* ---- Checkbox / radio groups ---- */
+  .opts {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--sp-2);
+  }
+  /* The engagement choice is three statements rather than tags, so it keeps
+     the equal-column grid. */
+  .opts--stack {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+  }
+  @media (min-width: 48em) {
+    .opts--stack { grid-template-columns: repeat(auto-fit, minmax(12rem, 1fr)); }
+  }
+  .opt {
+    display: flex;
+    align-items: center;
+    gap: var(--sp-2h);
+    padding: var(--sp-2) var(--sp-3);
+    /* A guard, not the fix: if a longer channel is ever added it should push
+       its column rather than silently wrap and unbalance the row again. */
+    white-space: nowrap;
+    border: 1px solid var(--c-line);
+    border-radius: var(--r-1);
+    background: var(--c-panel-2);
+    font-family: var(--font-mono);
+    font-size: var(--fs-2xs);
+    letter-spacing: var(--tr-wide);
+    color: var(--c-ink-2);
+    cursor: pointer;
+    transition:
+      border-color var(--dur-2) var(--ease-out),
+      background-color var(--dur-2) var(--ease-out),
+      color var(--dur-2) var(--ease-out);
+  }
+  @media (pointer: coarse) { .opt { min-block-size: 2.75rem; } }
+  .opt:hover { border-color: var(--c-line-strong); background: var(--c-panel-3); }
+  .opt:has(.opt__box:checked) {
+    border-color: var(--c-line-signal);
+    background: var(--c-signal-wash);
+    color: var(--c-ink);
+  }
+  .opt:has(.opt__box:focus-visible) {
+    border-color: var(--c-signal);
+    box-shadow: 0 0 0 1px var(--c-signal);
+  }
+  .opt__box {
+    inline-size: 0.9375rem;
+    block-size: 0.9375rem;
+    flex: none;
+    margin: 0;
+    accent-color: var(--c-signal);
+    cursor: pointer;
+  }
+  .opt__box:focus-visible { outline: none; }
+
+  /* ---- Consent ---- */
+  .consent {
+    display: flex;
+    align-items: flex-start;
+    gap: var(--sp-3);
+    padding: var(--sp-4);
+    border: 1px solid var(--c-line);
+    border-radius: var(--r-1);
+    background: var(--c-panel-2);
+  }
+  .consent__box {
+    inline-size: 0.9375rem;
+    block-size: 0.9375rem;
+    flex: none;
+    margin: 0;
+    margin-block-start: var(--nudge-1);
+    accent-color: var(--c-signal);
+    cursor: pointer;
+  }
+  .consent__text { display: flex; flex-direction: column; gap: var(--sp-2); }
+  .consent__label {
+    font-size: var(--fs-sm);
+    line-height: var(--lh-snug);
+    color: var(--c-ink);
+    cursor: pointer;
+  }
+
+  /* ---- Submit ---- */
+  .form__submit {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--sp-3) var(--sp-5);
+    padding-block-start: var(--sp-5);
+    border-block-start: 1px solid var(--c-line);
+  }
+  .form__submit-note { text-transform: none; letter-spacing: var(--tr-wide); color: var(--c-ink-3); }
+
+  /* ---- Context column ---- */
+  .ctx { display: flex; flex-direction: column; gap: var(--sp-4); min-width: 0; }
+  .ctx__panel { display: flex; flex-direction: column; gap: var(--sp-3); }
+  .ctx__kicker { display: inline-flex; align-items: center; gap: var(--sp-2); color: var(--c-ink-3); }
+  .ctx__title { margin-block-start: var(--sp-1); }
+  .ctx__btn { margin-block-start: var(--sp-2); }
+  .ctx__mail {
+    font-family: var(--font-mono);
+    font-size: var(--fs-sm);
+    letter-spacing: var(--tr-wide);
+    word-break: break-word;
+    align-self: flex-start;
+  }
+  .ctx__social {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--sp-3) var(--sp-5);
+    margin-block-start: var(--sp-2);
+    padding-block-start: var(--sp-4);
+    border-block-start: 1px solid var(--c-line);
+    list-style: none;
+    padding-inline: 0;
+  }
+  .ctx__social-link {
+    font-family: var(--font-mono);
+    font-size: var(--fs-2xs);
+    letter-spacing: var(--tr-label);
+    text-transform: uppercase;
+    color: var(--c-ink-3);
+    transition: color var(--dur-2) var(--ease-out);
+  }
+  .ctx__social-link:hover { color: var(--c-signal); }
+
+  /* ---- What happens next ---- */
+  .steps {
+    display: grid;
+    gap: var(--sp-4);
+    margin-block-start: clamp(2.5rem, 1.5rem + 3vw, 4rem);
+    grid-template-columns: minmax(0, 1fr);
+    list-style: none;
+    padding: 0;
+  }
+  @media (min-width: 62em) { .steps { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+  .step { display: flex; flex-direction: column; gap: var(--sp-3); }
+  .step__n { color: var(--c-signal); }
+  .step__name { margin-block-start: var(--sp-1); }
+
+  /* ---- Reassurance strip ---- */
+  .assure {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: var(--sp-3) var(--sp-6);
+    margin-block-start: var(--sp-6);
+    padding-block: var(--sp-4);
+    border-block: 1px solid var(--c-line);
+  }
+  .assure__label { color: var(--c-ink-3); }
+  .assure__list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--sp-3) var(--sp-6);
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+  .assure__item {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--sp-2);
+    font-family: var(--font-mono);
+    font-size: var(--fs-2xs);
+    letter-spacing: var(--tr-wide);
+    text-transform: uppercase;
+    color: var(--c-ink-3);
+  }
+
+  /* ---- Faster routes ---- */
+  .reach__title {
+    font-size: var(--fs-2xl);
+    line-height: var(--lh-snug);
+    letter-spacing: var(--tr-display);
+    font-weight: 500;
+    color: var(--c-ink);
+    text-align: center;
+    text-wrap: balance;
+  }
+  .reach__lede {
+    margin: var(--sp-4) auto 0;
+    max-width: 42rem;
+    font-size: var(--fs-md);
+    line-height: var(--lh-relaxed);
+    color: var(--c-ink-2);
+    text-align: center;
+    text-wrap: pretty;
+  }
+  /* How many cards there are depends on what is configured — two, three or
+     four — so the track count cannot be fixed. auto-fit builds as many columns
+     as fit and collapses the empty ones, which fills the row at every count
+     instead of leaving a hole where the scheduler would have been. */
+  .reach {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 15rem), 1fr));
+    gap: var(--sp-4);
+    margin-block-start: clamp(2rem, 1.4rem + 2vw, 3rem);
+    list-style: none;
+    padding: 0;
+  }
+
+  .reach__card {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--sp-3);
+    padding: clamp(1.25rem, 1rem + 1vw, 1.75rem);
+    border: 1px solid var(--c-line);
+    border-radius: var(--r-2);
+    background: var(--c-panel);
+  }
+  .reach__card--lead {
+    border-color: var(--c-line-signal);
+    background: linear-gradient(160deg, var(--c-signal-veil), transparent 55%), var(--c-panel);
+  }
+  .reach__k { display: inline-flex; align-items: center; gap: var(--sp-2); color: var(--c-ink-3); }
+  .reach__card--lead .reach__k { color: var(--c-signal-text); }
+  .reach__t {
+    font-size: var(--fs-base);
+    font-weight: 500;
+    letter-spacing: var(--tr-normal);
+    color: var(--c-ink);
+  }
+  .reach__d {
+    font-size: var(--fs-sm);
+    line-height: var(--lh-relaxed);
+    color: var(--c-ink-2);
+    text-wrap: pretty;
+  }
+  /* Pushes the action to the card foot so a row of cards lines its buttons up
+     regardless of how long each description runs. */
+  .reach__btn,
+  .reach__mail { margin-block-start: auto; }
+  .reach__mail {
+    font-family: var(--font-mono);
+    font-size: var(--fs-xs);
+    letter-spacing: var(--tr-wide);
+    word-break: break-all;
+  }
+  /* Unmistakably unfinished. It should look wrong until the number lands. */
+  .reach__todo {
+    margin-block-start: auto;
+    padding: var(--sp-2h) var(--sp-3);
+    border: 1px dashed var(--c-amber);
+    border-radius: var(--r-1);
+    font-family: var(--font-mono);
+    font-size: var(--fs-2xs);
+    letter-spacing: var(--tr-wide);
+    color: var(--c-amber);
+  }
+
+  /* The answer the timeline choice earns. Marked with the signal rule so it
+     reads as a reply rather than as another piece of field help. */
+  .tl-hint {
+    margin-block-start: var(--sp-3);
+    padding-inline-start: var(--sp-3);
+    border-inline-start: 2px solid var(--c-signal);
+    color: var(--c-ink-2);
+    text-transform: none;
+    letter-spacing: var(--tr-normal);
+    text-wrap: pretty;
+  }
+  .tl-hint[hidden] { display: none; }
+</style>
+
+<script is:inline>
+  /* Answers the timeline question as soon as it is answered. Progressive
+     enhancement only: the hint text lives on each <option> as a data attribute,
+     so with this script blocked the select still works and still submits — the
+     visitor just does not get the suggestion. */
+  (() => {
+    /* Arriving from a plan CTA on /pricing (?plan=Growth): tick the pricing box,
+       select that plan, and open the brief with a line saying so. All three are
+       things the visitor would otherwise do by hand, and all three stay
+       editable. Progressive enhancement — with this blocked the form still
+       works, the visitor just fills it in themselves. */
+    const askBox = document.getElementById('f-ask-pricing');
+    const pkgs = Array.from(document.querySelectorAll('input[name="package"]'));
+    const brief = document.getElementById('f-brief');
+
+    /* Matched against the rendered radios rather than a hard-coded list, so a
+       renamed package cannot silently stop matching. The query string is only
+       ever compared, never written into the page. */
+    const wantedPlan = new URLSearchParams(location.search).get('plan') || '';
+    const hitPlan = pkgs.find((r) => r.value === wantedPlan);
+    if (hitPlan && askBox) {
+      askBox.checked = true;
+      hitPlan.checked = true;
+      /* Only when empty — never overwrite typed text, including a value the
+         browser restored on a back-navigation. */
+      if (brief && !brief.value.trim()) {
+        brief.value =
+          'Hi GroovyMark — I would like more detail on the ' + hitPlan.value +
+          ' plan, and I am looking to get started. ';
+      }
+    }
+
+    /* Unticking hides the list in CSS, but a radio chosen beforehand would still
+       submit from behind display:none. Clear it. */
+    if (askBox) {
+      askBox.addEventListener('change', () => {
+        if (!askBox.checked) pkgs.forEach((r) => { r.checked = false; });
+      });
+    }
+
+    const sel = document.getElementById('f-timeline');
+    const hint = document.getElementById('timeline-hint');
+    if (!sel || !hint) return;
+
+    const show = () => {
+      const text = sel.selectedOptions[0]?.dataset.hint || '';
+      hint.textContent = text;
+      hint.hidden = !text;
+    };
+
+    sel.addEventListener('change', show);
+    /* Browsers restore a selected value on back-navigation without firing
+       change, so the hint has to be reconciled on load too. */
+    show();
+  })();
+</script>
+
+<style>
+  /* :global throughout. This panel is built by the script below via innerHTML,
+     so its elements never receive Astro's scoping attribute and a scoped
+     selector silently does not apply — the reference rendered as plain 15px
+     sans-serif instead of mono violet. The outer .form__status IS in the
+     template, but its children are not, so scoping the lot is the only
+     consistent option. */
+  :global(.form__status) {
+    margin-block-start: var(--sp-5);
+    padding: var(--sp-4) var(--sp-5);
+    border: 1px solid var(--c-line-2);
+    background: var(--c-panel-2);
+  }
+  :global(.form__status)[hidden] { display: none; }
+  :global(.form__status--bad) { border-color: rgb(255 138 138 / 38%); }
+
+  :global(.form__status-label) {
+    display: flex;
+    align-items: center;
+    gap: var(--sp-2);
+    color: var(--c-ink-3);
+  }
+  :global(.form__status-title) {
+    margin-block-start: var(--sp-3);
+    font-size: var(--fs-lg);
+    line-height: 1.3;
+    color: var(--c-ink);
+  }
+  :global(.form__status-body) { margin-block-start: var(--sp-3); color: var(--c-ink-2); }
+  :global(.form__status-ref) {
+    margin-block-start: var(--sp-4);
+    padding: var(--sp-3) var(--sp-4);
+    border: 1px solid var(--c-line);
+    background: var(--c-panel-3);
+    font-family: var(--font-mono);
+    font-size: var(--fs-lg);
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    color: var(--c-signal-text);
+  }
+  :global(.form__status-acts) {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--sp-3);
+    margin-block-start: var(--sp-5);
+  }
+  :global(.form__status-fine) {
+    margin-block-start: var(--sp-4);
+    font-size: var(--fs-xs);
+    line-height: 1.6;
+    color: var(--c-ink-3);
+  }
+</style>
+
+<script is:inline>
+  /*
+    Enhances the enquiry form. Without this the form still posts normally and
+    the endpoint answers with a 303 to /contact/sent/ — the whole flow works
+    with JavaScript off, which is why nothing here is required for correctness.
+    All this buys is staying on the page.
+  */
+  (function () {
+    var form = document.getElementById('enquiry');
+    var box = document.getElementById('form-status');
+    var btn = document.getElementById('enquiry-send');
+    if (!form || !box || !btn) return;
+
+    var WA = form.getAttribute('data-wa') || '';
+
+    function esc(s) {
+      return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) {
+        return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
+      });
+    }
+
+    function show(html, bad) {
+      box.className = 'form__status' + (bad ? ' form__status--bad' : '');
+      box.innerHTML = html;
+      box.hidden = false;
+      box.scrollIntoView({ block: 'center', behavior: 'smooth' });
+      box.setAttribute('tabindex', '-1');
+      box.focus({ preventScroll: true });
+    }
+
+    var REASONS = {
+      rate_limited: 'That is a few too many in a row. Give it ten minutes, or message us on WhatsApp.',
+      too_large: 'That submission was too large. Trim the brief down and try again.',
+      send_failed: 'Your enquiry reached us but our mail service rejected it, so nobody has seen it. Please use WhatsApp — it does not depend on the same system.',
+      not_configured: 'The form is not accepting enquiries right now. That is our fault, not yours. Please use WhatsApp in the meantime.',
+      bad_request: 'That did not arrive intact. Trying again usually works.'
+    };
+
+    form.addEventListener('submit', function (e) {
+      /* Let the browser do it the ordinary way if fetch is missing. */
+      if (typeof window.fetch !== 'function') return;
+      e.preventDefault();
+
+      if (typeof form.reportValidity === 'function' && !form.reportValidity()) return;
+
+      var label = btn.innerHTML;
+      btn.disabled = true;
+      btn.textContent = 'Sending…';
+
+      fetch(form.action, {
+        method: 'POST',
+        body: new FormData(form),
+        headers: { Accept: 'application/json' }
+      })
+        .then(function (r) {
+          return r.json().then(function (d) { return { status: r.status, data: d }; });
+        })
+        .then(function (res) {
+          var d = res.data || {};
+          if (d.ok && d.id) {
+            form.querySelectorAll('input, select, textarea, button').forEach(function (el) {
+              el.disabled = true;
+            });
+            show(
+              '<p class="meta form__status-label"><span class="dot dot--done" aria-hidden="true"></span>Enquiry received</p>' +
+                '<p class="form__status-title">We have it. A person is reading it now.</p>' +
+                '<p class="form__status-body">A confirmation with a copy of what you sent is on its way to your inbox. ' +
+                'One of our agents will come back to you personally — usually within a few hours, and always within one business day.</p>' +
+                '<p class="form__status-ref">' + esc(d.id) + '</p>' +
+                '<p class="form__status-fine">Quote that reference in any reply and we will pull your enquiry straight up. ' +
+                'If the confirmation has not arrived in a few minutes, check your spam folder.</p>',
+              false
+            );
+            return;
+          }
+
+          btn.disabled = false;
+          btn.innerHTML = label;
+
+          if (d.errors) {
+            var first = Object.keys(d.errors)[0];
+            var msg = Object.keys(d.errors)
+              .map(function (k) { return esc(d.errors[k]); })
+              .join(' ');
+            show(
+              '<p class="meta form__status-label"><span class="dot dot--queued" aria-hidden="true"></span>Not sent</p>' +
+                '<p class="form__status-title">That came back incomplete</p>' +
+                '<p class="form__status-body">' + msg + '</p>',
+              true
+            );
+            var el = form.querySelector('[name="' + first + '"]');
+            if (el && el.focus) el.focus();
+            return;
+          }
+
+          var reason = REASONS[d.reason] || 'Something went wrong at our end. Please try again, or message us on WhatsApp.';
+          show(
+            '<p class="meta form__status-label"><span class="dot dot--queued" aria-hidden="true"></span>Not sent</p>' +
+              '<p class="form__status-title">We could not take that just now</p>' +
+              '<p class="form__status-body">' + esc(reason) + '</p>' +
+              (WA ? '<p class="form__status-acts"><a class="btn" href="' + esc(WA) + '" target="_blank" rel="noopener noreferrer">Message us on WhatsApp</a></p>' : ''),
+            true
+          );
+        })
+        .catch(function () {
+          btn.disabled = false;
+          btn.innerHTML = label;
+          show(
+            '<p class="meta form__status-label"><span class="dot dot--queued" aria-hidden="true"></span>Not sent</p>' +
+              '<p class="form__status-title">That did not reach us</p>' +
+              '<p class="form__status-body">Check your connection and try again. If it keeps failing, message us on WhatsApp.</p>' +
+              (WA ? '<p class="form__status-acts"><a class="btn" href="' + esc(WA) + '" target="_blank" rel="noopener noreferrer">Message us on WhatsApp</a></p>' : ''),
+            true
+          );
+        });
+    });
+  })();
+</script>

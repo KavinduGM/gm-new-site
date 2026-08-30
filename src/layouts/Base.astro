@@ -1,0 +1,42 @@
+---
+import Head from '../components/Head.astro';
+import Header from '../components/Header.astro';
+import Footer from '../components/Footer.astro';
+import CookieConsent from '../components/CookieConsent.astro';
+import { SITE } from '../site.config.mjs';
+import '../styles/app.css';
+
+interface Props {
+  title: string;
+  description: string;
+  bareTitle?: boolean;
+  image?: string;
+  type?: 'website' | 'article';
+  noindex?: boolean;
+  schema?: unknown[];
+  publishedTime?: string;
+  modifiedTime?: string;
+  class?: string;
+  /** Pages closing with their own CTA suppress the footer's duplicate. */
+  hideFooterCta?: boolean;
+}
+
+const { class: cls, hideFooterCta = false, ...head } = Astro.props;
+---
+
+<!doctype html>
+<html lang={SITE.locale} class="no-js">
+  <head>
+    <Head {...head} />
+    <script is:inline>document.documentElement.classList.remove('no-js');</script>
+  </head>
+  <body>
+    <a href="#main" class="skip-link">Skip to content</a>
+    <Header />
+    <main id="main" class={cls} tabindex="-1">
+      <slot />
+    </main>
+    <Footer hideCta={hideFooterCta} />
+    <CookieConsent />
+  </body>
+</html>

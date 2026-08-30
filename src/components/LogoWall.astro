@@ -1,0 +1,173 @@
+---
+import { LOGOS } from '../data/logos.mjs';
+
+interface Props { eyebrow?: string; title?: string }
+const { eyebrow = 'Selected clients', title = 'Brands and teams we’ve worked with' } = Astro.props;
+
+/* Two rows travelling in opposite directions. Interleaved rather than split
+   1-10 / 11-20 so each row gets a mix of wide and narrow marks. */
+const rowA = LOGOS.filter((_, i) => i % 2 === 0);
+const rowB = LOGOS.filter((_, i) => i % 2 === 1);
+
+/* COPIES sets how many times each row repeats.
+   A marquee that slides by one set width needs (COPIES - 1) sets to be at
+   least as wide as the viewport, or the tail runs out and leaves a blank
+   stretch. Two sets required one set to cover the whole viewport on its own,
+   and a set measures ~1620-1790px, so anything above ~1600px wide showed gaps.
+   Four sets clear ~4800px, well past ultrawide. The extra <img> tags reuse the
+   same 20 files from cache, so this costs DOM nodes and no network. */
+const COPIES = 4;
+const rows = [
+  { items: rowA, dir: 'l', speed: '46s' },
+  { items: rowB, dir: 'r', speed: '54s' },
+];
+---
+
+<section class="lw" aria-labelledby="lw-title">
+  <div class="wrap wrap--wide lw__head">
+    <p class="eyebrow eyebrow--center">{eyebrow}</p>
+    <h2 id="lw-title" class="lw__title">{title}</h2>
+  </div>
+
+  <div class="lw__rows">
+    {rows.map((row) => (
+      <div class="lw__row">
+        <div class:list={['lw__track', `lw__track--${row.dir}`]} style={`--speed:${row.speed}`}>
+          {Array.from({ length: COPIES }, (_, copy) =>
+            row.items.map((l) => (
+              <span class="lw__item" aria-hidden={copy > 0 ? 'true' : undefined}>
+                <img
+                  src={l.src}
+                  alt={copy > 0 ? '' : l.name}
+                  width={l.w}
+                  height={l.h}
+                  {/* NOT lazy: the marquee track is several viewports wide, so most
+                      logos start far outside the viewport. Native lazy loading does
+                      not reliably re-evaluate as a CSS transform carries them in, so
+                      they scrolled into view still unloaded and left blank gaps.
+                      20 files / 208 KB total, largest 18 KB — cheap to fetch up
+                      front, and fetchpriority keeps them behind the hero. */}
+                  loading="eager"
+                  fetchpriority="low"
+                  decoding="async"
+                />
+              </span>
+            ))
+          )}
+        </div>
+      </div>
+    ))}
+  </div>
+</section>
+
+<style>
+  .lw { padding-block: var(--sp-section-sm); }
+
+  .lw__head { text-align: center; }
+
+  .lw__title {
+    margin: var(--sp-2) auto 0;
+    font-size: var(--fs-section);
+    line-height: var(--lh-snug);
+    letter-spacing: var(--tr-tight);
+    font-weight: 600;
+    /* rem, never `ch` — see the note in Footer.astro.
+       Raised from 33rem when the heading moved to --fs-section: at 40px the
+       line needs ~640px and 33rem (528px) split it in two. */
+    max-width: 44rem;
+    text-wrap: balance;
+  }
+
+  .lw__rows {
+    display: grid;
+    gap: clamp(0.75rem, 0.5rem + 1vw, 1.5rem);
+    margin-block-start: clamp(1.75rem, 1rem + 2.4vw, 3rem);
+  }
+
+  /* Full-bleed rows, faded at both ends so marks dissolve instead of being
+     sliced off at the viewport edge. */
+  .lw__row {
+    overflow: hidden;
+    -webkit-mask-image: var(--lw-fade);
+    mask-image: var(--lw-fade);
+    --lw-fade: linear-gradient(
+      to right,
+      transparent 0,
+      rgb(0 0 0 / 35%) 6%,
+      var(--mask-opaque) 16%,
+      var(--mask-opaque) 84%,
+      rgb(0 0 0 / 35%) 94%,
+      transparent 100%
+    );
+  }
+
+  .lw__track {
+    /* Declared once so the seam maths below can subtract exactly one gap.
+       The track holds two copies of the set, and a gap also sits between the
+       copies — translating a flat -50% lands half a gap short and stutters. */
+    --lw-gap: clamp(2rem, 1.2rem + 3vw, 4.5rem);
+    display: flex;
+    align-items: center;
+    gap: var(--lw-gap);
+    width: max-content;
+    padding-block: var(--sp-3);
+  }
+
+  /* Height and width caps are tuned independently on purpose. Wide wordmarks
+     are limited by width, stacked lockups (mark + strap-line) by height — so
+     raising the height cap makes the stacked ones legible without making the
+     wide ones dominate the row. */
+  .lw__rows { --lw-h: clamp(1.75rem, 1.3rem + 1.8vw, 2.5rem); }
+
+  .lw__item {
+    display: grid;
+    place-items: center;
+    flex: none;
+    block-size: var(--lw-h);
+  }
+
+  /* base.css sets `img { height: auto }`, which was overriding a scoped
+     block-size:100% and letting tall marks overflow their slot — the row's
+     overflow:hidden then sliced their strap-lines off. Constrain with max-*
+     and let auto sizing keep the aspect: nothing can exceed the slot. */
+  .lw__item img {
+    inline-size: auto;
+    block-size: auto;
+    max-block-size: var(--lw-h);
+    max-inline-size: clamp(5.5rem, 4rem + 4.5vw, 8rem);
+    opacity: 0.6;
+    transition: opacity var(--dur-2) var(--ease-out);
+  }
+  .lw__row:hover .lw__item img { opacity: 0.78; }
+
+  @media (prefers-reduced-motion: no-preference) {
+    .lw__track--l { animation: lw-left var(--speed) linear infinite; }
+    .lw__track--r { animation: lw-right var(--speed) linear infinite; }
+    .lw__row:hover .lw__track { animation-play-state: paused; }
+  }
+
+  /* Travel exactly one set width. With N sets on the track, one set is
+     100/N% of it plus a 1/N share of one gap, because the track carries
+     N*count-1 gaps rather than N*count. N = 4 here, so -25% - gap/4. */
+  @keyframes lw-left {
+    from { transform: translateX(0); }
+    to   { transform: translateX(calc(-25% - (var(--lw-gap) / 4))); }
+  }
+  @keyframes lw-right {
+    from { transform: translateX(calc(-25% - (var(--lw-gap) / 4))); }
+    to   { transform: translateX(0); }
+  }
+
+  /* No motion: a centred, wrapped wall with the duplicate set removed. */
+  @media (prefers-reduced-motion: reduce) {
+    .lw__row { -webkit-mask-image: none; mask-image: none; overflow: visible; }
+    .lw__track {
+      flex-wrap: wrap;
+      width: auto;
+      justify-content: center;
+      row-gap: var(--sp-5);
+      padding-inline: var(--gutter);
+    }
+    .lw__item[aria-hidden='true'] { display: none; }
+  }
+</style>

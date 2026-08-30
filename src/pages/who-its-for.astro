@@ -1,0 +1,1031 @@
+---
+import Base from '../layouts/Base.astro';
+import { AUDIENCES, FIT, DEMAND, PAID, FIXES, FITS, MARKETS, WHO_FAQ } from '../data/content.mjs';
+import { breadcrumbSchema, faqSchema } from '../lib/schema.mjs';
+import FaqSection from '../components/FaqSection.astro';
+
+/* Honest disqualifiers. These are the strongest credibility device on the page,
+   so they get the one inverted band and are stated without hedging. */
+/* `more` is optional: a contextual link under the objection. Only the three
+   that raise a question another page already answers carry one — the page had
+   no route to /engagements/ or /trust/ at all, despite naming a $2,000 build,
+   a ~$100 monthly run cost and an access hand-over. */
+const NOT_FOR = [
+  {
+    title: 'You want to build it once and rent it out.',
+    body:
+      'We do not build tools for other people to resell. One system is built for one company ' +
+      'to run its own work, locally, so the data and the speed stay yours. It is not a product ' +
+      'you can put seats on and let out to other people. If you want the output without owning ' +
+      'anything, that is the managed plan, not a licence to resell.',
+    more: { label: 'See the managed plan', href: '/engagements/' },
+  },
+  {
+    title: 'You publish fewer than ten pieces a month.',
+    body:
+      'Below that, a custom build does not pay for itself. A good freelance editor is cheaper ' +
+      'and faster. Come back when the calendar is fuller.',
+  },
+  {
+    title: 'You would rather not hand over brand details or access.',
+    body:
+      'The build needs your brand material to train on and your channels connected once. You ' +
+      'either give us access and we set it up, or your team sets it up with us guiding. If ' +
+      'neither feels comfortable, the build cannot start, and we would rather say so now.',
+    more: { label: 'What we do with your access', href: '/trust/#data' },
+  },
+  {
+    title: 'A build starting at $2,000 is out of reach.',
+    body:
+      'That is where a system starts, and it moves with scope from there. It is a one-off ' +
+      'investment that replaces recurring production cost, so if the first number is the ' +
+      'problem, the maths behind it will not work either.',
+    more: { label: 'How a build is scoped and priced', href: '/engagements/' },
+  },
+  {
+    title: 'Around $100 a month in running cost is out of reach.',
+    body:
+      'The system pays platform APIs and AI models to do the work, from generating a voiceover ' +
+      'to publishing the finished post. Expect $100 a month at the low end, more as volume ' +
+      'rises. You can hold those accounts yourself, or have us run them for you.',
+  },
+  {
+    title: 'You need results next week.',
+    body:
+      'This builds an organic presence, and organic compounds rather than spikes. Search and ' +
+      'feeds take time to learn a brand. The trade is the opposite of a paid ad: slower to ' +
+      'start, and it does not stop the day you stop paying.',
+  },
+];
+
+/* The most common false disqualifier. Prospects assume a system means their
+   human editors are out of a job, and rule themselves out before the call. */
+const STILL_WORKS = {
+  title: 'Human editors in the workflow? Still works.',
+  body:
+    'Talking heads, podcasts, anything that genuinely needs a person in the edit. The system ' +
+    'does not have to make the video to run the operation around it. We automate the flow ' +
+    'either way: files in, review, approval, scheduling and publishing, with your editors ' +
+    'producing the work. The build is designed around how you actually make things.',
+};
+
+/* Status dots carry the tier honestly: done / queued / idle, never all green. */
+
+
+---
+
+<Base
+  title="Who a content system is for, and who it isn’t"
+  description="Built for teams publishing more than ten pieces a month across three or more social accounts: agencies running client channels, and brands running their own."
+  schema={[breadcrumbSchema([{ name: 'Who it’s for', href: '/who-its-for/' }]), faqSchema(WHO_FAQ)]}
+  hideFooterCta
+>
+  <!-- ============================================================ 1. HERO -->
+  <section class="hero grid-bg" aria-labelledby="page-title">
+    <span class="bloom hero__bloom" aria-hidden="true"></span>
+    <div class="wrap hero__inner">
+      <p class="eyebrow eyebrow--center hero__eyebrow">Who it’s for</p>
+      <h1 class="hero__title" id="page-title">
+        <span class="hero__title-l1">Best for teams managing</span>
+        <span class="hl">{FIT.pieces}+ pieces of content a month</span>.
+      </h1>
+      <p class="hero__lede">
+        If you publish more than {FIT.pieces} pieces of content a month, across {FIT.accounts} or
+        more social accounts, and a person still touches every one of them, this is built for
+        you. Two kinds of team hit that wall: agencies running content for clients, and brands
+        running their own.
+      </p>
+
+      <nav class="chip-row hero__jumps" aria-label="Teams covered on this page">
+        {AUDIENCES.map((a) => (
+          <a href={`#${a.id}`} class="chip jump">
+            <span class="jump__n">{a.n}</span>
+            {a.short}
+            <svg class="jump__arrow" width="10" height="10" viewBox="0 0 12 12" aria-hidden="true"><path d="M6 1v9M2 6.5 6 10.5l4-4" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="square"/></svg>
+          </a>
+        ))}
+      </nav>
+    </div>
+  </section>
+
+  <!-- ======================================================= 2. AUDIENCES -->
+  <!-- The argument of the page. Each pain carries a real, attributed figure:
+       the claim is only as strong as the source printed under it. -->
+  <section class="section section--raised grid-bg grid-bg--center" aria-labelledby="aud-title">
+    <div class="wrap wrap--wide">
+      <h2 id="aud-title" class="sec__title">Two teams hit the same wall.</h2>
+      <p class="sec__lede">
+        One is selling content to clients, the other is publishing its own. Both run out of the
+        same thing, and it is never ideas. It is the number of hours a person can be at a desk —
+        <a href="/insights/the-only-number-a-vendor-cannot-dress-up/" class="link">the one measure
+        that cannot be dressed up</a>, and the one this is built to move.
+      </p>
+
+      <div class="auds">
+        {AUDIENCES.map((a) => (
+          <article id={a.id} class="aud" aria-labelledby={`${a.id}-name`}>
+            <div class="aud__bar">
+              <span class="aud__bar-k">
+                <span class="dot dot--done" aria-hidden="true"></span>{a.kicker}
+              </span>
+              <span class="aud__bar-n">{a.n}</span>
+            </div>
+
+            <div class="aud__head">
+              <h3 class="aud__name" id={`${a.id}-name`}>{a.name}</h3>
+              <p class="aud__who">{a.who}</p>
+              <p class="aud__lede">{a.lede}</p>
+            </div>
+
+            <div class="aud__block">
+              <p class="aud__k">What a human team costs you today</p>
+              <ul role="list" class="aud__pains">
+                {a.pains.map((p) => (
+                  <li class="aud__pain">
+                    <p class="aud__stat">{p.stat}</p>
+                    <p class="aud__src">
+                      {p.href ? (
+                        <a href={p.href} class="src-link" target="_blank" rel="noopener noreferrer">
+                          {p.src}<span class="sr-only"> (source, opens in a new tab)</span>
+                        </a>
+                      ) : p.src}
+                    </p>
+                    <p class="aud__pain-t">{p.t}</p>
+                    <p class="aud__pain-d">{p.d}</p>
+                  </li>
+                ))}
+              </ul>
+            </div>
+
+            <div class="aud__block aud__block--fix">
+              <p class="aud__k aud__k--fix">What the system changes</p>
+              <ul role="list" class="aud__gains">
+                {a.gains.map((g) => (
+                  <li class="aud__gain">
+                    <svg class="aud__tick" width="11" height="11" viewBox="0 0 12 12" aria-hidden="true"><path d="M2 6.4 4.6 9 10 3" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="square"/></svg>
+                    <span>{g}</span>
+                  </li>
+                ))}
+              </ul>
+              <p class="aud__close">{a.close}</p>
+            </div>
+          </article>
+        ))}
+      </div>
+
+      <p class="auds__note">
+        Every figure above is published by the named source and dated. None of it is ours, and
+        none of it is an estimate.
+      </p>
+    </div>
+  </section>
+
+  <!-- ============================================================ 3. WHY -->
+  <!-- The case for building rather than hiring. Two opposing forces first,
+       then the pain and the answer to it. Figures are global or multi-market
+       and each prints its own geography, because a wall of American statistics
+       reads as a page written for Americans. -->
+  <section class="section" aria-labelledby="why-title">
+    <div class="wrap wrap--wide">
+      <p class="eyebrow eyebrow--center">Why build one</p>
+      <h2 id="why-title" class="sec__title">
+        Content is <span class="hl">eating the plan</span>. Headcount cannot keep up.
+      </h2>
+      <p class="sec__lede">
+        Two things are happening at once. What audiences want more of is the most expensive
+        thing to make, and the shortcut that used to buy attention is getting dearer every year.
+        A bigger team solves neither. <a href="/system/" class="link">A pipeline that runs
+        without one</a> does.
+      </p>
+
+      <!-- ---- the two forces, set against each other ---- -->
+      <div class="why__forces">
+        <div class="why__force">
+          <p class="meta why__force-k">
+            <span class="why__arrow why__arrow--up" aria-hidden="true">
+              <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M7 11.5V2.5M3 6.5 7 2.5l4 4"/></svg>
+            </span>
+            What people watch
+          </p>
+          <ul role="list" class="why__list">
+            {DEMAND.map((f) => (
+              <li class="why__item">
+                <p class="why__stat">{f.stat}</p>
+                <p class="why__t">{f.t}</p>
+                <p class="why__d">{f.d}</p>
+                <p class="why__src">
+                  {f.href ? (
+                    <a href={f.href} class="src-link" target="_blank" rel="noopener noreferrer">
+                      {f.src}<span class="sr-only"> (source, opens in a new tab)</span>
+                    </a>
+                  ) : f.src} · {f.geo}
+                </p>
+              </li>
+            ))}
+          </ul>
+        </div>
+
+        <div class="why__force">
+          <p class="meta why__force-k">
+            <span class="why__arrow why__arrow--down" aria-hidden="true">
+              <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M7 2.5v9M3 7.5l4 4 4-4"/></svg>
+            </span>
+            What renting attention costs
+          </p>
+          <ul role="list" class="why__list">
+            {PAID.map((f) => (
+              <li class="why__item why__item--cost">
+                <p class="why__stat">{f.stat}</p>
+                <p class="why__t">{f.t}</p>
+                <p class="why__d">{f.d}</p>
+                <p class="why__src">
+                  {f.href ? (
+                    <a href={f.href} class="src-link" target="_blank" rel="noopener noreferrer">
+                      {f.src}<span class="sr-only"> (source, opens in a new tab)</span>
+                    </a>
+                  ) : f.src} · {f.geo}
+                </p>
+              </li>
+            ))}
+          </ul>
+        </div>
+      </div>
+
+      <!-- ---- the pain, and the answer, paired ---- -->
+      <div class="why__fixes">
+        <div class="why__fixes-bar">
+          <p class="eyebrow why__fixes-k">The trade</p>
+          <h3 class="why__fixes-h">What breaks today, and what replaces it.</h3>
+        </div>
+        {/* The before/after meaning is carried by colour (red x / violet tick)
+            and by the arrow between the two sides — and that arrow is
+            aria-hidden, as a decorative glyph should be. That left a screen
+            reader hearing two sentences with nothing saying which is the
+            problem and which is the replacement, and below 56em the columns
+            stack so even the left-to-right reading is gone. The two sr-only
+            labels below are the text alternative. */}
+        <ul role="list" class="fx">
+          {FIXES.map((f) => (
+            <li class="fx__row">
+              <div class="fx__side fx__side--bad">
+                <svg class="fx__mark fx__mark--x" width="12" height="12" viewBox="0 0 12 12" aria-hidden="true"><path d="M2.6 2.6 9.4 9.4M9.4 2.6 2.6 9.4" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>
+                <span>
+                  <span class="sr-only">Breaks today: </span>
+                  {f.problem}
+                  {f.note && <span class="fx__note">{f.note}</span>}
+                </span>
+              </div>
+              <span class="fx__to" aria-hidden="true">
+                <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M2.5 8h11M9.5 4l4 4-4 4"/></svg>
+              </span>
+              <div class="fx__side fx__side--good">
+                <svg class="fx__mark fx__mark--tick" width="12" height="12" viewBox="0 0 12 12" aria-hidden="true"><path d="M2 6.4 4.6 9 10 3" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                <span><span class="sr-only">Replaced by: </span>{f.fix}</span>
+              </div>
+            </li>
+          ))}
+        </ul>
+      </div>
+
+      <p class="why__close">
+        Your competitors are publishing into the same feeds, on the same day, to the same people.
+        The one who shows up consistently wins the reach, and consistency is an engineering
+        problem long before it is a talent problem.
+      </p>
+      <p class="why__geo">
+        Figures are global or multi-market unless the line beneath them says otherwise.
+      </p>
+    </div>
+  </section>
+
+  <!-- ============================================================ 4. FITS -->
+  <!-- Replaces the old primary/secondary/later coverage table. The markets now
+       sit in the description, and the space goes to the buyer list instead:
+       it lets a reader find themselves, and it carries the long-tail terms
+       people actually search for. Grouping follows published volume benchmarks,
+       cited under the grid. -->
+  <section class="section" aria-labelledby="fits-title">
+    <div class="wrap wrap--wide">
+      <h2 id="fits-title" class="sec__title">
+        The agencies, brands and companies <span class="hl">this fits</span>.
+      </h2>
+      <p class="sec__lede">
+        We build and deliver remotely, on hours that overlap yours, for teams across {MARKETS}.
+        Output language is a run parameter rather than a function of where we sit, so a build
+        scoped in London publishes in German, Spanish or Arabic. If your work looks like any of
+        these, there is somewhere to start.
+      </p>
+
+      <ul role="list" class="fits">
+        {FITS.map((g) => (
+          <li class="fits__group">
+            <h3 class="fits__k">{g.k}</h3>
+            <p class="fits__note">{g.note}</p>
+            <ul role="list" class="fits__items">
+              {g.items.map((i) => (
+                <li class="fits__item">
+                  <span class="fits__dot" aria-hidden="true"></span>{i}
+                </li>
+              ))}
+            </ul>
+          </li>
+        ))}
+      </ul>
+
+      {/* Only citations whose source page was fetched and confirmed to carry the
+          claim get a link — the same bar the rest of the site's citations use.
+          Sprout Social states all three figures verbatim (9.5 average, Media 64,
+          Leisure/sport 31). The CMO Survey links to its own results index: the
+          publisher is authoritative and the page resolves, but the report is
+          rendered client-side so the 23/20 split could not be confirmed from the
+          HTML. BrightLocal is deliberately NOT linked — nothing in their research
+          index carries the 99% figure, and a citation link that does not support
+          its claim is worse than no link. */}
+      <p class="fits__foot">
+        Media brands publish 64 social posts a day and leisure and sport 31, against an all-industry average
+        of 9.5 (<a class="src-link" href="https://sproutsocial.com/insights/social-media-benchmarks-by-industry/" target="_blank" rel="noopener noreferrer">Sprout Social, 2024<span class="sr-only"> (opens in a new tab)</span></a>). In the US, retail puts 23 percent of marketing budget into
+        social and packaged goods 20 percent (<a class="src-link" href="https://cmosurvey.org/results/" target="_blank" rel="noopener noreferrer">The CMO Survey, 2026<span class="sr-only"> (opens in a new tab)</span></a>). Ninety-nine percent of
+        multi-location brands invest in social (BrightLocal, 2024).
+      </p>
+    </div>
+  </section>
+
+  <!-- ======================================================= 3. NOT A FIT -->
+  <section class="section paper nofit" aria-labelledby="nofit-title">
+    <span class="nofit__hatch hatch" aria-hidden="true"></span>
+    <div class="wrap wrap--wide nofit__inner">
+      <h2 id="nofit-title" class="sec__title">
+        Not a fit if <span class="hl">any one of these</span> is true.
+      </h2>
+      <p class="sec__lede">
+        We would rather lose the call than take on a build the system cannot
+        carry. These come up often enough to put in writing.
+      </p>
+
+      <ul role="list" class="nofit__list">
+        {NOT_FOR.map((n, i) => (
+          <li class="nofit__item">
+            <div class="nofit__top">
+              <span class="nofit__n">{String(i + 1).padStart(2, '0')}</span>
+              <svg class="nofit__x" width="12" height="12" viewBox="0 0 12 12" aria-hidden="true"><path d="M2.6 2.6 9.4 9.4M9.4 2.6 2.6 9.4" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="square"/></svg>
+            </div>
+            <h3 class="nofit__title">{n.title}</h3>
+            <p class="nofit__body">{n.body}</p>
+            {n.more && (
+              <a href={n.more.href} class="link nofit__more">
+                {n.more.label}
+                <svg width="10" height="10" viewBox="0 0 12 12" aria-hidden="true"><path d="M1 6h9M6.5 2 10.5 6l-4 4" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="square"/></svg>
+              </a>
+            )}
+          </li>
+        ))}
+      </ul>
+
+      <div class="still">
+        <p class="meta still__k">
+          <span class="dot dot--done" aria-hidden="true"></span>One thing this is not
+        </p>
+        <h3 class="still__t">{STILL_WORKS.title}</h3>
+        <p class="still__d">{STILL_WORKS.body}</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================================================= 5. FAQ -->
+  <FaqSection
+    items={WHO_FAQ}
+    eyebrow="Still deciding"
+    title="The questions people ask about [fit]."
+  />
+
+  <!-- =========================================================== 6. CLOSE -->
+  <section class="section section--sm close" aria-labelledby="close-title">
+    <span class="bloom close__bloom" aria-hidden="true"></span>
+    <div class="wrap close__foot">
+      <h2 id="close-title" class="close__hook">
+        Open next month’s content plan. Who is producing all of it — and what
+        happens the week they’re away?
+      </h2>
+      <a href="/contact/" class="btn btn--primary btn--lg">
+        Book a build call
+        <svg class="btn__arrow" width="12" height="12" viewBox="0 0 12 12" aria-hidden="true"><path d="M1 6h9M6.5 2 10.5 6l-4 4" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="square"/></svg>
+      </a>
+    </div>
+  </section>
+</Base>
+
+<style>
+  /* Optional per-objection link. Mirrors .wf__card-more on /system and
+     .ph__more on /how-we-build so the three read as one component family.
+     margin-block-start:auto pins it to the card bottom so cards of unequal
+     body length still align their links. */
+  .nofit__more {
+    display: inline-flex;
+    align-items: center;
+    align-self: flex-start;
+    gap: var(--sp-2);
+    margin-block-start: auto;
+    padding-block-start: var(--sp-3);
+    font-size: var(--fs-sm);
+  }
+  .nofit__more svg { flex: none; }
+  @media (pointer: coarse) {
+    /* .jump is the page's only in-page navigation and is display:flex via
+       .chip, so the inline-link exemption the sitewide coarse-pointer rule
+       relies on does not apply to it. It measured 38.5px. */
+    .nofit__more,
+    .jump { min-block-size: 2.75rem; }
+  }
+
+  /* ---- Shared section heading, matching the home page ---- */
+  .sec__title {
+    margin-inline: auto;
+    font-size: var(--fs-section);
+    line-height: var(--lh-snug);
+    letter-spacing: var(--tr-display);
+    font-weight: 600;
+    /* rem, never `ch`: the body face is a system stack, so a `ch` measure
+       narrows exactly the wider faces that need more room. */
+    max-width: 44rem;
+    text-align: center;
+    text-wrap: balance;
+  }
+  .sec__lede {
+    margin: var(--sp-5) auto 0;
+    max-width: 50rem;
+    font-size: var(--fs-md);
+    line-height: var(--lh-relaxed);
+    color: var(--c-ink-2);
+    text-align: center;
+    text-wrap: pretty;
+  }
+
+  /* ================================================================ HERO */
+  .hero {
+    position: relative;
+    padding-block: clamp(3rem, 1.6rem + 5vw, 5.75rem);
+    overflow: clip;
+    text-align: center;
+  }
+  .hero__bloom {
+    inline-size: min(46rem, 94vw);
+    block-size: 27rem;
+    inset-block-start: -13rem;
+    inset-inline-start: 50%;
+    translate: -50% 0;
+  }
+  .hero__inner {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    max-width: 62rem;
+  }
+
+  /* The shared .eyebrow is a flex row whose dot strands at the far left once
+     the label wraps. As an inline marker it stays on the line. */
+  .hero__eyebrow {
+    display: block;
+    margin-block-end: 0;
+    white-space: nowrap;
+    letter-spacing: var(--tr-label);
+  }
+  .hero__eyebrow::before {
+    display: inline-block;
+    vertical-align: middle;
+    margin-inline-end: var(--sp-2);
+    margin-block-end: 0.1em;
+  }
+  .hero__eyebrow::after { display: none; }
+  @media (min-width: 30em) {
+    .hero__eyebrow { letter-spacing: var(--tr-micro); }
+  }
+
+  /* text-wrap: balance optimises for even line lengths, so it always pulls
+     "10+" up to the first line and splits the highlighted phrase. Making the
+     first clause a block forces the break where it belongs. Inline below this,
+     where the lines are short enough to wrap naturally. */
+  @media (min-width: 48em) {
+    .hero__title-l1 { display: block; }
+  }
+  .hero__title {
+    margin-block-start: var(--sp-6);
+  }
+  .hero__lede {
+    margin-block-start: var(--sp-6);
+  }
+
+  /* ---- Compact jump index: chips, not a panel ---- */
+  .hero__jumps { justify-content: center; margin-block-start: var(--sp-7); }
+  .jump {
+    gap: var(--sp-2h);
+    padding: var(--sp-2h) var(--sp-3h);
+    transition:
+      border-color var(--dur-2) var(--ease-out),
+      background-color var(--dur-2) var(--ease-out),
+      color var(--dur-2) var(--ease-out);
+  }
+  .jump:hover {
+    border-color: var(--c-line-signal);
+    background: var(--c-signal-wash);
+    color: var(--c-ink);
+  }
+  .jump__n {
+    letter-spacing: var(--tr-label);
+    color: var(--c-ink-3);
+    font-variant-numeric: tabular-nums;
+  }
+  .jump:hover .jump__n { color: var(--c-signal); }
+  /* base.css sets `svg { display: block }`, so an icon on a text line needs
+     to be laid out explicitly — here as a flex child of the chip. */
+  .jump__arrow { flex: none; color: var(--c-ink-3); }
+  .jump:hover .jump__arrow { color: var(--c-signal); }
+
+  /* =========================================================== AUDIENCES */
+  .auds {
+    display: grid;
+    gap: var(--sp-5);
+    margin-block-start: clamp(2rem, 1.4rem + 2vw, 3rem);
+  }
+  /* 62em, matching .why__forces. At 68em this was the last grid on the page to
+     split — .fits goes 2-up at 46em, .nofit__list and .fx__row at 56em — which
+     left the audience cards full-width up to 1088px with nothing capping the
+     measure inside them, running to ~106 characters a line. */
+  @media (min-width: 62em) { .auds { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--sp-6); } }
+
+  .aud {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    border: 1px solid var(--c-line-2);
+    border-radius: var(--r-2);
+    /* .section--raised resolves to --c-panel, so the card lifts a step. */
+    background: linear-gradient(180deg, rgb(255 255 255 / 2.2%) 0%, transparent 40%), var(--c-panel-2);
+  }
+  .aud__bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: var(--sp-3);
+    padding: var(--sp-3) clamp(1rem, 0.8rem + 1vw, 1.5rem);
+    border-block-end: 1px solid var(--c-line);
+    font-family: var(--font-mono);
+    font-size: var(--fs-2xs);
+    letter-spacing: var(--tr-label);
+    text-transform: uppercase;
+  }
+  .aud__bar-k { display: inline-flex; align-items: center; gap: var(--sp-2); color: var(--c-ink); }
+  .aud__bar-n { color: var(--c-ink-3); font-variant-numeric: tabular-nums; }
+
+  .aud__head { padding: clamp(1.25rem, 1rem + 1.2vw, 1.75rem) clamp(1rem, 0.8rem + 1vw, 1.5rem) 0; }
+  .aud__name {
+    font-size: var(--fs-lg);
+    line-height: var(--lh-snug);
+    letter-spacing: var(--tr-display);
+    font-weight: 600;
+    color: var(--c-ink);
+    text-wrap: balance;
+  }
+  .aud__who {
+    margin-block-start: var(--sp-2);
+    font-family: var(--font-mono);
+    font-size: var(--fs-2xs);
+    letter-spacing: var(--tr-wide);
+    color: var(--c-signal-text);
+  }
+  .aud__lede {
+    margin-block-start: var(--sp-3);
+    font-size: var(--fs-sm);
+    line-height: var(--lh-relaxed);
+    color: var(--c-ink-2);
+    text-wrap: pretty;
+  }
+
+  .aud__block { padding: clamp(1.25rem, 1rem + 1.2vw, 1.75rem) clamp(1rem, 0.8rem + 1vw, 1.5rem); }
+  .aud__block--fix { margin-block-start: auto; border-block-start: 1px solid var(--c-line); }
+  .aud__k {
+    margin-block-end: var(--sp-4);
+    font-family: var(--font-mono);
+    font-size: var(--fs-2xs);
+    letter-spacing: var(--tr-label);
+    text-transform: uppercase;
+    color: var(--c-ink-3);
+  }
+  .aud__k--fix { color: var(--c-signal-text); }
+
+  .aud__pains { display: grid; gap: var(--sp-4); list-style: none; margin: 0; padding: 0; }
+  .aud__pain {
+    padding-inline-start: var(--sp-4);
+    /* A rose rule rather than a filled panel: four stacked panels inside a card
+       turned the whole column into stripes. */
+    border-inline-start: 2px solid var(--c-rose);
+  }
+  .aud__stat {
+    font-family: var(--font-mono);
+    font-size: var(--fs-lg);
+    line-height: 1.1;
+    letter-spacing: var(--tr-tight);
+    font-weight: 600;
+    color: var(--c-ink);
+    font-variant-numeric: tabular-nums;
+  }
+  /* The source is the load-bearing part of the claim, so it sits with the
+     number rather than in a footnote nobody reaches. */
+  .aud__src {
+    margin-block-start: var(--nudge-1);
+    font-family: var(--font-mono);
+    font-size: var(--fs-2xs);
+    letter-spacing: var(--tr-wide);
+    color: var(--c-ink-3);
+  }
+  .aud__pain-t {
+    margin-block-start: var(--sp-2);
+    font-size: var(--fs-sm);
+    line-height: var(--lh-snug);
+    /* Was inherited from the h1-h6 rule in base.css. These captions are now <p>
+       — they label the number above them rather than head a section — so the
+       display tracking has to be stated here or it is silently lost. */
+    letter-spacing: var(--tr-display);
+    font-weight: 600;
+    color: var(--c-ink);
+    text-wrap: balance;
+  }
+  .aud__pain-d {
+    margin-block-start: var(--sp-2);
+    font-size: var(--fs-sm);
+    line-height: var(--lh-relaxed);
+    color: var(--c-ink-2);
+    text-wrap: pretty;
+  }
+
+  .aud__gains { display: grid; gap: var(--sp-3); list-style: none; margin: 0; padding: 0; }
+  .aud__gain {
+    display: flex;
+    gap: var(--sp-3);
+    align-items: flex-start;
+    font-size: var(--fs-sm);
+    line-height: var(--lh-normal);
+    color: var(--c-ink-2);
+  }
+  .aud__tick { flex: none; margin-block-start: var(--nudge-1); color: var(--c-signal); }
+  .aud__close {
+    margin-block-start: var(--sp-4);
+    padding-block-start: var(--sp-4);
+    border-block-start: 1px solid var(--c-line);
+    font-family: var(--font-mono);
+    font-size: var(--fs-xs);
+    line-height: var(--lh-relaxed);
+    letter-spacing: var(--tr-wide);
+    font-weight: 600;
+    color: var(--c-signal-text);
+    text-wrap: pretty;
+  }
+
+  .auds__note {
+    margin: clamp(2rem, 1.4rem + 2vw, 2.75rem) auto 0;
+    max-width: 46rem;
+    font-size: var(--fs-xs);
+    line-height: var(--lh-relaxed);
+    color: var(--c-ink-3);
+    text-align: center;
+    text-wrap: pretty;
+  }
+
+  /* ================================================================= WHY */
+  .why__forces {
+    display: grid;
+    gap: var(--sp-5);
+    margin-block-start: clamp(2rem, 1.4rem + 2vw, 3rem);
+  }
+  @media (min-width: 62em) { .why__forces { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--sp-6); } }
+
+  .why__force { min-width: 0; }
+  .why__force-k {
+    display: flex;
+    align-items: center;
+    gap: var(--sp-2);
+    padding-block-end: var(--sp-3);
+    border-block-end: 1px solid var(--c-line-2);
+    color: var(--c-ink);
+  }
+  .why__arrow {
+    display: grid;
+    place-items: center;
+    inline-size: 1.5rem;
+    block-size: 1.5rem;
+    border-radius: 50%;
+    border: 1px solid currentColor;
+  }
+  /* Demand climbing reads as the opportunity, cost climbing as the threat. */
+  .why__arrow--up { color: var(--c-signal); }
+  .why__arrow--down { color: var(--c-rose); }
+
+  .why__list { display: grid; gap: 0; list-style: none; margin: 0; padding: 0; }
+  .why__item { padding-block: var(--sp-5); border-block-end: 1px solid var(--c-line); }
+  .why__item:last-child { border-block-end: 0; }
+  .why__stat {
+    font-family: var(--font-mono);
+    font-size: var(--fs-2xl);
+    line-height: 1;
+    letter-spacing: var(--tr-tight);
+    font-weight: 600;
+    color: var(--c-signal-text);
+    font-variant-numeric: tabular-nums;
+  }
+  .why__item--cost .why__stat { color: var(--c-rose); }
+  .why__t {
+    margin-block-start: var(--sp-3);
+    font-size: var(--fs-md);
+    line-height: var(--lh-snug);
+    letter-spacing: var(--tr-display);
+    font-weight: 600;
+    color: var(--c-ink);
+    text-wrap: balance;
+  }
+  .why__d {
+    margin-block-start: var(--sp-2);
+    font-size: var(--fs-sm);
+    line-height: var(--lh-relaxed);
+    color: var(--c-ink-2);
+    text-wrap: pretty;
+  }
+  /* The geography rides with the source: a reader in Berlin or Dubai should be
+     able to see at a glance whether a number covers them. */
+  .why__src {
+    margin-block-start: var(--sp-3);
+    font-family: var(--font-mono);
+    font-size: var(--fs-2xs);
+    letter-spacing: var(--tr-wide);
+    color: var(--c-ink-3);
+  }
+
+  /* ---- problem paired with its answer ---- */
+  .why__fixes { margin-block-start: clamp(2.5rem, 1.8rem + 2.6vw, 4rem); }
+  /* Centred bold text alone had nothing anchoring it: sitting between the
+     citation cards above and the fx rows below, it read as a stray line of the
+     previous section rather than the title of this one. Giving it the site's
+     panel-bar treatment — hairline rule, panel ground, mono eyebrow — makes it
+     own the rows underneath, which are themselves cards. */
+  .why__fixes-bar {
+    margin-block-end: var(--sp-4);
+    padding: var(--sp-4) clamp(1rem, 0.85rem + 0.9vw, 1.375rem);
+    border: 1px solid var(--c-line-2);
+    border-radius: var(--r-2);
+    background: var(--c-panel-2);
+    text-align: center;
+  }
+  .why__fixes-k {
+    justify-content: center;
+    margin-block-end: var(--sp-2);
+  }
+  .why__fixes-h {
+    margin: 0;
+    font-size: var(--fs-lg);
+    line-height: var(--lh-snug);
+    letter-spacing: var(--tr-display);
+    font-weight: 600;
+    color: var(--c-ink);
+    text-wrap: balance;
+  }
+  .fx { display: grid; gap: var(--sp-3); list-style: none; margin: 0; padding: 0; }
+  .fx__row {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--sp-3);
+    align-items: center;
+    padding: clamp(1rem, 0.85rem + 0.9vw, 1.375rem);
+    border: 1px solid var(--c-line-2);
+    border-radius: var(--r-2);
+    background: var(--c-panel-2);
+  }
+  /* The arrow column only earns its space once the two sides sit side by side. */
+  @media (min-width: 56em) {
+    .fx__row { grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr); gap: var(--sp-4); }
+  }
+  .fx__side {
+    display: grid;
+    grid-template-columns: 0.875rem minmax(0, 1fr);
+    gap: var(--sp-3);
+    align-items: start;
+    font-size: var(--fs-sm);
+    line-height: var(--lh-normal);
+  }
+  .fx__side--bad { color: var(--c-ink-2); }
+  .fx__side--good { color: var(--c-ink); }
+  .fx__mark { margin-block-start: var(--nudge-1); flex: none; }
+  .fx__mark--x { color: var(--c-rose); }
+  .fx__mark--tick { color: var(--c-signal); }
+  .fx__note {
+    display: block;
+    margin-block-start: var(--sp-2);
+    font-family: var(--font-mono);
+    font-size: var(--fs-2xs);
+    line-height: var(--lh-relaxed);
+    letter-spacing: var(--tr-wide);
+    color: var(--c-ink-3);
+  }
+  .fx__to { display: none; color: var(--c-ink-4); }
+  @media (min-width: 56em) { .fx__to { display: grid; place-items: center; } }
+
+  .why__close {
+    margin: clamp(2.5rem, 1.8rem + 2.6vw, 3.5rem) auto 0;
+    max-width: 46rem;
+    font-size: var(--fs-md);
+    line-height: var(--lh-relaxed);
+    color: var(--c-ink);
+    text-align: center;
+    text-wrap: pretty;
+  }
+  .why__geo {
+    margin: var(--sp-4) auto 0;
+    max-width: 40rem;
+    font-family: var(--font-mono);
+    font-size: var(--fs-2xs);
+    letter-spacing: var(--tr-wide);
+    color: var(--c-ink-3);
+    text-align: center;
+  }
+
+  /* =========================================================== NOT A FIT */
+  .nofit { position: relative; overflow: clip; }
+  .nofit__hatch {
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    opacity: 0.8;
+    mask-image: linear-gradient(to bottom, var(--mask-opaque), transparent 45%);
+    pointer-events: none;
+  }
+  .nofit__inner { position: relative; z-index: 1; }
+
+  .nofit__list {
+    display: grid;
+    gap: var(--sp-6) clamp(2rem, 1.2rem + 3vw, 3.5rem);
+    margin-block-start: clamp(2.25rem, 1.5rem + 2.4vw, 3.25rem);
+    grid-template-columns: minmax(0, 1fr);
+  }
+  @media (min-width: 56em) { .nofit__list { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+
+  .nofit__item {
+    padding-block-start: var(--sp-4);
+    border-block-start: 1px solid var(--c-line-2);
+    display: flex;
+    flex-direction: column;
+  }
+  .nofit__top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--sp-4);
+    margin-block-end: var(--sp-4);
+  }
+  /* On .paper the ink ramp is remapped and --c-ink-3 lands at 3.8:1 — under
+     AA for text this size. These use --c-ink-2 (8.2:1) instead. */
+  .nofit__n {
+    font-family: var(--font-mono);
+    font-size: var(--fs-2xs);
+    letter-spacing: var(--tr-label);
+    color: var(--c-ink-2);
+    font-variant-numeric: tabular-nums;
+  }
+  /* .paper remaps --c-rose to its paper-safe value, so this clears 3:1 here. */
+  .nofit__x { flex: none; color: var(--c-rose); }
+  .nofit__title {
+    font-size: var(--fs-md);
+    line-height: var(--lh-snug);
+    letter-spacing: var(--tr-tight);
+    color: var(--c-ink);
+    text-wrap: pretty;
+  }
+  .nofit__body {
+    margin-block-start: var(--sp-3);
+    font-size: var(--fs-sm);
+    line-height: var(--lh-relaxed);
+    color: var(--c-ink-2);
+  }
+  .still {
+    margin-block-start: clamp(2rem, 1.4rem + 2vw, 2.75rem);
+    padding: clamp(1.5rem, 1.1rem + 1.6vw, 2.25rem);
+    border: 1px solid var(--c-line-signal);
+    border-radius: var(--r-2);
+    /* Flat panel, no accent wash. This section is .paper, where --c-panel-2 is
+       a warm grey (#e2e5dd); a violet gradient over it reads as a muddy green.
+       The accent is carried by the border and the eyebrow instead. */
+    background: var(--c-panel-2);
+    text-align: center;
+  }
+  .still__k { display: inline-flex; align-items: center; gap: var(--sp-2); color: var(--c-signal-text); }
+  .still__t {
+    margin-block-start: var(--sp-3);
+    font-size: var(--fs-lg);
+    line-height: var(--lh-snug);
+    letter-spacing: var(--tr-display);
+    font-weight: 600;
+    color: var(--c-ink);
+    text-wrap: balance;
+  }
+  .still__d {
+    margin: var(--sp-3) auto 0;
+    max-width: 44rem;
+    font-size: var(--fs-sm);
+    line-height: var(--lh-relaxed);
+    color: var(--c-ink-2);
+    text-wrap: pretty;
+  }
+
+  /* ================================================================ FITS */
+  .fits {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--sp-5);
+    list-style: none;
+    margin: clamp(2rem, 1.4rem + 2vw, 3rem) 0 0;
+    padding: 0;
+  }
+  @media (min-width: 46em) { .fits { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+  @media (min-width: 82em) { .fits { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
+
+  .fits__group {
+    min-width: 0;
+    padding: clamp(1.25rem, 1rem + 1.2vw, 1.625rem);
+    border: 1px solid var(--c-line-2);
+    border-radius: var(--r-2);
+    background: linear-gradient(180deg, rgb(255 255 255 / 2.2%) 0%, transparent 42%), var(--c-panel-2);
+  }
+  .fits__k {
+    font-size: var(--fs-md);
+    line-height: var(--lh-snug);
+    letter-spacing: var(--tr-display);
+    font-weight: 600;
+    color: var(--c-ink);
+    text-wrap: balance;
+  }
+  .fits__note {
+    margin-block-start: var(--sp-2);
+    padding-block-end: var(--sp-4);
+    border-block-end: 1px solid var(--c-line);
+    font-size: var(--fs-xs);
+    line-height: var(--lh-relaxed);
+    color: var(--c-ink-3);
+    text-wrap: pretty;
+  }
+  .fits__items {
+    display: grid;
+    gap: var(--sp-2h);
+    list-style: none;
+    margin: var(--sp-4) 0 0;
+    padding: 0;
+  }
+  .fits__item {
+    display: grid;
+    grid-template-columns: 0.375rem minmax(0, 1fr);
+    gap: var(--sp-3);
+    align-items: baseline;
+    font-size: var(--fs-sm);
+    line-height: var(--lh-normal);
+    color: var(--c-ink-2);
+  }
+  .fits__dot {
+    inline-size: 0.3125rem;
+    block-size: 0.3125rem;
+    border-radius: 50%;
+    background: var(--c-signal);
+    /* baseline alignment puts a bare span on the text baseline; nudge it back
+       onto the optical centre of the line. */
+    transform: translateY(-0.15em);
+  }
+  .fits__foot {
+    margin: clamp(2rem, 1.4rem + 2vw, 2.75rem) auto 0;
+    max-width: 50rem;
+    font-size: var(--fs-xs);
+    line-height: var(--lh-relaxed);
+    color: var(--c-ink-3);
+    text-align: center;
+    text-wrap: pretty;
+  }
+
+  /* =============================================================== CLOSE */
+  .close { position: relative; overflow: clip; }
+  .close__bloom {
+    inline-size: min(44rem, 92vw);
+    block-size: 22rem;
+    inset-block-end: -13rem;
+    inset-inline-start: 50%;
+    translate: -50% 0;
+  }
+  .close__foot {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    max-width: 52rem;
+  }
+  .close__hook {
+    font-size: var(--fs-xl);
+    line-height: var(--lh-snug);
+    letter-spacing: var(--tr-display);
+    font-weight: 500;
+    color: var(--c-ink);
+    text-wrap: balance;
+  }
+  .close__foot .btn { margin-block-start: var(--sp-6); }
+</style>

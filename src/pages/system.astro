@@ -1,0 +1,242 @@
+---
+import Base from '../layouts/Base.astro';
+import { CHANNELS, SYSTEM_FAQ } from '../data/content.mjs';
+import { BRAND } from '../lib/brand-icons.mjs';
+import { breadcrumbSchema, faqSchema } from '../lib/schema.mjs';
+import FaqSection from '../components/FaqSection.astro';
+import CloseCta from '../components/CloseCta.astro';
+import Formats from '../components/Formats.astro';
+import Workflow from '../components/Workflow.astro';
+import Craft from '../components/Craft.astro';
+import Deliverables from '../components/Deliverables.astro';
+
+
+
+
+---
+
+<Base
+  title="How the AI content pipeline works, step by step"
+  description="How the content system works step by step: what it does with your document, what it produces, where it publishes, and where you can approve or stop a run."
+  schema={[breadcrumbSchema([{ name: 'The System', href: '/system/' }]), faqSchema(SYSTEM_FAQ)]}
+  hideFooterCta
+>
+  <!-- =========================================================== 1. HERO -->
+  <section class="hero grid-bg" aria-labelledby="sys-title">
+    <span class="bloom hero__bloom" aria-hidden="true"></span>
+
+    <div class="wrap hero__inner">
+      <p class="eyebrow hero__eyebrow">The system, in detail</p>
+      <h1 id="sys-title" class="hero__title">
+        How the system works, <span class="hl">start to finish</span>.
+      </h1>
+      <p class="hero__lede">
+        You upload one file. Ten steps later, every video, thumbnail, graphic and post
+        is live on your channels. This page covers each step, the standard the work is
+        held to, every file it produces, where it publishes, and what you own at the end.
+      </p>
+      <div class="btn-row hero__actions">
+        <a href="/contact/" class="btn btn--primary btn--lg">
+          Book a build call
+          <svg class="btn__arrow" width="12" height="12" viewBox="0 0 12 12" aria-hidden="true"><path d="M1 6h9M6.5 2 10.5 6l-4 4" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="square"/></svg>
+        </a>
+        <a href="/engagements/" class="btn btn--ghost btn--lg">Who owns it afterwards</a>
+      </div>
+    </div>
+
+  </section>
+
+  <!-- ======================================================= 2. WORKFLOW -->
+  <Workflow id="stages" />
+
+  <!-- ========================================================== 3. CRAFT -->
+  <Craft />
+
+  <!-- ======================================================== 4. FORMATS -->
+  <Formats
+    eyebrow="Deliverables"
+    title="What lands in your [drive and your feeds]."
+    lede={`Every one of these comes out of the same run, at the spec each platform enforces. Nothing here is a manual reformat of something else — on <a href="/insights/oap-client-production-review/" class="link">the account we measured</a>, that mix held steady at one long video to 4.3 shorts and 4.3 post sets for four months.`}
+  />
+
+  <!-- =========================================== 5. CHANNELS + INTEGRATIONS -->
+  <section class="section" id="channels" aria-labelledby="chan-title">
+    <div class="wrap wrap--wide">
+      <h2 id="chan-title" class="sec__title">Scheduled and published to every platform your audience is <span class="hl">already on</span>.</h2>
+      <p class="sec__lede">
+        One upload produces what each destination expects, in the formats that destination
+        accepts. Everything publishes under your own connected accounts, never a shared
+        pool, and your blog and newsletter come out of the same run.
+      </p>
+
+      <ul role="list" class="dest">
+        {CHANNELS.map((c) => (
+          <li class="dest__card ticked">
+            <span class="dest__ico" aria-hidden="true">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor" set:html={BRAND[c.icon]} />
+            </span>
+            <h3 class="dest__name">{c.name}</h3>
+            <p class="dest__fmt">{c.formats}</p>
+          </li>
+        ))}
+      </ul>
+
+      <!-- Restores the close this section lost. The .sys__foot / .sys__hook CSS
+           below outlived its markup, which is what gave it away: Channels is the
+           payoff of the whole pipeline story and was ending on a bare card grid,
+           inside a 4.4-screen stretch with nothing to act on. Ghost, not primary
+           — the hero and the Deliverables close own that weight. No hook line:
+           the only one available restated the lede 800px above it. -->
+      <div class="sys__foot">
+        <a href="/contact/" class="btn btn--ghost">
+          Book a build call
+          <svg class="btn__arrow" width="12" height="12" viewBox="0 0 12 12" aria-hidden="true"><path d="M1 6h9M6.5 2 10.5 6l-4 4" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="square"/></svg>
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- =================================================== 6. WHAT YOU GET -->
+  <!-- Placed after the destinations so the page closes on ownership: how it
+       works, to what standard, what files, where they go, what you keep. -->
+  <Deliverables cta={{ label: 'Book a build call', href: '/contact/' }} />
+
+  <!-- ============================================================ 7. FAQ -->
+  <FaqSection
+    items={SYSTEM_FAQ}
+    eyebrow="About the system"
+    title="What people ask about [the run itself]."
+  />
+
+  <!-- =========================================================== 8. CLOSE -->
+  <CloseCta
+    title="See it run on [your own plan]."
+    body="Bring one row of your content calendar to the call. We will walk it through all ten steps and tell you plainly whether a custom build is worth it for your volume."
+  />
+</Base>
+
+<style>
+  /* ==================================================================== HERO */
+  .hero {
+    position: relative;
+    padding-block: clamp(3rem, 1.4rem + 5.6vw, 6.5rem) clamp(2.5rem, 1.6rem + 3vw, 4rem);
+    overflow: clip;
+    text-align: center;
+  }
+  .hero__bloom {
+    inline-size: min(48rem, 94vw);
+    block-size: 28rem;
+    inset-block-start: -12rem;
+    inset-inline-start: 50%;
+    translate: -50% 0;
+  }
+  .hero__inner {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    max-width: 62rem;
+  }
+
+  /* The shared .eyebrow is a flex row whose dot strands at the far left once the
+     label wraps; as an inline marker it stays on the line. */
+  .hero__eyebrow {
+    display: block;
+    margin-block-end: 0;
+    letter-spacing: var(--tr-label);
+  }
+  .hero__eyebrow::before {
+    display: inline-block;
+    vertical-align: middle;
+    margin-inline-end: var(--sp-2);
+    margin-block-end: 0.1em;
+  }
+  .hero__eyebrow::after { display: none; }
+  @media (min-width: 30em) {
+    .hero__eyebrow { letter-spacing: var(--tr-micro); }
+  }
+
+  .hero__title {
+    margin-block-start: var(--sp-6);
+  }
+  .hero__lede {
+    margin-block-start: var(--sp-5);
+  }
+  .hero__actions { justify-content: center; margin-block-start: var(--sp-6); }
+
+  /* ---- Derived fan-out strip: hairlines only, no panel chrome ---- */
+  /* Declared after the 34em block so the same-specificity resets win. */
+
+  /* ========================================================== DESTINATIONS */
+  .dest {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--sp-4);
+    list-style: none;
+    margin: clamp(2rem, 1.4rem + 2vw, 3rem) 0 0;
+    padding: 0;
+  }
+  @media (min-width: 40em) { .dest { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+  @media (min-width: 68em) { .dest { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+
+  .dest__card {
+    position: relative;
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    grid-template-rows: auto auto;
+    column-gap: var(--sp-3h);
+    row-gap: var(--sp-1);
+    align-items: center;
+    padding: clamp(1rem, 0.85rem + 0.9vw, 1.375rem);
+    border: 1px solid var(--c-line-2);
+    border-radius: var(--r-2);
+    background:
+      linear-gradient(180deg, rgb(255 255 255 / 2.2%) 0%, transparent 46%),
+      var(--c-panel-2);
+    transition: border-color var(--dur-2) var(--ease-out);
+  }
+  .dest__card:hover { border-color: var(--c-line-signal); }
+
+  .dest__ico {
+    grid-row: 1 / span 2;
+    display: grid;
+    place-items: center;
+    inline-size: 2.75rem;
+    block-size: 2.75rem;
+    border-radius: var(--r-1);
+    border: 1px solid var(--c-line-2);
+    background: var(--c-panel-3);
+    /* One tone, so nine different brand palettes cannot fight the page or each
+       other. Every one of these guidelines permits a monochrome mark. */
+    color: var(--c-ink);
+    flex: none;
+  }
+  .dest__ico svg { display: block; }
+
+  .dest__name {
+    align-self: end;
+    font-size: var(--fs-md);
+    line-height: var(--lh-snug);
+    letter-spacing: var(--tr-display);
+    font-weight: 600;
+    color: var(--c-ink);
+  }
+  .dest__fmt {
+    align-self: start;
+    font-size: var(--fs-sm);
+    line-height: var(--lh-normal);
+    color: var(--c-ink-2);
+    text-wrap: pretty;
+  }
+
+  /* ================================================================== CLOSE */
+  .sys__foot {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    gap: var(--sp-4) var(--sp-5);
+    margin-block-start: clamp(2.5rem, 1.6rem + 3vw, 4rem);
+  }
+  .sys__foot .btn { flex: none; }
+</style>

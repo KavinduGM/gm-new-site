@@ -1,0 +1,172 @@
+---
+/**
+ * Receipt page.
+ *
+ * Rendered on demand because it has to show a reference the build cannot know.
+ * It is the landing page for a submit without JavaScript — the enhanced path
+ * never leaves /contact/ — and it doubles as the error surface, since the
+ * contact page itself is prerendered and cannot render a server-side failure.
+ */
+import Base from '../../layouts/Base.astro';
+import { SITE } from '../../site.config.mjs';
+import { SUBMISSION_ID_RE } from '../../lib/leads.mjs';
+
+export const prerender = false;
+
+const params = Astro.url.searchParams;
+
+/* Validate the reference rather than echoing it. It arrives in a URL, so
+   without this the page would render whatever a crafted link put there. */
+const rawRef = params.get('ref') ?? '';
+const ref = SUBMISSION_ID_RE.test(rawRef) ? rawRef : null;
+
+const REASONS = {
+  invalid: {
+    title: 'That form came back incomplete',
+    body: 'Something required was missing or malformed. Going back and resubmitting usually sorts it.',
+  },
+  rate_limited: {
+    title: 'That is a few too many in a row',
+    body: 'We limit how often the form can be sent from one place. Give it ten minutes, or reach us directly using the routes below.',
+  },
+  too_large: {
+    title: 'That submission was too large',
+    body: 'The brief field has a generous limit but not an unlimited one. Trim it down, or send the detail by email once we are talking.',
+  },
+  send_failed: {
+    title: 'We could not deliver that one',
+    body: 'Your enquiry reached us but our mail service rejected it, which means nobody has seen it. Please use one of the routes below — they do not depend on the same system.',
+  },
+  not_configured: {
+    title: 'The form is not accepting enquiries right now',
+    body: 'This is our fault, not yours, and we are aware of it. Please use one of the routes below in the meantime.',
+  },
+  bad_request: {
+    title: 'That submission did not arrive intact',
+    body: 'Something went wrong in transit. Trying again usually works.',
+  },
+};
+
+const errorKey = params.get('error');
+const failure = errorKey ? (REASONS[errorKey] ?? REASONS.invalid) : null;
+const ok = !failure && Boolean(ref);
+
+/* Neither a valid reference nor a known error: someone opened the URL directly. */
+const bare = !failure && !ref;
+
+/* Same digits-only guard as /contact/ and the auto-reply. A malformed number
+   renders a button that opens a dead WhatsApp screen. */
+const hasWhatsapp = /^\d{8,15}$/.test(String(SITE.whatsapp ?? ''));
+const waHref = hasWhatsapp
+  ? `https://wa.me/${SITE.whatsapp}?text=${encodeURIComponent(SITE.whatsappMessage ?? '')}`
+  : '';
+const mailHref = `mailto:${SITE.email}`;
+---
+
+<Base
+  title={ok ? 'Enquiry received' : 'Contact'}
+  description="Confirmation that your enquiry reached GroovyMark, with your submission reference."
+  noindex={true}
+  hideFooterCta={true}
+>
+  <article class="sent">
+    <div class="wrap wrap--text">
+      {ok && (
+        <>
+          <p class="eyebrow">
+            <span class="dot dot--done" aria-hidden="true"></span>Enquiry received
+          </p>
+          <h1 class="display-2 sent__title">We have it. A person is reading it now.</h1>
+          <p class="lede sent__lede">
+            A confirmation is on its way to your inbox with a copy of what you sent. One of
+            our agents will come back to you personally — usually within a few hours, and
+            always within one business day.
+          </p>
+
+          <div class="panel panel--pad sent__ref">
+            <p class="meta sent__ref-label">Your reference</p>
+            <p class="sent__ref-id">{ref}</p>
+            <p class="body-sm sent__ref-note">
+              Quote it in any reply and we will pull your enquiry straight up.
+            </p>
+          </div>
+        </>
+      )}
+
+      {failure && (
+        <>
+          <p class="eyebrow">
+            <span class="dot dot--queued" aria-hidden="true"></span>Not sent
+          </p>
+          <h1 class="display-2 sent__title">{failure.title}</h1>
+          <p class="lede sent__lede">{failure.body}</p>
+        </>
+      )}
+
+      {bare && (
+        <>
+          <p class="eyebrow">Contact</p>
+          <h1 class="display-2 sent__title">Nothing to show here</h1>
+          <p class="lede sent__lede">
+            This page confirms an enquiry after you send one. There is no enquiry attached to
+            this visit — the form is on the contact page.
+          </p>
+        </>
+      )}
+
+      <div class="sent__acts">
+        {!ok && (
+          <a class="btn btn--primary" href="/contact/">
+            {failure ? 'Back to the form' : 'Go to the contact form'}
+          </a>
+        )}
+        {waHref && (
+          <a class="btn" href={waHref} rel="noopener noreferrer" target="_blank">
+            Message us on WhatsApp
+          </a>
+        )}
+        <a class="btn btn--ghost" href={mailHref}>Email us directly</a>
+      </div>
+
+      {ok && (
+        <p class="body-sm sent__after">
+          Nothing else is needed from you. If the confirmation has not arrived in a few
+          minutes, check your spam folder for a message from
+          <strong>{SITE.leadsEmail.split('@')[1]}</strong>, then tell us on WhatsApp.
+        </p>
+      )}
+    </div>
+  </article>
+</Base>
+
+<style>
+  .sent {
+    padding-block: clamp(4rem, 3rem + 6vw, 8rem) clamp(3rem, 2rem + 4vw, 6rem);
+  }
+  .sent__title { margin-block-start: var(--sp-3); }
+  .sent__lede { margin-block-start: var(--sp-5); font-size: var(--fs-md); }
+
+  .sent__ref { margin-block-start: var(--sp-7); }
+  .sent__ref-label { color: var(--c-ink-3); }
+  .sent__ref-id {
+    margin-block-start: var(--sp-2);
+    font-family: var(--font-mono);
+    font-size: clamp(1.5rem, 1.2rem + 1.5vw, 2rem);
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    color: var(--c-signal-text);
+  }
+  .sent__ref-note { margin-block-start: var(--sp-3); color: var(--c-ink-2); }
+
+  .sent__acts {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--sp-3);
+    margin-block-start: var(--sp-7);
+  }
+  .sent__after {
+    margin-block-start: var(--sp-6);
+    color: var(--c-ink-3);
+  }
+  .sent__after strong { color: var(--c-ink-2); font-weight: 500; }
+</style>

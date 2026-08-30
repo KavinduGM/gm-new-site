@@ -1,0 +1,455 @@
+---
+import { getCollection, render, type CollectionEntry } from 'astro:content';
+import Base from '../../layouts/Base.astro';
+import { articleSchema, breadcrumbSchema } from '../../lib/schema.mjs';
+
+export async function getStaticPaths() {
+  const entries = (await getCollection('insights', ({ data }) => !data.draft)).sort(
+    (a, b) => b.data.date.valueOf() - a.data.date.valueOf(),
+  );
+
+  return entries.map((entry, i) => ({
+    params: { slug: entry.id },
+    props: {
+      entry,
+      /** Newest first, so the previous index position is the newer entry. */
+      newer: entries[i - 1] ?? null,
+      older: entries[i + 1] ?? null,
+    },
+  }));
+}
+
+type Entry = CollectionEntry<'insights'>;
+
+interface Props {
+  entry: Entry;
+  newer: Entry | null;
+  older: Entry | null;
+}
+
+const { entry, newer, older } = Astro.props;
+const { Content, headings } = await render(entry);
+
+const { title, description, metaDescription, date, updated, tags, category, readingTime, kind, source, cover, coverAlt } =
+  entry.data;
+
+const iso = (d: Date) => d.toISOString().slice(0, 10);
+
+/** Top-level sections only — the sidebar is a map, not a mirror. */
+const toc = headings.filter((h) => h.depth === 2);
+
+/** Some entries number their own sections, because the numbering is part of the
+ *  argument ("here are the nine questions"). Adding the decorative index on top
+ *  of that renders as "01  1. Which figures are instrumented?". Where a heading
+ *  already opens with a number, the entry has said it and the sidebar keeps
+ *  quiet. Checked across the whole set so one numbered heading does not leave
+ *  the rest of the list unindexed. */
+const tocSelfNumbered = toc.some((h) => /^\d+[.)]\s/.test(h.text));
+
+const arrow = 'M1 6h9M6.5 2 10.5 6l-4 4';
+---
+
+<Base
+  title={title}
+  description={metaDescription ?? description}
+  type="article"
+  {/* Its own share card, rasterised from the cover by scripts/build-og-images.mjs.
+      All five articles previously shared og-default.png, so every article's card
+      was indistinguishable from the others and from the home page. */}
+  image={`/insights/og/${entry.id}.png`}
+  imageAlt={coverAlt}
+  publishedTime={date.toISOString()}
+  modifiedTime={(updated ?? date).toISOString()}
+  schema={[
+    breadcrumbSchema([
+      { name: 'Insights', href: '/insights/' },
+      { name: title, href: `/insights/${entry.id}` },
+    ]),
+    articleSchema({
+      title,
+      description,
+      slug: entry.id,
+      date,
+      updated,
+      tags,
+      image: `/insights/og/${entry.id}.png`,
+    }),
+  ]}
+>
+  <article class="post">
+    <!-- ================================================== HEADER -->
+    <header class="post__head grid-bg">
+      <span class="bloom post__bloom" aria-hidden="true"></span>
+      <div class="wrap">
+        <a href="/insights/" class="post__back">
+          <svg width="12" height="12" viewBox="0 0 12 12" aria-hidden="true"><path d="M11 6H2M5.5 2 1.5 6l4 4" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="square"/></svg>
+          Insights index
+        </a>
+
+        <p class="post__kicker">
+          <span class="post__cat"><span class="dot dot--done" aria-hidden="true"></span>{kind}</span>
+          {category !== kind && (
+            <>
+              <span class="post__sep" aria-hidden="true">/</span>
+              <span>{category}</span>
+            </>
+          )}
+          <span class="post__sep" aria-hidden="true">/</span>
+          <time datetime={iso(date)}>{iso(date)}</time>
+          {updated && (
+            <>
+              <span class="post__sep" aria-hidden="true">/</span>
+              <span>Updated <time datetime={iso(updated)}>{iso(updated)}</time></span>
+            </>
+          )}
+          <span class="post__sep" aria-hidden="true">/</span>
+          <span>{readingTime} min read</span>
+        </p>
+
+        <h1 class="post__title">{title}</h1>
+        <p class="post__desc">{description}</p>
+
+        <ul role="list" class="chip-row post__tags">
+          {tags.map((t) => <li class="chip">{t}</li>)}
+        </ul>
+      </div>
+    </header>
+
+    <!-- ================================================== COVER -->
+    <div class="wrap wrap--wide">
+      <figure class="cover">
+        <img class="cover__img" src={cover} alt={coverAlt} width="1600" height="800" />
+        <figcaption class="cover__cap">
+          <span class="cover__k">Source</span>
+          <span class="cover__v">{source}</span>
+        </figcaption>
+      </figure>
+    </div>
+
+    <!-- ================================================== BODY -->
+    <div class="section post__main">
+      <div class="wrap wrap--wide">
+        <div class="post__grid">
+          <div class="prose post__body">
+            <Content />
+          </div>
+
+          <aside class="post__rail">
+            {toc.length > 1 && (
+              <nav class="toc" aria-labelledby="toc-title">
+                <h2 id="toc-title" class="toc__title">Contents</h2>
+                <ol role="list" class="toc__list">
+                  {toc.map((h, i) => (
+                    <li>
+                      <a href={`#${h.slug}`} class="toc__link">
+                        {!tocSelfNumbered && (
+                          <span class="index toc__n">{String(i + 1).padStart(2, '0')}</span>
+                        )}
+                        <span class="toc__text">{h.text}</span>
+                      </a>
+                    </li>
+                  ))}
+                </ol>
+              </nav>
+            )}
+
+            <p class="post__rail-cta">
+              <a href="/contact/" class="link-arrow">
+                Run these against your account
+                <svg width="12" height="12" viewBox="0 0 12 12" aria-hidden="true"><path d={arrow} fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="square"/></svg>
+              </a>
+            </p>
+          </aside>
+        </div>
+      </div>
+    </div>
+  </article>
+
+  <!-- ================================================== PREV / NEXT -->
+  <section class="section section--sm section--ruled" aria-labelledby="more-title">
+    <div class="wrap wrap--wide">
+      <h2 id="more-title" class="post__more-title">More from the index</h2>
+
+      <nav class="pn" aria-label="More insights">
+        {newer ? (
+          <a href={`/insights/${newer.id}/`} class="pn__item card card--hover pn__item--newer">
+            <span class="pn__label">
+              <svg width="12" height="12" viewBox="0 0 12 12" aria-hidden="true" class="pn__arrow pn__arrow--back"><path d="M11 6H2M5.5 2 1.5 6l4 4" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="square"/></svg>
+              Newer entry
+            </span>
+            <span class="pn__title">{newer.data.title}</span>
+            <span class="pn__meta">
+              <time datetime={iso(newer.data.date)}>{iso(newer.data.date)}</time>
+              <span class="post__sep" aria-hidden="true">/</span>
+              {newer.data.category}
+            </span>
+          </a>
+        ) : (
+          <div class="pn__item card pn__item--none hatch">
+            <span class="pn__label">Newer entry</span>
+            <span class="pn__none">This is the most recent entry.</span>
+          </div>
+        )}
+
+        {older ? (
+          <a href={`/insights/${older.id}/`} class="pn__item card card--hover pn__item--older">
+            <span class="pn__label">
+              Older entry
+              <svg width="12" height="12" viewBox="0 0 12 12" aria-hidden="true" class="pn__arrow"><path d={arrow} fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="square"/></svg>
+            </span>
+            <span class="pn__title">{older.data.title}</span>
+            <span class="pn__meta">
+              <time datetime={iso(older.data.date)}>{iso(older.data.date)}</time>
+              <span class="post__sep" aria-hidden="true">/</span>
+              {older.data.category}
+            </span>
+          </a>
+        ) : (
+          <div class="pn__item card pn__item--none hatch">
+            <span class="pn__label">Older entry</span>
+            <span class="pn__none">This is the first entry.</span>
+          </div>
+        )}
+      </nav>
+
+      <div class="btn-row pn__all">
+        <a href="/insights/" class="link-arrow">
+          Every entry
+          <svg width="12" height="12" viewBox="0 0 12 12" aria-hidden="true"><path d={arrow} fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="square"/></svg>
+        </a>
+      </div>
+    </div>
+  </section>
+</Base>
+
+<style>
+  /* ---- Header ----
+     Centred over a full-width cover. The old header was left-aligned inside
+     the wide wrap, which left the right half of a 1440px screen empty beside
+     a 60rem title and read as a broken column rather than as a margin. */
+  .post__head {
+    position: relative;
+    padding-block: clamp(2.5rem, 1.6rem + 3.5vw, 4.5rem) clamp(2rem, 1.4rem + 2.5vw, 3rem);
+    overflow: clip;
+    text-align: center;
+  }
+  .post__bloom {
+    inline-size: min(46rem, 92vw);
+    block-size: 26rem;
+    inset-block-start: -14rem;
+    inset-inline-start: 50%;
+    translate: -50% 0;
+  }
+  .post__back {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--sp-2);
+    font-family: var(--font-mono);
+    font-size: var(--fs-2xs);
+    font-weight: 600;
+    letter-spacing: var(--tr-label);
+    text-transform: uppercase;
+    color: var(--c-ink-2);
+    transition: color var(--dur-2) var(--ease-out), gap var(--dur-2) var(--ease-out);
+  }
+  .post__back:hover { color: var(--c-signal); gap: var(--sp-3); }
+
+  .post__back { align-self: center; }
+
+  .post__kicker {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+    gap: var(--sp-3);
+    margin-block-start: var(--sp-6);
+    font-family: var(--font-mono);
+    font-size: var(--fs-2xs);
+    letter-spacing: var(--tr-label);
+    text-transform: uppercase;
+    color: var(--c-ink-2);
+  }
+  .post__cat { display: inline-flex; align-items: center; gap: var(--sp-2); }
+  .post__sep { color: var(--c-ink-4); }
+
+  /* One notch under the page heroes: an article title should not out-shout
+     the landing pages, and at 52rem it holds two lines at every width. */
+  .post__title {
+    margin: var(--sp-4) auto 0;
+    max-width: 52rem;
+    font-size: clamp(1.875rem, 1.05rem + 3.6vw, 3.5rem);
+    line-height: 1.08;
+    letter-spacing: var(--tr-display);
+    font-weight: 500;
+    text-wrap: balance;
+  }
+  .post__desc {
+    margin: var(--sp-5) auto 0;
+    max-width: 44rem;
+    font-size: var(--fs-lg);
+    line-height: var(--lh-relaxed);
+    color: var(--c-ink-2);
+    text-wrap: pretty;
+  }
+  .post__tags { margin-block-start: var(--sp-6); justify-content: center; }
+
+  /* ---- Cover ----
+     Full container width, sitting on the seam between the header and the body.
+     It is what makes the page read as an article rather than as a document. */
+  .cover { margin: 0; }
+  .cover__img {
+    display: block;
+    inline-size: 100%;
+    block-size: auto;
+    aspect-ratio: 2 / 1;
+    object-fit: cover;
+    border: 1px solid var(--c-line-2);
+    border-radius: var(--r-3);
+    background: var(--c-panel);
+  }
+  .cover__cap {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--sp-2) var(--sp-4);
+    margin-block-start: var(--sp-4);
+    font-family: var(--font-mono);
+    font-size: var(--fs-2xs);
+    line-height: var(--lh-relaxed);
+  }
+  .cover__k {
+    flex: none;
+    letter-spacing: var(--tr-label);
+    text-transform: uppercase;
+    color: var(--c-signal-text);
+  }
+  .cover__v { color: var(--c-ink-3); letter-spacing: var(--tr-wide); }
+
+  /* ---- Layout ----
+     Fixed measure plus a fixed rail, centred as a pair. The old split gave the
+     sidebar 42% of a 1472px container to hold a 355px card, so the page had
+     dead space on both sides of the reading column at once. */
+  .post__main { padding-block-start: clamp(2.5rem, 1.6rem + 3vw, 4rem); }
+  .post__grid { display: grid; gap: clamp(2rem, 1rem + 3vw, 4rem); }
+  .post__body { max-width: 44rem; }
+  .post__rail { display: flex; flex-direction: column; gap: var(--sp-6); }
+  .post__rail-cta {
+    padding-block-start: var(--sp-5);
+    border-block-start: 1px solid var(--c-line);
+  }
+
+  @media (min-width: 64em) {
+    .post__grid {
+      grid-template-columns: minmax(0, 44rem) 15rem;
+      justify-content: center;
+      align-items: start;
+    }
+    .post__rail {
+      position: sticky;
+      top: calc(var(--header-h) + var(--sp-6));
+      /* Long entries have a ten-item contents list; on a short laptop screen
+         that runs past the fold, so the rail scrolls on its own. */
+      max-block-size: calc(100svh - var(--header-h) - var(--sp-8));
+      overflow-y: auto;
+      scrollbar-width: thin;
+    }
+  }
+  /* Below the split the contents list is a wall of links between the reader
+     and the article they already chose. The article comes first. */
+  @media (max-width: 63.99em) {
+    .post__rail { order: 2; }
+    .post__body { order: 1; }
+  }
+
+  /* ---- Contents ---- */
+  .toc__title {
+    font-family: var(--font-mono);
+    font-size: var(--fs-2xs);
+    font-weight: 500;
+    letter-spacing: var(--tr-label);
+    text-transform: uppercase;
+    color: var(--c-ink-3);
+    padding-block-end: var(--sp-3);
+    border-block-end: 1px solid var(--c-line);
+  }
+  .toc__list { display: grid; gap: 0; margin: 0; padding: 0; list-style: none; }
+  .toc__link {
+    display: flex;
+    align-items: baseline;
+    gap: var(--sp-3);
+    padding-block: var(--sp-3);
+    border-block-end: 1px solid var(--c-line);
+    font-size: var(--fs-sm);
+    line-height: var(--lh-snug);
+    color: var(--c-ink-2);
+    transition: color var(--dur-2) var(--ease-out);
+  }
+  .toc__link:hover { color: var(--c-signal); }
+  .toc__link:hover .toc__n { color: var(--c-signal); }
+  .toc__n { flex: none; transition: color var(--dur-2) var(--ease-out); }
+  .toc__text { text-wrap: pretty; }
+
+  /* ---- Prev / next ---- */
+  .post__more-title {
+    font-family: var(--font-mono);
+    font-size: var(--fs-2xs);
+    font-weight: 500;
+    letter-spacing: var(--tr-label);
+    text-transform: uppercase;
+    color: var(--c-ink-3);
+    padding-block-end: var(--sp-4);
+    border-block-end: 1px solid var(--c-line);
+  }
+
+  .pn {
+    display: grid;
+    gap: var(--sp-4);
+    grid-template-columns: minmax(0, 1fr);
+    margin-block-start: var(--sp-6);
+  }
+  @media (min-width: 48em) { .pn { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+
+  .pn__item { display: flex; flex-direction: column; gap: var(--sp-3); }
+  @media (min-width: 48em) {
+    .pn__item--older { text-align: right; align-items: flex-end; }
+  }
+
+  .pn__label {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--sp-2);
+    font-family: var(--font-mono);
+    font-size: var(--fs-2xs);
+    letter-spacing: var(--tr-label);
+    text-transform: uppercase;
+    color: var(--c-ink-3);
+    transition: color var(--dur-2) var(--ease-out);
+  }
+  a.pn__item:hover .pn__label { color: var(--c-signal); }
+  .pn__arrow { transition: transform var(--dur-2) var(--ease-out); }
+  a.pn__item:hover .pn__arrow { transform: translateX(3px); }
+  a.pn__item:hover .pn__arrow--back { transform: translateX(-3px); }
+
+  .pn__title {
+    font-size: var(--fs-md);
+    font-weight: 500;
+    letter-spacing: var(--tr-tight);
+    line-height: var(--lh-snug);
+    color: var(--c-ink);
+    text-wrap: pretty;
+  }
+  .pn__meta {
+    display: inline-flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--sp-2);
+    margin-block-start: auto;
+    padding-block-start: var(--sp-3);
+    font-family: var(--font-mono);
+    font-size: var(--fs-2xs);
+    letter-spacing: var(--tr-wide);
+    color: var(--c-ink-2);
+  }
+  .pn__none { font-size: var(--fs-sm); color: var(--c-ink-2); line-height: var(--lh-relaxed); }
+
+  .pn__all { margin-block-start: var(--sp-6); }
+</style>

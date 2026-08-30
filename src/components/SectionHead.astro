@@ -1,0 +1,28 @@
+---
+interface Props {
+  eyebrow: string;
+  title: string;
+  lede?: string;
+  /** Stacks centred instead of left-aligned. */
+  center?: boolean;
+  /** Renders the title at display-3 instead of display-2. */
+  small?: boolean;
+  as?: 'h1' | 'h2' | 'h3';
+  id?: string;
+}
+const { eyebrow, title, lede, center = false, small = false, as: Tag = 'h2', id } = Astro.props;
+---
+<div class:list={['sh', center && 'sh--center']}>
+  <p class:list={['eyebrow', center && 'eyebrow--center']}>{eyebrow}</p>
+  <Tag id={id} class={small ? 'display-3' : 'display-2'}>
+    <Fragment set:html={title} />
+  </Tag>
+  {lede && <p class="lede sh__lede"><Fragment set:html={lede} /></p>}
+</div>
+
+<style>
+  .sh { max-width: 56rem; }
+  .sh--center { margin-inline: auto; text-align: center; }
+  .sh--center .sh__lede { margin-inline: auto; }
+  .sh__lede { margin-block-start: var(--sp-5); }
+</style>

@@ -1,0 +1,177 @@
+---
+import { DELIVERABLES } from '../data/home.mjs';
+
+/**
+ * What a client owns at the end: five things a run produces, and five things
+ * that come with the build. Moved off the home page so the ownership argument
+ * sits with the rest of the system detail rather than competing with it.
+ */
+interface Props { cta?: { label: string; href: string } }
+const { cta = DELIVERABLES.cta } = Astro.props;
+---
+
+<section class="section get" aria-labelledby="get-title">
+  <div class="wrap wrap--wide">
+    <h2 id="get-title" class="get__title">What the system hands you.</h2>
+    <p class="get__lede">{DELIVERABLES.lede}</p>
+
+    <!-- Two matched cards, each numbered 01–05 in its own right: the blocks
+         are two different kinds of thing, so a continuous 01–10 run implied a
+         single list split across a gap. -->
+    <div class="get__cards">
+      {[DELIVERABLES.produces, DELIVERABLES.comes].map((block) => (
+        <article class="get__card ticked">
+          <div class="get__bar">
+            <span class="get__bar-label">
+              <span class="dot dot--done" aria-hidden="true"></span>{block.label}
+            </span>
+            <span class="get__bar-range">01–{String(block.items.length).padStart(2, '0')}</span>
+          </div>
+
+          <ul role="list" class="get__list">
+            {block.items.map((it, i) => (
+              <li class:list={['get__item', it.feature && 'get__item--lead']}>
+                <span class="get__n">{String(i + 1).padStart(2, '0')}</span>
+                <span class="get__body">
+                  <span class="get__t">{it.t}</span>
+                  <span class="get__d">{it.d}</span>
+                </span>
+              </li>
+            ))}
+          </ul>
+        </article>
+      ))}
+    </div>
+
+    <div class="get__foot">
+      <p class="get__hook">{DELIVERABLES.hook}</p>
+      <a href={cta.href} class="btn btn--primary get__cta">
+        {cta.label}
+        <svg class="btn__arrow" width="12" height="12" viewBox="0 0 12 12" aria-hidden="true"><path d="M1 6h9M6.5 2 10.5 6l-4 4" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="square"/></svg>
+      </a>
+    </div>
+  </div>
+</section>
+
+<style>
+/* ========================================================= WHAT YOU GET */
+.get { padding-block: clamp(3rem, 1.8rem + 3.6vw, 4.75rem); }
+
+.get__title {
+  margin-inline: auto;
+  font-size: var(--fs-section);
+  line-height: var(--lh-snug);
+  letter-spacing: var(--tr-display);
+  font-weight: 600;
+  text-align: center;
+  text-wrap: balance;
+}
+.get__lede {
+  margin: var(--sp-5) auto 0;
+  max-width: 52rem;
+  font-size: var(--fs-md);
+  line-height: var(--lh-relaxed);
+  color: var(--c-ink-2);
+  text-align: center;
+  text-wrap: pretty;
+}
+
+/* Equal halves, equal height. */
+.get__cards {
+  display: grid;
+  gap: var(--sp-4);
+  margin-block-start: clamp(2rem, 1.4rem + 2vw, 3rem);
+  grid-template-columns: minmax(0, 1fr);
+  align-items: stretch;
+}
+@media (min-width: 62em) { .get__cards { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+
+.get__card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  border: 1px solid var(--c-line-signal);
+  border-radius: var(--r-2);
+  background:
+    radial-gradient(ellipse 100% 55% at 50% 0%, var(--c-signal-wash), transparent 70%),
+    linear-gradient(180deg, var(--c-sheen), transparent 40%),
+    var(--c-panel);
+  box-shadow: var(--sh-lift);
+  overflow: hidden;
+}
+
+.get__bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sp-4);
+  padding: var(--sp-3) clamp(1rem, 0.8rem + 0.9vw, 1.5rem);
+  border-block-end: 1px solid var(--c-line-signal);
+  background: var(--c-signal-wash);
+  font-family: var(--font-mono);
+  font-size: var(--fs-2xs);
+  letter-spacing: var(--tr-label);
+  text-transform: uppercase;
+}
+.get__bar-label { display: inline-flex; align-items: center; gap: var(--sp-2); color: var(--c-ink); }
+.get__bar-range { color: var(--c-signal); }
+
+.get__list {
+  display: grid;
+  gap: var(--sp-5);
+  padding: clamp(1.25rem, 1rem + 1.2vw, 1.75rem) clamp(1rem, 0.8rem + 0.9vw, 1.5rem);
+}
+
+.get__item {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: var(--sp-3);
+}
+.get__n {
+  font-family: var(--font-mono);
+  font-size: var(--fs-2xs);
+  letter-spacing: var(--tr-label);
+  /* --c-ink-3 (4.5:1 here), not --c-ink-4 — these convey order. */
+  color: var(--c-ink-3);
+  padding-block-start: 0.28em;
+}
+.get__body { display: grid; gap: var(--sp-1); }
+.get__t {
+  font-size: var(--fs-md);
+  line-height: var(--lh-snug);
+  letter-spacing: var(--tr-normal);
+  color: var(--c-ink);
+  text-wrap: pretty;
+}
+.get__d {
+  font-size: var(--fs-sm);
+  line-height: var(--lh-relaxed);
+  color: var(--c-ink-2);
+  text-wrap: pretty;
+}
+
+/* Kept modest so the two cards stay matched, but this is still the strongest
+   claim on the page and should not read as one bullet among five. */
+.get__item--lead .get__t { font-size: var(--fs-lg); font-weight: 500; letter-spacing: var(--tr-tight); }
+.get__item--lead .get__n { color: var(--c-signal); }
+
+/* Same closing pattern as the outcomes and comparison sections. */
+.get__foot {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  gap: var(--sp-4) var(--sp-5);
+  margin-block-start: clamp(2rem, 1.4rem + 2vw, 3rem);
+}
+.get__hook {
+  font-size: var(--fs-lg);
+  line-height: var(--lh-snug);
+  letter-spacing: var(--tr-tight);
+  font-weight: 500;
+  color: var(--c-ink);
+  text-wrap: balance;
+}
+.get__cta { flex: none; }
+</style>

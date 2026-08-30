@@ -1,0 +1,548 @@
+---
+import Base from '../layouts/Base.astro';
+import CloseCta from '../components/CloseCta.astro';
+import FaqSection from '../components/FaqSection.astro';
+import { SITE } from '../site.config.mjs';
+import { SURFACE, POSTURE, RIGHTS, RUNNING, TRUST_FAQ } from '../data/content.mjs';
+import { breadcrumbSchema, faqSchema } from '../lib/schema.mjs';
+
+/* Line glyphs on the house 20x20 grid. `live` is a broadcast mark — a signal
+   going out. `build` is stacked layers with the bottom course dashed, so it
+   reads as assembly still in progress rather than a finished stack. */
+const STAT_ICON = {
+  live: '<circle cx="10" cy="10" r="1.7"/><path d="M6.3 6.3a5.2 5.2 0 0 0 0 7.4M13.7 13.7a5.2 5.2 0 0 0 0-7.4"/><path d="M3.7 3.7a8.9 8.9 0 0 0 0 12.6M16.3 16.3a8.9 8.9 0 0 0 0-12.6"/>',
+  build: '<path d="M10 2.7 16.8 6.3 10 9.9 3.2 6.3z"/><path d="M3.2 10 10 13.6 16.8 10"/><path d="M3.2 13.7 10 17.3 16.8 13.7" stroke-dasharray="2.2 2.2"/>',
+};
+
+/**
+ * Rebuilt around what the system actually does.
+ *
+ * The previous version led on a signed `provenance.json` manifest with an
+ * ed25519 signature, presented as shipping with every asset. That is not what
+ * the build produces, so it has gone: a fabricated technical artefact is the
+ * worst possible thing to put in front of the compliance reviewer this page
+ * exists to satisfy.
+ *
+ * What replaces it is the real and genuinely strong story — a four-integration
+ * data map, a model that is briefed rather than handed the source file, a
+ * publishing layer with no edit or delete power, and licensed music.
+ *
+ * Vendors are named by ROLE only. The AI provider is not to be named on the
+ * site at all; the others are shared with clients on the call along with each
+ * vendor's own privacy terms.
+ */
+---
+
+<Base
+  title="Data privacy, and what the system will not do"
+  description="How the system handles your data: four integrations, a model briefed rather than handed your files, and a publishing layer that cannot edit or delete."
+  schema={[breadcrumbSchema([{ name: 'Trust', href: '/trust/' }]), faqSchema(TRUST_FAQ)]}
+  hideFooterCta
+>
+  <!-- ============================================================ 1. HERO -->
+  <section class="hero grid-bg" aria-labelledby="trust-title">
+    <span class="bloom hero__bloom" aria-hidden="true"></span>
+    <div class="wrap hero__inner">
+      <p class="eyebrow eyebrow--center hero__eyebrow">Privacy &amp; data</p>
+      <h1 id="trust-title" class="hero__title">
+        Four integrations. That is the <span class="hl">whole data map</span>.
+      </h1>
+      <p class="hero__lede">
+        Most AI content setups are a chain of a dozen SaaS trials, each with its own retention
+        policy and its own breach surface. This one talks to four things, your document never
+        leaves the machine it sits on, and nothing that publishes can edit or delete what went
+        out.
+      </p>
+      <div class="btn-row hero__actions">
+        <a href="/contact/" class="btn btn--primary btn--lg">
+          Book a build call
+          <svg class="btn__arrow" width="12" height="12" viewBox="0 0 12 12" aria-hidden="true"><path d="M1 6h9M6.5 2 10.5 6l-4 4" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="square"/></svg>
+        </a>
+        <a href="#data" class="btn btn--ghost btn--lg">See the data map</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========================================================= 2. SURFACE -->
+  <section class="section section--ruled" id="data" aria-labelledby="surf-title">
+    <div class="wrap wrap--wide">
+      <h2 id="surf-title" class="sec__title">Everything it talks to, <span class="hl">in full</span>.</h2>
+      <p class="sec__lede">
+        Four integrations, each doing one job, each constrained at the point it is wired in.
+        We name every vendor on the call and hand you their own privacy terms with them.
+      </p>
+
+      <ol role="list" class="surf__list">
+        {SURFACE.map((s) => (
+          <li class="surf__item">
+            <span class="surf__n">{s.n}</span>
+            <div class="surf__body">
+              <h3 class="surf__k">{s.k}</h3>
+              <p class="surf__d">{s.d}</p>
+              <p class="surf__limit">
+                <svg class="surf__lock" width="12" height="12" viewBox="0 0 12 12" aria-hidden="true"><path d="M3.2 5.4V4a2.8 2.8 0 0 1 5.6 0v1.4" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/><rect x="2.4" y="5.4" width="7.2" height="4.4" rx="1" fill="none" stroke="currentColor" stroke-width="1.3"/></svg>
+                {s.limit}
+              </p>
+            </div>
+          </li>
+        ))}
+      </ol>
+
+      <p class="surf__foot">
+        That is the complete list. There is no fifteenth tool holding a copy of your brand voice
+        because somebody once started a trial with it.
+      </p>
+      <a href="/system/" class="link sec__go">
+        See what each one does in a run
+        <svg width="10" height="10" viewBox="0 0 12 12" aria-hidden="true"><path d="M1 6h9M6.5 2 10.5 6l-4 4" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="square"/></svg>
+      </a>
+    </div>
+  </section>
+
+  <!-- ========================================================= 3. POSTURE -->
+  <section class="section section--raised" id="posture" aria-labelledby="post-title">
+    <div class="wrap wrap--wide">
+      <h2 id="post-title" class="sec__title">What the system <span class="hl">will not do</span>.</h2>
+      <p class="sec__lede">
+        Constraints are built in at the integration layer, not left as house rules somebody has
+        to remember on a busy week.
+      </p>
+
+      <ul role="list" class="post">
+        {POSTURE.map((p) => (
+          <li class="post__card">
+            <h3 class="post__t">{p.t}</h3>
+            <p class="post__d">{p.d}</p>
+          </li>
+        ))}
+      </ul>
+
+      <a href="/how-we-build/" class="link sec__go">
+        Where these constraints get built in
+        <svg width="10" height="10" viewBox="0 0 12 12" aria-hidden="true"><path d="M1 6h9M6.5 2 10.5 6l-4 4" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="square"/></svg>
+      </a>
+    </div>
+  </section>
+
+  <!-- ========================================================== 4. RIGHTS -->
+  <section class="section" id="rights" aria-labelledby="rights-title">
+    <div class="wrap wrap--wide">
+      <h2 id="rights-title" class="sec__title">Rights, licensing and <span class="hl">AI Act disclosure</span>.</h2>
+      <p class="sec__lede">
+        The questions a client or a platform reviewer actually asks, answered before they ask.
+      </p>
+
+      <dl class="rights">
+        {RIGHTS.map((r) => (
+          <div class="rights__row">
+            <dt class="rights__k">{r.k}</dt>
+            <dd class="rights__d">{r.d}</dd>
+          </div>
+        ))}
+      </dl>
+
+      <!-- Stated plainly because the alternative is a reader assuming it. -->
+      <p class="rights__foot">
+        {SITE.name} holds no SOC 2 or ISO 27001 certification, and this page is a description of
+        how the build works rather than legal advice. Have your own counsel read it against your
+        obligations.
+      </p>
+    </div>
+  </section>
+
+  <!-- =========================================================== 5. PROOF -->
+  <!-- The demo was one stat in a row of three. For a sceptical reader it is the
+       most disarming thing on the page, so it leads its own section now. -->
+  <section class="section section--raised" aria-labelledby="proof-title">
+    <div class="wrap wrap--wide">
+      <h2 id="proof-title" class="sec__title">Watch it run <span class="hl">before you commit</span>.</h2>
+      <p class="sec__lede">
+        You do not have to take any of this on trust. There are two ways to see the system
+        working on real material before you spend anything on a build — and
+        <a href="/insights/oap-client-production-review/" class="link">four months of measured
+        results</a> from an account we ran both ways, published in full.
+      </p>
+
+      <ul role="list" class="try">
+        <li class="try__card try__card--lead">
+          <p class="meta try__k"><span class="dot dot--done" aria-hidden="true"></span>Option 01</p>
+          <h3 class="try__t">A live demo, on a real run</h3>
+          <p class="try__d">
+            We take a document and run it end to end in front of you: script, voiceover, video,
+            thumbnails, descriptions and the scheduled queue. Not slides, not a recording. You
+            see how it is working at each stage, not just the files at the end, and you can ask
+            what happens at any of them while it is on screen.
+          </p>
+          <a href="/contact/" class="link try__go">
+            Book a free demo
+            <svg width="10" height="10" viewBox="0 0 12 12" aria-hidden="true"><path d="M1 6h9M6.5 2 10.5 6l-4 4" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="square"/></svg>
+          </a>
+        </li>
+        <li class="try__card">
+          <p class="meta try__k"><span class="dot dot--queued" aria-hidden="true"></span>Option 02</p>
+          <h3 class="try__t">Start on the monthly plan</h3>
+          <p class="try__d">
+            Have us produce and publish on your own brand as a
+            <a href="/engagements/" class="link">managed service</a>. You get the output without
+            a build, and if it earns its place you commission your own system later. The monthly
+            plans are <a href="/pricing/" class="link">published in full</a>.
+          </p>
+        </li>
+      </ul>
+
+      <ul role="list" class="proof">
+        <li class="proof__stat">
+          <span class="proof__ico" aria-hidden="true">
+            <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor"
+              stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" set:html={STAT_ICON.live} />
+          </span>
+          <p class="proof__v">{RUNNING.live}</p>
+          <p class="proof__k">Systems live with clients today</p>
+        </li>
+        <li class="proof__stat">
+          <span class="proof__ico" aria-hidden="true">
+            <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor"
+              stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" set:html={STAT_ICON.build} />
+          </span>
+          <p class="proof__v">{RUNNING.building}</p>
+          <p class="proof__k">More in build right now</p>
+        </li>
+      </ul>
+
+      <p class="try__foot">
+        Running software, not a proposal. Whichever route you take, you can build your own
+        system whenever you decide to.
+      </p>
+    </div>
+  </section>
+
+  <!-- ============================================================= 6. FAQ -->
+  <FaqSection
+    items={TRUST_FAQ}
+    eyebrow="Before you ask"
+    title="The questions a [reviewer asks first]."
+  />
+
+  <!-- =========================================================== 7. CLOSE -->
+  <CloseCta
+    title="Bring your data questions [to the call]."
+    body="We will name every vendor, show you what leaves your machine and what does not, and run the system in front of you, on a real run rather than slides."
+  />
+</Base>
+
+<style>
+  /* Section-closing links. /system, /how-we-build and /who-its-for all link INTO
+     /trust, but /trust linked back to almost nothing — and its three substance
+     sections (the data map, the constraints, the rights block) ran from 10% to
+     57% of the page with nothing to act on. These sit at the end of the two
+     sections whose obvious next question is answered on another page. */
+  .sec__go {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--sp-2);
+    margin-block-start: var(--sp-5);
+    font-size: var(--fs-sm);
+  }
+  .sec__go svg { flex: none; }
+  @media (pointer: coarse) { .sec__go { min-block-size: 2.75rem; } }
+
+  /* Option 01 described the free demo and gave the reader no way to ask for it —
+     the only card on the page with nothing clickable in it, and the stronger of
+     the two offers. /contact/ is the right destination: its own H1 is "Book a
+     build call and a free demo". Option 02 keeps its inline "managed service"
+     link rather than gaining a second route to the same page. */
+  .try__go {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--sp-2);
+    margin-block-start: auto;
+    padding-block-start: var(--sp-4);
+    align-self: flex-start;
+    font-size: var(--fs-sm);
+  }
+  .try__go svg { flex: none; }
+  @media (pointer: coarse) { .try__go { min-block-size: 2.75rem; } }
+
+  /* ================================================================ HERO */
+  .hero {
+    position: relative;
+    padding-block: clamp(3rem, 1.4rem + 5.6vw, 6.5rem) clamp(2.5rem, 1.6rem + 3vw, 4rem);
+    overflow: clip;
+    overflow-clip-margin: 6px;
+    text-align: center;
+  }
+  .hero__bloom {
+    inline-size: min(48rem, 94vw);
+    block-size: 26rem;
+    inset-block-start: -8rem;
+    inset-inline-start: 50%;
+    translate: -50% 0;
+  }
+  .hero__inner { position: relative; z-index: 1; }
+  .hero__eyebrow { justify-content: center; }
+  .hero__title { margin-block-start: var(--sp-6); }
+  .hero__lede { margin-block-start: var(--sp-5); }
+  .hero__actions { justify-content: center; margin-block-start: var(--sp-7); }
+
+  /* ============================================================= SURFACE */
+  .surf__list {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 0;
+    list-style: none;
+    margin: clamp(2rem, 1.4rem + 2vw, 3rem) 0 0;
+    padding: 0;
+  }
+  @media (min-width: 62em) { .surf__list { grid-template-columns: repeat(2, minmax(0, 1fr)); column-gap: var(--sp-6); } }
+
+  .surf__item {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    gap: var(--sp-4);
+    align-items: start;
+    padding-block: var(--sp-5);
+    border-block-start: 1px solid var(--c-line);
+  }
+  .surf__n {
+    font-family: var(--font-mono);
+    font-size: var(--fs-2xs);
+    letter-spacing: var(--tr-label);
+    color: var(--c-signal-text);
+    font-variant-numeric: tabular-nums;
+    padding-block-start: var(--nudge-1);
+  }
+  .surf__body { min-width: 0; }
+  .surf__k {
+    font-size: var(--fs-md);
+    line-height: var(--lh-snug);
+    letter-spacing: var(--tr-display);
+    font-weight: 600;
+    color: var(--c-ink);
+    text-wrap: balance;
+  }
+  .surf__d {
+    margin-block-start: var(--sp-2);
+    font-size: var(--fs-sm);
+    line-height: var(--lh-relaxed);
+    color: var(--c-ink-2);
+    text-wrap: pretty;
+  }
+  /* The constraint is the point of each row, so it gets its own treatment
+     rather than being buried at the end of the description. */
+  .surf__limit {
+    display: grid;
+    grid-template-columns: 0.75rem minmax(0, 1fr);
+    gap: var(--sp-2);
+    align-items: start;
+    margin-block-start: var(--sp-3);
+    font-family: var(--font-mono);
+    /* --fs-2xs floors at 11px and is the micro-label token used by .eyebrow,
+       .index and .chip — one to three words each. This carries a full sentence
+       ('Cannot delete. Cannot edit anything without your say-so.'), so it takes
+       the body-mono step up instead. */
+    font-size: var(--fs-xs);
+    line-height: var(--lh-relaxed);
+    letter-spacing: var(--tr-wide);
+    color: var(--c-signal-text);
+  }
+  .surf__lock { margin-block-start: 0.15rem; }
+  .surf__foot {
+    margin: clamp(2rem, 1.4rem + 2vw, 2.75rem) auto 0;
+    max-width: 46rem;
+    font-size: var(--fs-sm);
+    line-height: var(--lh-relaxed);
+    color: var(--c-ink-2);
+    text-align: center;
+    text-wrap: pretty;
+  }
+
+  /* ============================================================= POSTURE */
+  /* Flex rather than grid: eight cards across three columns leaves a row of
+     two, and a grid strands them against the left edge. Wrapping flex items
+     with justify-content:center puts that short row in the middle. The basis
+     subtracts the gaps so the columns still line up exactly. */
+  .post {
+    --post-gap: var(--sp-4);
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: var(--post-gap);
+    list-style: none;
+    margin: clamp(2rem, 1.4rem + 2vw, 3rem) 0 0;
+    padding: 0;
+  }
+  .post__card { flex: 1 1 100%; min-width: 0; }
+  @media (min-width: 52em) {
+    .post__card { flex: 0 1 calc((100% - var(--post-gap)) / 2); }
+  }
+  @media (min-width: 82em) {
+    .post__card { flex: 0 1 calc((100% - 2 * var(--post-gap)) / 3); }
+  }
+  .post__card {
+    padding: clamp(1.25rem, 1rem + 1.2vw, 1.625rem);
+    border: 1px solid var(--c-line-2);
+    border-radius: var(--r-2);
+    /* .section--raised resolves to --c-panel, so the card lifts a step. */
+    background: linear-gradient(180deg, rgb(255 255 255 / 2.2%) 0%, transparent 42%), var(--c-panel-2);
+  }
+  .post__t {
+    font-size: var(--fs-md);
+    line-height: var(--lh-snug);
+    letter-spacing: var(--tr-display);
+    font-weight: 600;
+    color: var(--c-ink);
+    text-wrap: balance;
+  }
+  .post__d {
+    margin-block-start: var(--sp-3);
+    font-size: var(--fs-sm);
+    line-height: var(--lh-relaxed);
+    color: var(--c-ink-2);
+    text-wrap: pretty;
+  }
+
+  /* ============================================================== RIGHTS */
+  .rights {
+    margin: clamp(2rem, 1.4rem + 2vw, 3rem) auto 0;
+    max-width: 54rem;
+  }
+  .rights__row {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--sp-2);
+    padding-block: var(--sp-5);
+    border-block-start: 1px solid var(--c-line);
+  }
+  @media (min-width: 46em) {
+    .rights__row { grid-template-columns: 10rem minmax(0, 1fr); gap: var(--sp-5); align-items: start; }
+  }
+  .rights__k {
+    font-family: var(--font-mono);
+    font-size: var(--fs-2xs);
+    letter-spacing: var(--tr-label);
+    text-transform: uppercase;
+    color: var(--c-signal-text);
+  }
+  .rights__d {
+    margin: 0;
+    font-size: var(--fs-sm);
+    line-height: var(--lh-relaxed);
+    color: var(--c-ink-2);
+    text-wrap: pretty;
+  }
+  .rights__foot {
+    margin: clamp(2rem, 1.4rem + 2vw, 2.75rem) auto 0;
+    max-width: 46rem;
+    font-size: var(--fs-xs);
+    line-height: var(--lh-relaxed);
+    color: var(--c-ink-3);
+    text-align: center;
+    text-wrap: pretty;
+  }
+
+  /* ================================================================= TRY */
+  .try {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--sp-4);
+    list-style: none;
+    margin: clamp(2rem, 1.4rem + 2vw, 3rem) 0 0;
+    padding: 0;
+  }
+  @media (min-width: 62em) { .try { grid-template-columns: 1.15fr 1fr; gap: var(--sp-5); } }
+  .try__card {
+    /* Flex column so .try__go's auto top margin has free space to consume and
+       actually pins to the card bottom. The same declaration was dead on
+       /who-its-for because its card was a plain list-item. */
+    display: flex;
+    flex-direction: column;
+    padding: clamp(1.375rem, 1.1rem + 1.3vw, 1.875rem);
+    border: 1px solid var(--c-line-2);
+    border-radius: var(--r-2);
+    background: linear-gradient(180deg, rgb(255 255 255 / 2.2%) 0%, transparent 42%), var(--c-panel-2);
+  }
+  /* The demo is the one we want taken up, so it carries the accent. */
+  .try__card--lead {
+    border-color: var(--c-line-signal);
+    background:
+      radial-gradient(ellipse 90% 110% at 0% 0%, var(--c-signal-wash) 0%, transparent 62%),
+      var(--c-panel-2);
+  }
+  .try__k { display: inline-flex; align-items: center; gap: var(--sp-2); }
+  .try__t {
+    margin-block-start: var(--sp-3);
+    font-size: var(--fs-lg);
+    line-height: var(--lh-snug);
+    letter-spacing: var(--tr-display);
+    font-weight: 600;
+    color: var(--c-ink);
+    text-wrap: balance;
+  }
+  .try__d {
+    margin-block-start: var(--sp-3);
+    font-size: var(--fs-sm);
+    line-height: var(--lh-relaxed);
+    color: var(--c-ink-2);
+    text-wrap: pretty;
+  }
+  .try__foot {
+    margin: clamp(1.5rem, 1.2rem + 1.4vw, 2rem) auto 0;
+    max-width: 44rem;
+    font-family: var(--font-mono);
+    font-size: var(--fs-xs);
+    line-height: var(--lh-relaxed);
+    letter-spacing: var(--tr-wide);
+    color: var(--c-signal-text);
+    text-align: center;
+    text-wrap: pretty;
+  }
+
+  /* =============================================================== PROOF */
+  .proof {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--sp-4);
+    list-style: none;
+    margin: clamp(2rem, 1.4rem + 2vw, 3rem) 0 0;
+    padding: 0;
+  }
+  @media (min-width: 46em) { .proof { grid-template-columns: repeat(2, minmax(0, 1fr)); max-width: 40rem; margin-inline: auto; } }
+  .proof__stat {
+    padding: clamp(1.25rem, 1rem + 1.2vw, 1.75rem);
+    border: 1px solid var(--c-line-signal);
+    border-radius: var(--r-2);
+    background:
+      radial-gradient(ellipse 90% 120% at 0% 0%, var(--c-signal-wash) 0%, transparent 62%),
+      var(--c-panel-2);
+    text-align: center;
+  }
+  .proof__ico {
+    display: grid;
+    place-items: center;
+    inline-size: 2.5rem;
+    block-size: 2.5rem;
+    margin-inline: auto;
+    margin-block-end: var(--sp-4);
+    border-radius: 50%;
+    border: 1px solid var(--c-line-signal);
+    background: var(--c-panel-3);
+    color: var(--c-signal);
+  }
+  .proof__ico svg { display: block; }
+  .proof__v {
+    font-family: var(--font-mono);
+    font-size: var(--fs-3xl);
+    line-height: 1;
+    letter-spacing: var(--tr-tight);
+    font-weight: 600;
+    color: var(--c-signal-text);
+    font-variant-numeric: tabular-nums;
+  }
+  .proof__k {
+    margin-block-start: var(--sp-3);
+    font-size: var(--fs-sm);
+    line-height: var(--lh-relaxed);
+    color: var(--c-ink-2);
+    text-wrap: pretty;
+  }
+</style>
