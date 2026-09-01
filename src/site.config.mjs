@@ -121,6 +121,22 @@ export const SITE = {
   googleAnalyticsId: 'G-MQ5QKX7WCM',
   googleAnalyticsRequiresConsent: false,
 
+  /**
+   * Google Search Console ownership token.
+   *
+   * Google only asks for this on the home page, but it renders on every page
+   * because the cost is 90 bytes and the failure is silent: verification is
+   * re-checked periodically, and if Google fetches a page without it the
+   * property is UNVERIFIED and Search Console stops reporting. Site-wide also
+   * means it survives verifying a second property later, or Google checking a
+   * URL other than the one it first verified.
+   *
+   * Do not remove it after verification succeeds — that un-verifies the
+   * property. Set to '' only if the Search Console property is being
+   * abandoned.
+   */
+  googleSiteVerification: 'nDfzV_oUHTuZmstdicdXkooo3C2R31eLRdOmOUFVFbs',
+
   /** Privacy, data-rights and cookie-record requests. Kept separate from the
    *  general address so a rights request is not lost in the sales inbox —
    *  GDPR gives us one month to answer one. */

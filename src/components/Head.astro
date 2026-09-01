@@ -69,6 +69,12 @@ gtag('config', '${SITE.googleAnalyticsId}');`}
   </>
 )}
 
+{/* Search Console ownership. Must stay put: Google re-checks periodically and
+    removing it un-verifies the property. */}
+{SITE.googleSiteVerification && (
+  <meta name="google-site-verification" content={SITE.googleSiteVerification} />
+)}
+
 <title>{fullTitle}</title>
 <meta name="description" content={description} />
 {!noindex && <link rel="canonical" href={canonical} />}
