@@ -58,8 +58,18 @@ export default defineConfig({
   trailingSlash: 'ignore',
   integrations: [
     sitemap({
-      /* Both are noindex. A noindex page inside a submitted sitemap is a
-         Search Console coverage error, not a neutral no-op. */
+      /* Two exclusions, two different reasons — they were recorded as one and
+         only half of it was true.
+         /contact/sent/ is noindex, and a noindex page inside a submitted
+         sitemap is a Search Console coverage error, not a neutral no-op.
+
+         /legal/* is NOT noindex. It renders `index, follow` like every other
+         page and is reachable from the footer, so Google will find and index
+         it regardless. Keeping it out of the sitemap is a choice about what
+         this site puts forward, not about what it hides — and while the legal
+         pages still carry their "not reviewed by a lawyer" callout, not
+         nominating them for search is the more careful default. Deleting the
+         /legal/ clause is the whole change if that stops being true. */
       filter: (page) => !page.includes('/legal/') && !page.includes('/contact/sent'),
       changefreq: 'weekly',
       /* Per-article, from frontmatter. Anything without a real content date

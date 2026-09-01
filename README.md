@@ -98,7 +98,10 @@ Each of these looks wrong until you know why, and each has broken before:
   and internal links must all agree.
 - **Design tokens are `--font-mono` / `--font-sans`,** not `--ff-*`. CSS
   variables fail silently, so a typo just renders as inherited type.
-- **`/legal/*` is excluded from the sitemap but is crawlable.** Deliberate.
+- **`/legal/*` is excluded from the sitemap but is crawlable.** Deliberate, and
+  not for the reason the config used to give: those pages render `index, follow`
+  and are linked from the footer, so Google indexes them anyway. Only
+  `/contact/sent/` is excluded for being noindex.
 - **`robots.txt` allows ~20 AI crawlers.** Also deliberate.
 
 ---
