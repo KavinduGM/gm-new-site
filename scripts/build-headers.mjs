@@ -68,10 +68,16 @@ const csp = [
   "default-src 'self'",
   // No 'unsafe-inline': every inline script on the site is hashed above, so an
   // injected one would not run even if the host were compromised.
-  // The analytics tracker is an external script on the CRM host. Everything else
-  // is 'self' plus per-build hashes; this is the only third-party origin allowed
-  // to execute, and it only ever loads after the visitor allows analytics.
-  `script-src 'self' https://crm.groovymark.com ${[...scripts].join(' ')}`,
+  //
+  // Two third-party origins may execute, and no others:
+  //   crm.groovymark.com   — our own tracker, on our own box
+  //   *.googletagmanager.com — GA4's loader, which then pulls its own config
+  //
+  // The googletagmanager wildcard is Google's documented requirement rather
+  // than laziness: gtag.js fetches from region-sharded hosts, so pinning the
+  // single www host breaks measurement in some regions and nowhere else, which
+  // is the worst kind of bug to own — invisible from here.
+  `script-src 'self' https://crm.groovymark.com https://*.googletagmanager.com ${[...scripts].join(' ')}`,
   // style-src-elem is hash-locked. style-src-attr must stay 'unsafe-inline'
   // because the page uses style="--i:N" custom properties for stagger delays,
   // and attributes cannot be hashed. Removing those three attributes in favour
@@ -80,13 +86,21 @@ const csp = [
   "style-src-attr 'unsafe-inline'",
   // Legacy fallback for browsers without the -elem/-attr split.
   "style-src 'self' 'unsafe-inline'",
-  "img-src 'self'",
+  // GA4 still falls back to a pixel beacon when sendBeacon and fetch are both
+  // unavailable, and serves its debug/consent images from the tag manager host.
+  "img-src 'self' https://*.google-analytics.com https://*.googletagmanager.com",
   "media-src 'self'",
   "font-src 'self'",
   // The cookie consent banner posts choices to the CRM and reads the banner
   // config from it. Without this the fetch is blocked by CSP and the banner
   // silently never renders — no error the visitor or we would ever see.
-  "connect-src 'self' https://crm.groovymark.com",
+  //
+  // GA4 needs all three Google hosts. It collects to *.google-analytics.com,
+  // is region-sharded onto *.analytics.google.com, and gtag.js itself calls
+  // back to *.googletagmanager.com. Miss one and hits are dropped only for
+  // some visitors, which looks like low traffic rather than a broken tag.
+  "connect-src 'self' https://crm.groovymark.com https://*.google-analytics.com " +
+    'https://*.analytics.google.com https://*.googletagmanager.com',
   // The contact form posts off-origin; nothing else may.
   // The enquiry form posts to /api/contact on this origin; Formspree is gone.
   "form-action 'self'",

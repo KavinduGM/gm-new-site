@@ -93,6 +93,34 @@ export const SITE = {
   analyticsSrc: 'https://crm.groovymark.com/t.js',
   analyticsRequiresConsent: false,
 
+  /**
+   * Google Analytics 4. Deliberately a SEPARATE switch from the one above,
+   * because the two trackers are not the same kind of thing and should not be
+   * able to move together by accident.
+   *
+   * LeadIQ is ours: it runs on our own box, the data never leaves us, and the
+   * legal pages can defend it on that basis. GA4 is a third party in the United
+   * States. It sets real cookies (_ga, _ga_<id>), Google is a processor with
+   * its own purposes, and it puts the site inside Chapter V transfer territory.
+   * KNOWN AND ACCEPTED: the legal pages have NOT been updated for this, by
+   * decision. legal/privacy.astro still says "There is no Google Analytics"
+   * and "This site sets no cookies", and legal/cookies.astro still says there
+   * are no analytics cookies and no third-party trackers. Those four
+   * statements are false while this ID is set. Anyone reaching for the legal
+   * pages should know that before quoting them.
+   *
+   * Set to '' to remove GA entirely; the tag, its CSP allowances and nothing
+   * else disappear with it, and the legal pages become true again.
+   *
+   * googleAnalyticsRequiresConsent is false today, matching the position taken
+   * for LeadIQ while the product is early. It is the weaker position of the
+   * two: GA4 cookies are not strictly necessary, so in the UK and EEA consent
+   * is the lawful basis, and a live consent banner that GA ignores is harder to
+   * defend than no banner at all. Flip it to true before marketing into either.
+   */
+  googleAnalyticsId: 'G-MQ5QKX7WCM',
+  googleAnalyticsRequiresConsent: false,
+
   /** Privacy, data-rights and cookie-record requests. Kept separate from the
    *  general address so a rights request is not lost in the sales inbox —
    *  GDPR gives us one month to answer one. */

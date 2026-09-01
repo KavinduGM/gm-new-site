@@ -46,6 +46,29 @@ const jsonLd = graph(organizationSchema(), websiteSchema(), ...schema);
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
 
+{/* Google Analytics 4.
+    Google's instruction is "immediately after the <head> element". This is one
+    line lower on purpose: <meta charset> has to be inside the first 1024 bytes
+    or the parser can guess the encoding and re-decode the document, and no
+    analytics tag is worth risking that. Nothing else renders above it, and the
+    tag is async, so it starts fetching before the title is parsed either way.
+
+    Exactly one tag per page — Google counts a second one as a duplicate and
+    double-reports every hit. This component is the only place it appears, and
+    every page renders through it. */}
+{SITE.googleAnalyticsId && !SITE.googleAnalyticsRequiresConsent && (
+  <>
+    <script async src={`https://www.googletagmanager.com/gtag/js?id=${SITE.googleAnalyticsId}`}></script>
+    <script
+      is:inline
+      set:html={`window.dataLayer = window.dataLayer || [];
+function gtag(){dataLayer.push(arguments);}
+gtag('js', new Date());
+gtag('config', '${SITE.googleAnalyticsId}');`}
+    />
+  </>
+)}
+
 <title>{fullTitle}</title>
 <meta name="description" content={description} />
 {!noindex && <link rel="canonical" href={canonical} />}
