@@ -1456,12 +1456,17 @@ export const TIMELINE = [
 /** Two people, and that is the whole company. It was STUDIO.peakStaff; the
  *  system took the rest, which is the same thing we sell and the reason the
  *  count is on the page rather than hidden. Portraits are cropped from their
- *  own cards. */
+ *  own cards.
+ *
+ *  linkedin is optional: about.astro renders the icon only for entries that
+ *  have one, so a third person without a profile is a missing icon rather
+ *  than a dead link. */
 export const TEAM = [
   {
     name: 'Kavindu',
     role: 'Founder & CEO',
     img: '/team/kavindu.webp',
+    linkedin: 'https://www.linkedin.com/in/kavindu-gamlath/',
     does: 'Scopes your build, runs the pipeline, and is on the call',
     bio:
       'Meta Certified Social Media Manager, entrepreneur and researcher. Has worked with clients ' +
@@ -1472,6 +1477,7 @@ export const TEAM = [
     name: 'Rangaa',
     role: 'CTO & Senior Software Engineer',
     img: '/team/rangaa.webp',
+    linkedin: 'https://www.linkedin.com/in/ranga-cooray-393652206/',
     does: 'Architects and builds the system that gets handed to you',
     bio:
       'Experienced software engineer with over six years in industry. Leads the technical ' +

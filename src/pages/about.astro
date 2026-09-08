@@ -3,6 +3,7 @@ import Base from '../layouts/Base.astro';
 import { SITE } from '../site.config.mjs';
 import { ENGAGEMENTS, STUDIO, TIMELINE, TEAM, RUNNING } from '../data/content.mjs';
 import { breadcrumbSchema } from '../lib/schema.mjs';
+import { BRAND } from '../lib/brand-icons.mjs';
 
 /* Engagement names are read from shared content so the two cards in the last
    section can never drift from /engagements. */
@@ -333,7 +334,20 @@ const arrow = 'M1 6h9M6.5 2 10.5 6l-4 4';
               decoding="async"
             />
             <div class="team__text">
-              <h3 class="team__name">{m.name}</h3>
+              <div class="team__head">
+                <h3 class="team__name">{m.name}</h3>
+                {m.linkedin && (
+                  <a
+                    class="team__li"
+                    href={m.linkedin}
+                    rel="noopener noreferrer me"
+                    target="_blank"
+                    aria-label={`${m.name} on LinkedIn (opens in a new tab)`}
+                  >
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" set:html={BRAND.linkedin} />
+                  </a>
+                )}
+              </div>
               <p class="team__role">{m.role}</p>
               <p class="team__does">{m.does}</p>
               <p class="team__bio">{m.bio}</p>
@@ -708,11 +722,43 @@ const arrow = 'M1 6h9M6.5 2 10.5 6l-4 4';
     border-block-end: 1px solid var(--c-line);
   }
   .team__text { display: flex; flex-direction: column; gap: var(--sp-2); padding: var(--sp-5); }
+  /* Name and profile link share a row. Centred, not baseline-aligned: the link
+     is a flex box wrapping an SVG, and an SVG has no baseline to align to —
+     `align-items: baseline` would fall back to the box's bottom edge and hang
+     the icon below the name. */
+  .team__head {
+    display: flex;
+    align-items: center;
+    gap: var(--sp-2);
+  }
   .team__name {
     font-size: var(--fs-base);
     font-weight: 500;
     letter-spacing: var(--tr-normal);
     color: var(--c-ink);
+  }
+  /* An icon link needs an explicit box. 1.5rem is exactly WCAG 2.5.8 Target
+     Size (Minimum, AA); the coarse-pointer rule below gives it real room on
+     touch without pushing the name off its line on a mouse. */
+  .team__li {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    inline-size: 1.5rem;
+    block-size: 1.5rem;
+    flex: none;
+    color: var(--c-ink-3);
+    border: 1px solid transparent;
+    border-radius: var(--r-sm, 4px);
+    transition: color 140ms ease, border-color 140ms ease;
+  }
+  .team__li:hover,
+  .team__li:focus-visible {
+    color: var(--c-signal-text);
+    border-color: var(--c-line-2);
+  }
+  @media (pointer: coarse) {
+    .team__li { inline-size: 2.25rem; block-size: 2.25rem; margin-inline-start: calc(var(--sp-2) * -0.5); }
   }
   .team__role {
     font-family: var(--font-mono);
