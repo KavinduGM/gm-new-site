@@ -1423,6 +1423,22 @@ export const STUDIO = {
      the rest. */
   peakStaff: 12,
   staff: 2,
+  /* Glassdoor. Read off the live page on 2026-09-08: 5.0 overall across 3
+     reviews, 100% would recommend, 100% CEO approval. Category scores are
+     lower than the headline — work/life balance and career opportunities both
+     sit at 4.6 — which is why the page quotes the overall and shows the count
+     beside it. A rating with no n is the kind of number this site does not
+     publish, and three is a number a reader can check in one click.
+
+     A rating moves. If it drops, change the figure here rather than pulling
+     the link: an honest 4.7 next to a real review count is worth more than a
+     silence a reader can find on their own. */
+  glassdoor: {
+    url: 'https://www.glassdoor.com/Reviews/GroovyMark-Reviews-E10436404.htm',
+    rating: '5.0',
+    reviews: 3,
+    verified: '2026-09-08',
+  },
 };
 
 export const TIMELINE = [

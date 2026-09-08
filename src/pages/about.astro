@@ -357,6 +357,22 @@ const arrow = 'M1 6h9M6.5 2 10.5 6l-4 4';
       </ul>
 
       <p class="team__where">
+        <span class="team__where-k">What our team says</span>
+        <span class="team__where-v">
+          The people who have worked here rate us <strong>{STUDIO.glassdoor.rating}</strong> on
+          <a
+            class="team__gd"
+            href={STUDIO.glassdoor.url}
+            rel="noopener noreferrer"
+            target="_blank"
+          >Glassdoor</a>{' '}
+          across {STUDIO.glassdoor.reviews} reviews, every one of which recommends working
+          here. The count is next to the rating because a rating without one is not worth
+          much, and both are one click away.
+        </span>
+      </p>
+
+      <p class="team__where">
         <span class="team__where-k">Where we are</span>
         <span class="team__where-v">
           {STUDIO.hq} — with a branch in {STUDIO.branch}. Clients are worked with async across
@@ -798,6 +814,18 @@ const arrow = 'M1 6h9M6.5 2 10.5 6l-4 4';
     color: var(--c-ink-2);
     text-align: center;
   }
+  /* Reads as body text, not a badge. A third-party rating dressed up as a
+     trust seal invites the question of who paid for it; a sentence with the
+     review count in it does not. */
+  .team__gd {
+    color: var(--c-signal-text);
+    text-decoration: underline;
+    text-decoration-color: var(--c-line-2);
+    text-underline-offset: 0.2em;
+    transition: text-decoration-color 140ms ease;
+  }
+  .team__gd:hover { text-decoration-color: currentColor; }
+  .team__where strong { color: var(--c-ink); font-weight: 600; }
   .team__where-k {
     font-family: var(--font-mono);
     font-size: var(--fs-2xs);
